@@ -11,7 +11,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "db:admin": "jiti scripts/create-admin.ts",
-    "db:demo": "jiti scripts/seed-dashboard-demo.ts"
+    "db:demo": "jiti scripts/seed-dashboard-demo.ts",
+    "db:seed:pos": "jiti scripts/seed-pos-categories.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

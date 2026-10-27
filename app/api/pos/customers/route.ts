@@ -66,3 +66,54 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// POST - Quick Create Customer for POS
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const phone = typeof body.phone === "string" ? body.phone.trim() : null;
+    const email = typeof body.email === "string" ? body.email.trim() : null;
+
+    if (!name) {
+      return NextResponse.json(
+        { success: false, message: "Customer name is required." },
+        { status: 400 }
+      );
+    }
+
+    // Generate unique customer code
+    const count = await prisma.customer.count();
+    const code = `CUST-${String(count + 1).padStart(4, "0")}`;
+
+    const newCustomer = await prisma.customer.create({
+      data: {
+        code,
+        name,
+        phone,
+        email,
+        isActive: true,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        phone: true,
+        email: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Customer added successfully.",
+      data: newCustomer,
+    });
+  } catch (error) {
+    console.error("CREATE POS CUSTOMER ERROR:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to create customer." },
+      { status: 500 }
+    );
+  }
+}

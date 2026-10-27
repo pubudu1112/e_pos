@@ -40,7 +40,7 @@ export async function POST(
 ) {
   try {
     // ========================================================
-    // Authentication
+    // Authentication & User resolution
     // ========================================================
 
     const { getSession } =
@@ -49,45 +49,52 @@ export async function POST(
     const session =
       await getSession();
 
-    if (!session) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "You must be logged in to complete a sale.",
-        },
-        { status: 401 }
-      );
+    let createdById: number;
+
+    if (session) {
+      const canCreateSale =
+        await hasPermission(
+          "POS_CREATE_SALE"
+        );
+
+      if (!canCreateSale) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "You do not have permission to create sales.",
+          },
+          { status: 403 }
+        );
+      }
+
+      createdById = session.user.id;
+    } else {
+      // In store terminal or direct POS access, fallback to active admin user
+      const activeUser = await prisma.user.findFirst({
+        where: { status: "ACTIVE" },
+        orderBy: { id: "asc" },
+      });
+
+      if (!activeUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "No active cashier or admin user found to record the sale.",
+          },
+          { status: 401 }
+        );
+      }
+
+      createdById = activeUser.id;
     }
-
-    // ========================================================
-    // POS CREATE SALE PERMISSION
-    // ========================================================
-
-    const canCreateSale =
-      await hasPermission(
-        "POS_CREATE_SALE"
-      );
-
-    if (!canCreateSale) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "You do not have permission to create sales.",
-        },
-        { status: 403 }
-      );
-    }
-
-    const createdById =
-      session.user.id;
 
     // ========================================================
     // Read Request
     // ========================================================
 
-    let body: any;
+    let body: Record<string, unknown>;
 
     try {
       body =
@@ -123,6 +130,26 @@ export async function POST(
 
     const discount =
       Number(body.discount) || 0;
+
+    const paymentReference =
+      typeof body.paymentReference === "string"
+        ? body.paymentReference.trim()
+        : typeof body.reference === "string"
+        ? body.reference.trim()
+        : "";
+
+    const paymentNote =
+      typeof body.paymentNote === "string"
+        ? body.paymentNote.trim()
+        : typeof body.note === "string"
+        ? body.note.trim()
+        : "";
+
+    const cashTendered =
+      Number(body.cashTendered) || 0;
+
+    const changeAmount =
+      Number(body.changeAmount) || 0;
 
     // ========================================================
     // Validate Cart
@@ -1029,6 +1056,12 @@ export async function POST(
           // Create Payment
           // ==================================================
 
+          const generatedNote =
+            paymentNote ||
+            (cashTendered > 0
+              ? `Tendered: Rs. ${cashTendered.toFixed(2)}, Change: Rs. ${changeAmount.toFixed(2)}`
+              : "POS Payment");
+
           await tx.payment.create({
             data: {
               saleId:
@@ -1043,10 +1076,10 @@ export async function POST(
                 ),
 
               reference:
-                invoiceNo,
+                paymentReference || invoiceNo,
 
               note:
-                "POS Payment",
+                generatedNote,
             },
           });
 
@@ -1118,6 +1151,15 @@ export async function POST(
               roundMoney(
                 balanceAmount
               ),
+
+            cashTendered:
+              cashTendered > 0 ? roundMoney(cashTendered) : roundMoney(paidAmount),
+
+            changeAmount:
+              changeAmount > 0 ? roundMoney(changeAmount) : 0,
+
+            paymentReference:
+              paymentReference || invoiceNo,
 
             paymentMethod:
               paymentMethod.name,

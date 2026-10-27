@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
-export const ALL_SYSTEM_PERMISSIONS = [
+const ALL_SYSTEM_PERMISSIONS = [
   "DASHBOARD_VIEW",
   "POS_VIEW",
   "JOB_VIEW",
