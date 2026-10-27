@@ -1,0 +1,671 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model auditlog {
+  id        BigInt   @id @default(autoincrement())
+  userId    Int?
+  action    String   @db.VarChar(100)
+  entity    String?  @db.VarChar(100)
+  entityId  String?  @db.VarChar(100)
+  details   String?  @db.Text
+  ipAddress String?  @db.VarChar(45)
+  createdAt DateTime @default(now())
+  user      user?    @relation(fields: [userId], references: [id], map: "AuditLog_userId_fkey")
+
+  @@index([action], map: "AuditLog_action_idx")
+  @@index([createdAt], map: "AuditLog_createdAt_idx")
+  @@index([userId], map: "AuditLog_userId_idx")
+}
+
+model brand {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "Brand_name_key") @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime @updatedAt
+  product     product[]
+
+  @@index([isActive], map: "Brand_isActive_idx")
+}
+
+model category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "Category_name_key") @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  product     product[]
+
+  @@index([isActive], map: "Category_isActive_idx")
+}
+
+model customer {
+  id                  Int                   @id @default(autoincrement())
+  code                String                @unique(map: "Customer_code_key") @db.VarChar(50)
+  name                String                @db.VarChar(150)
+  phone               String?               @db.VarChar(30)
+  email               String?               @db.VarChar(150)
+  address             String?               @db.Text
+  creditLimit         Decimal               @default(0.00) @db.Decimal(12, 2)
+  openingBalance      Decimal               @default(0.00) @db.Decimal(12, 2)
+  isActive            Boolean               @default(true)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  customertransaction customertransaction[]
+  job                 job[]
+  sale                sale[]
+
+  @@index([isActive], map: "Customer_isActive_idx")
+  @@index([name], map: "Customer_name_idx")
+  @@index([phone], map: "Customer_phone_idx")
+}
+
+model customertransaction {
+  id          BigInt   @id @default(autoincrement())
+  customerId  Int
+  saleId      Int?
+  description String?  @db.VarChar(255)
+  debit       Decimal  @default(0.00) @db.Decimal(12, 2)
+  credit      Decimal  @default(0.00) @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+  customer    customer @relation(fields: [customerId], references: [id], onDelete: Cascade, map: "CustomerTransaction_customerId_fkey")
+  sale        sale?    @relation(fields: [saleId], references: [id], map: "CustomerTransaction_saleId_fkey")
+
+  @@index([createdAt], map: "CustomerTransaction_createdAt_idx")
+  @@index([customerId], map: "CustomerTransaction_customerId_idx")
+  @@index([saleId], map: "CustomerTransaction_saleId_idx")
+}
+
+model expense {
+  id              Int             @id @default(autoincrement())
+  expenseNo       String          @unique(map: "Expense_expenseNo_key") @db.VarChar(50)
+  categoryId      Int
+  createdById     Int
+  description     String          @db.VarChar(255)
+  amount          Decimal         @db.Decimal(12, 2)
+  expenseDate     DateTime        @default(now())
+  paymentMethodId Int?
+  status          expense_status  @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  expensecategory expensecategory @relation(fields: [categoryId], references: [id], map: "Expense_categoryId_fkey")
+  user            user            @relation(fields: [createdById], references: [id], map: "Expense_createdById_fkey")
+  paymentmethod   paymentmethod?  @relation(fields: [paymentMethodId], references: [id], map: "Expense_paymentMethodId_fkey")
+
+  @@index([categoryId], map: "Expense_categoryId_idx")
+  @@index([createdById], map: "Expense_createdById_idx")
+  @@index([expenseDate], map: "Expense_expenseDate_idx")
+  @@index([paymentMethodId], map: "Expense_paymentMethodId_fkey")
+  @@index([status], map: "Expense_status_idx")
+}
+
+model expensecategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "ExpenseCategory_name_key") @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  expense     expense[]
+}
+
+model job {
+  id                          Int                @id @default(autoincrement())
+  jobNo                       String             @unique(map: "Job_jobNo_key") @db.VarChar(50)
+  customerId                  Int?
+  saleId                      Int?
+  title                       String             @db.VarChar(200)
+  description                 String?            @db.Text
+  status                      job_status         @default(NEW)
+  priority                    job_priority       @default(NORMAL)
+  startDate                   DateTime?
+  dueDate                     DateTime?
+  completedDate               DateTime?
+  total                       Decimal            @default(0.00) @db.Decimal(12, 2)
+  advanceAmount               Decimal            @default(0.00) @db.Decimal(12, 2)
+  balanceAmount               Decimal            @default(0.00) @db.Decimal(12, 2)
+  createdById                 Int
+  assignedToId                Int?
+  createdAt                   DateTime           @default(now())
+  updatedAt                   DateTime
+  user_job_assignedToIdTouser user?              @relation("job_assignedToIdTouser", fields: [assignedToId], references: [id], map: "Job_assignedToId_fkey")
+  user_job_createdByIdTouser  user               @relation("job_createdByIdTouser", fields: [createdById], references: [id], map: "Job_createdById_fkey")
+  customer                    customer?          @relation(fields: [customerId], references: [id], map: "Job_customerId_fkey")
+  sale                        sale?              @relation(fields: [saleId], references: [id], map: "Job_saleId_fkey")
+  jobitem                     jobitem[]
+  jobpayment                  jobpayment[]
+  jobstatushistory            jobstatushistory[]
+
+  @@index([assignedToId], map: "Job_assignedToId_idx")
+  @@index([createdById], map: "Job_createdById_idx")
+  @@index([customerId], map: "Job_customerId_idx")
+  @@index([dueDate], map: "Job_dueDate_idx")
+  @@index([saleId], map: "Job_saleId_idx")
+  @@index([status], map: "Job_status_idx")
+}
+
+model jobitem {
+  id          Int      @id @default(autoincrement())
+  jobId       Int
+  serviceId   Int?
+  description String?  @db.VarChar(255)
+  quantity    Decimal  @db.Decimal(12, 3)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+  job         job      @relation(fields: [jobId], references: [id], onDelete: Cascade, map: "JobItem_jobId_fkey")
+  service     service? @relation(fields: [serviceId], references: [id], map: "JobItem_serviceId_fkey")
+
+  @@index([jobId], map: "JobItem_jobId_idx")
+  @@index([serviceId], map: "JobItem_serviceId_idx")
+}
+
+model jobpayment {
+  id          Int      @id @default(autoincrement())
+  jobId       Int
+  amount      Decimal  @db.Decimal(12, 2)
+  paymentDate DateTime @default(now())
+  reference   String?  @db.VarChar(100)
+  note        String?  @db.VarChar(255)
+  job         job      @relation(fields: [jobId], references: [id], onDelete: Cascade, map: "JobPayment_jobId_fkey")
+
+  @@index([jobId], map: "JobPayment_jobId_idx")
+  @@index([paymentDate], map: "JobPayment_paymentDate_idx")
+}
+
+model jobstatushistory {
+  id          BigInt                  @id @default(autoincrement())
+  jobId       Int
+  status      jobstatushistory_status
+  note        String?                 @db.VarChar(255)
+  createdById Int
+  createdAt   DateTime                @default(now())
+  job         job                     @relation(fields: [jobId], references: [id], onDelete: Cascade, map: "JobStatusHistory_jobId_fkey")
+
+  @@index([createdAt], map: "JobStatusHistory_createdAt_idx")
+  @@index([jobId], map: "JobStatusHistory_jobId_idx")
+}
+
+model payment {
+  id              Int           @id @default(autoincrement())
+  saleId          Int
+  paymentMethodId Int
+  amount          Decimal       @db.Decimal(12, 2)
+  paymentDate     DateTime      @default(now())
+  reference       String?       @db.VarChar(100)
+  note            String?       @db.VarChar(255)
+  paymentmethod   paymentmethod @relation(fields: [paymentMethodId], references: [id], map: "Payment_paymentMethodId_fkey")
+  sale            sale          @relation(fields: [saleId], references: [id], onDelete: Cascade, map: "Payment_saleId_fkey")
+
+  @@index([paymentDate], map: "Payment_paymentDate_idx")
+  @@index([paymentMethodId], map: "Payment_paymentMethodId_idx")
+  @@index([saleId], map: "Payment_saleId_idx")
+}
+
+model paymentmethod {
+  id              Int                @id @default(autoincrement())
+  name            String             @unique(map: "PaymentMethod_name_key") @db.VarChar(100)
+  type            paymentmethod_type
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime
+  expense         expense[]
+  payment         payment[]
+  purchasepayment purchasepayment[]
+}
+
+model permission {
+  id             Int              @id @default(autoincrement())
+  code           String           @unique(map: "Permission_code_key") @db.VarChar(100)
+  name           String           @db.VarChar(100)
+  description    String?          @db.VarChar(255)
+  createdAt      DateTime         @default(now())
+  rolepermission rolepermission[]
+}
+
+model product {
+  id                  Int                   @id @default(autoincrement())
+  code                String                @unique(map: "Product_code_key") @db.VarChar(50)
+  barcode             String?               @unique(map: "Product_barcode_key") @db.VarChar(100)
+  name                String                @db.VarChar(200)
+  description         String?               @db.Text
+  categoryId          Int
+  brandId             Int?
+  unitId              Int
+  taxId               Int?
+  purchasePrice       Decimal               @db.Decimal(12, 2)
+  sellingPrice        Decimal               @db.Decimal(12, 2)
+  wholesalePrice      Decimal?              @db.Decimal(12, 2)
+  minimumStock        Decimal               @default(0.000) @db.Decimal(12, 3)
+  status              product_status        @default(ACTIVE)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  brand               brand?                @relation(fields: [brandId], references: [id], map: "Product_brandId_fkey")
+  category            category              @relation(fields: [categoryId], references: [id], map: "Product_categoryId_fkey")
+  tax                 tax?                  @relation(fields: [taxId], references: [id], map: "Product_taxId_fkey")
+  unit                unit                  @relation(fields: [unitId], references: [id], map: "Product_unitId_fkey")
+  purchaseitem        purchaseitem[]
+  saleitem            saleitem[]
+  stock               stock?
+  stockadjustmentitem stockadjustmentitem[]
+  stockmovement       stockmovement[]
+
+  @@index([brandId], map: "Product_brandId_idx")
+  @@index([categoryId], map: "Product_categoryId_idx")
+  @@index([status], map: "Product_status_idx")
+  @@index([taxId], map: "Product_taxId_idx")
+  @@index([unitId], map: "Product_unitId_idx")
+}
+
+model purchase {
+  id                  Int                   @id @default(autoincrement())
+  purchaseNo          String                @unique(map: "Purchase_purchaseNo_key") @db.VarChar(50)
+  supplierId          Int
+  createdById         Int
+  purchaseDate        DateTime              @default(now())
+  subtotal            Decimal               @db.Decimal(12, 2)
+  discount            Decimal               @default(0.00) @db.Decimal(12, 2)
+  tax                 Decimal               @default(0.00) @db.Decimal(12, 2)
+  total               Decimal               @db.Decimal(12, 2)
+  paidAmount          Decimal               @default(0.00) @db.Decimal(12, 2)
+  balanceAmount       Decimal               @default(0.00) @db.Decimal(12, 2)
+  status              purchase_status       @default(PENDING)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  user                user                  @relation(fields: [createdById], references: [id], map: "Purchase_createdById_fkey")
+  supplier            supplier              @relation(fields: [supplierId], references: [id], map: "Purchase_supplierId_fkey")
+  purchaseitem        purchaseitem[]
+  purchasepayment     purchasepayment[]
+  suppliertransaction suppliertransaction[]
+
+  @@index([createdById], map: "Purchase_createdById_idx")
+  @@index([purchaseDate], map: "Purchase_purchaseDate_idx")
+  @@index([supplierId], map: "Purchase_supplierId_idx")
+}
+
+model purchaseitem {
+  id         Int      @id @default(autoincrement())
+  purchaseId Int
+  productId  Int
+  quantity   Decimal  @db.Decimal(12, 3)
+  unitPrice  Decimal  @db.Decimal(12, 2)
+  discount   Decimal  @default(0.00) @db.Decimal(12, 2)
+  total      Decimal  @db.Decimal(12, 2)
+  product    product  @relation(fields: [productId], references: [id], map: "PurchaseItem_productId_fkey")
+  purchase   purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade, map: "PurchaseItem_purchaseId_fkey")
+
+  @@index([productId], map: "PurchaseItem_productId_idx")
+  @@index([purchaseId], map: "PurchaseItem_purchaseId_idx")
+}
+
+model purchasepayment {
+  id              Int           @id @default(autoincrement())
+  purchaseId      Int
+  paymentMethodId Int
+  amount          Decimal       @db.Decimal(12, 2)
+  paymentDate     DateTime      @default(now())
+  reference       String?       @db.VarChar(100)
+  note            String?       @db.VarChar(255)
+  paymentmethod   paymentmethod @relation(fields: [paymentMethodId], references: [id], map: "PurchasePayment_paymentMethodId_fkey")
+  purchase        purchase      @relation(fields: [purchaseId], references: [id], onDelete: Cascade, map: "PurchasePayment_purchaseId_fkey")
+
+  @@index([paymentDate], map: "PurchasePayment_paymentDate_idx")
+  @@index([paymentMethodId], map: "PurchasePayment_paymentMethodId_idx")
+  @@index([purchaseId], map: "PurchasePayment_purchaseId_idx")
+}
+
+model role {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique(map: "Role_name_key") @db.VarChar(50)
+  description    String?          @db.VarChar(255)
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  rolepermission rolepermission[]
+  user           user[]
+}
+
+model rolepermission {
+  id           Int        @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+  createdAt    DateTime   @default(now())
+  permission   permission @relation(fields: [permissionId], references: [id], onDelete: Cascade, map: "RolePermission_permissionId_fkey")
+  role         role       @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "RolePermission_roleId_fkey")
+
+  @@unique([roleId, permissionId], map: "RolePermission_roleId_permissionId_key")
+  @@index([permissionId], map: "RolePermission_permissionId_idx")
+  @@index([roleId], map: "RolePermission_roleId_idx")
+}
+
+model sale {
+  id                  Int                   @id @default(autoincrement())
+  invoiceNo           String                @unique(map: "Sale_invoiceNo_key") @db.VarChar(50)
+  customerId          Int?
+  createdById         Int
+  saleDate            DateTime              @default(now())
+  subtotal            Decimal               @db.Decimal(12, 2)
+  discount            Decimal               @default(0.00) @db.Decimal(12, 2)
+  tax                 Decimal               @default(0.00) @db.Decimal(12, 2)
+  total               Decimal               @db.Decimal(12, 2)
+  paidAmount          Decimal               @default(0.00) @db.Decimal(12, 2)
+  balanceAmount       Decimal               @default(0.00) @db.Decimal(12, 2)
+  status              sale_status           @default(COMPLETED)
+  paymentStatus       sale_paymentStatus    @default(PAID)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  customertransaction customertransaction[]
+  job                 job[]
+  payment             payment[]
+  user                user                  @relation(fields: [createdById], references: [id], map: "Sale_createdById_fkey")
+  customer            customer?             @relation(fields: [customerId], references: [id], map: "Sale_customerId_fkey")
+  saleitem            saleitem[]
+
+  @@index([createdById], map: "Sale_createdById_idx")
+  @@index([customerId], map: "Sale_customerId_idx")
+  @@index([saleDate], map: "Sale_saleDate_idx")
+  @@index([status], map: "Sale_status_idx")
+}
+
+model saleitem {
+  id          Int      @id @default(autoincrement())
+  saleId      Int
+  productId   Int?
+  serviceId   Int?
+  description String?  @db.VarChar(255)
+  quantity    Decimal  @db.Decimal(12, 3)
+  unitPrice   Decimal  @db.Decimal(12, 2)
+  discount    Decimal  @default(0.00) @db.Decimal(12, 2)
+  tax         Decimal  @default(0.00) @db.Decimal(12, 2)
+  total       Decimal  @db.Decimal(12, 2)
+  product     product? @relation(fields: [productId], references: [id], map: "SaleItem_productId_fkey")
+  sale        sale     @relation(fields: [saleId], references: [id], onDelete: Cascade, map: "SaleItem_saleId_fkey")
+  service     service? @relation(fields: [serviceId], references: [id], map: "SaleItem_serviceId_fkey")
+
+  @@index([productId], map: "SaleItem_productId_idx")
+  @@index([saleId], map: "SaleItem_saleId_idx")
+  @@index([serviceId], map: "SaleItem_serviceId_idx")
+}
+
+model service {
+  id              Int             @id @default(autoincrement())
+  code            String          @unique(map: "Service_code_key") @db.VarChar(50)
+  name            String          @db.VarChar(200)
+  description     String?         @db.Text
+  categoryId      Int
+  taxId           Int?
+  basePrice       Decimal         @db.Decimal(12, 2)
+  status          service_status  @default(ACTIVE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime
+  jobitem         jobitem[]
+  saleitem        saleitem[]
+  servicecategory servicecategory @relation(fields: [categoryId], references: [id], map: "Service_categoryId_fkey")
+  tax             tax?            @relation(fields: [taxId], references: [id], map: "Service_taxId_fkey")
+  serviceprice    serviceprice[]
+
+  @@index([categoryId], map: "Service_categoryId_idx")
+  @@index([status], map: "Service_status_idx")
+  @@index([taxId], map: "Service_taxId_idx")
+}
+
+model servicecategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "ServiceCategory_name_key") @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  service     service[]
+}
+
+model serviceprice {
+  id        Int      @id @default(autoincrement())
+  serviceId Int
+  name      String   @db.VarChar(100)
+  price     Decimal  @db.Decimal(12, 2)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  service   service  @relation(fields: [serviceId], references: [id], onDelete: Cascade, map: "ServicePrice_serviceId_fkey")
+
+  @@index([serviceId], map: "ServicePrice_serviceId_idx")
+}
+
+model stock {
+  id               Int      @id @default(autoincrement())
+  productId        Int      @unique(map: "Stock_productId_key")
+  quantity         Decimal  @default(0.000) @db.Decimal(12, 3)
+  reservedQuantity Decimal  @default(0.000) @db.Decimal(12, 3)
+  updatedAt        DateTime
+  product          product  @relation(fields: [productId], references: [id], onDelete: Cascade, map: "Stock_productId_fkey")
+}
+
+model stockadjustment {
+  id                  Int                   @id @default(autoincrement())
+  adjustmentNo        String                @unique(map: "StockAdjustment_adjustmentNo_key") @db.VarChar(50)
+  reason              String?               @db.VarChar(255)
+  createdById         Int
+  createdAt           DateTime              @default(now())
+  stockadjustmentitem stockadjustmentitem[]
+}
+
+model stockadjustmentitem {
+  id              Int             @id @default(autoincrement())
+  adjustmentId    Int
+  productId       Int
+  quantity        Decimal         @db.Decimal(12, 3)
+  note            String?         @db.VarChar(255)
+  stockadjustment stockadjustment @relation(fields: [adjustmentId], references: [id], onDelete: Cascade, map: "StockAdjustmentItem_adjustmentId_fkey")
+  product         product         @relation(fields: [productId], references: [id], map: "StockAdjustmentItem_productId_fkey")
+
+  @@index([adjustmentId], map: "StockAdjustmentItem_adjustmentId_idx")
+  @@index([productId], map: "StockAdjustmentItem_productId_idx")
+}
+
+model stockmovement {
+  id          BigInt             @id @default(autoincrement())
+  productId   Int
+  type        stockmovement_type
+  quantity    Decimal            @db.Decimal(12, 3)
+  referenceId String?            @db.VarChar(100)
+  note        String?            @db.VarChar(255)
+  createdAt   DateTime           @default(now())
+  product     product            @relation(fields: [productId], references: [id], map: "StockMovement_productId_fkey")
+
+  @@index([createdAt], map: "StockMovement_createdAt_idx")
+  @@index([productId], map: "StockMovement_productId_idx")
+  @@index([type], map: "StockMovement_type_idx")
+}
+
+model supplier {
+  id                  Int                   @id @default(autoincrement())
+  code                String                @unique(map: "Supplier_code_key") @db.VarChar(50)
+  name                String                @db.VarChar(150)
+  phone               String?               @db.VarChar(30)
+  email               String?               @db.VarChar(150)
+  address             String?               @db.Text
+  openingBalance      Decimal               @default(0.00) @db.Decimal(12, 2)
+  isActive            Boolean               @default(true)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime
+  purchase            purchase[]
+  suppliertransaction suppliertransaction[]
+
+  @@index([isActive], map: "Supplier_isActive_idx")
+  @@index([name], map: "Supplier_name_idx")
+  @@index([phone], map: "Supplier_phone_idx")
+}
+
+model suppliertransaction {
+  id          BigInt    @id @default(autoincrement())
+  supplierId  Int
+  purchaseId  Int?
+  description String?   @db.VarChar(255)
+  debit       Decimal   @default(0.00) @db.Decimal(12, 2)
+  credit      Decimal   @default(0.00) @db.Decimal(12, 2)
+  createdAt   DateTime  @default(now())
+  purchase    purchase? @relation(fields: [purchaseId], references: [id], map: "SupplierTransaction_purchaseId_fkey")
+  supplier    supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade, map: "SupplierTransaction_supplierId_fkey")
+
+  @@index([createdAt], map: "SupplierTransaction_createdAt_idx")
+  @@index([purchaseId], map: "SupplierTransaction_purchaseId_idx")
+  @@index([supplierId], map: "SupplierTransaction_supplierId_idx")
+}
+
+model tax {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique(map: "Tax_name_key") @db.VarChar(100)
+  rate      Decimal   @db.Decimal(5, 2)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime @updatedAt
+  product   product[]
+  service   service[]
+}
+
+model unit {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique(map: "Unit_name_key") @db.VarChar(50)
+  shortName   String    @unique(map: "Unit_shortName_key") @db.VarChar(20)
+  description String?   @db.VarChar(255)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  product     product[]
+}
+
+model user {
+  id                         Int           @id @default(autoincrement())
+  username                   String        @unique(map: "User_username_key") @db.VarChar(50)
+  email                      String?       @unique(map: "User_email_key") @db.VarChar(150)
+  passwordHash               String        @db.VarChar(255)
+  fullName                   String        @db.VarChar(150)
+  status                     user_status   @default(ACTIVE)
+  roleId                     Int
+  lastLoginAt                DateTime?
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime
+  auditlog                   auditlog[]
+  expense                    expense[]
+  job_job_assignedToIdTouser job[]         @relation("job_assignedToIdTouser")
+  job_job_createdByIdTouser  job[]         @relation("job_createdByIdTouser")
+  purchase                   purchase[]
+  sale                       sale[]
+  role                       role          @relation(fields: [roleId], references: [id], map: "User_roleId_fkey")
+  usersession                usersession[]
+
+  @@index([roleId], map: "User_roleId_idx")
+  @@index([status], map: "User_status_idx")
+}
+
+model usersession {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  sessionToken String   @unique(map: "UserSession_sessionToken_key") @db.VarChar(255)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "UserSession_userId_fkey")
+
+  @@index([expiresAt], map: "UserSession_expiresAt_idx")
+  @@index([userId], map: "UserSession_userId_idx")
+}
+
+enum jobstatushistory_status {
+  NEW
+  DESIGNING
+  WAITING_APPROVAL
+  APPROVED
+  PRINTING
+  FINISHING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum paymentmethod_type {
+  CASH
+  CARD
+  BANK_TRANSFER
+  ONLINE
+  CREDIT
+  OTHER
+}
+
+enum stockmovement_type {
+  PURCHASE
+  SALE
+  SALE_RETURN
+  PURCHASE_RETURN
+  ADJUSTMENT
+  DAMAGE
+  OPENING_STOCK
+  JOB_CONSUMPTION
+}
+
+enum user_status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum job_status {
+  NEW
+  DESIGNING
+  WAITING_APPROVAL
+  APPROVED
+  PRINTING
+  FINISHING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum job_priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum service_status {
+  ACTIVE
+  INACTIVE
+}
+
+enum expense_status {
+  ACTIVE
+  CANCELLED
+}
+
+enum purchase_status {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+enum sale_status {
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum sale_paymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+enum product_status {
+  ACTIVE
+  INACTIVE
+}
