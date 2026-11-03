@@ -33,6 +33,8 @@ model brand {
   product     product[]
 
   @@index([isActive], map: "Brand_isActive_idx")
+
+  @@map("Brand")
 }
 
 model category {
@@ -45,6 +47,8 @@ model category {
   product     product[]
 
   @@index([isActive], map: "Category_isActive_idx")
+
+  @@map("Category")
 }
 
 model customer {
@@ -66,6 +70,8 @@ model customer {
   @@index([isActive], map: "Customer_isActive_idx")
   @@index([name], map: "Customer_name_idx")
   @@index([phone], map: "Customer_phone_idx")
+
+  @@map("Customer")
 }
 
 model customertransaction {
@@ -82,6 +88,8 @@ model customertransaction {
   @@index([createdAt], map: "CustomerTransaction_createdAt_idx")
   @@index([customerId], map: "CustomerTransaction_customerId_idx")
   @@index([saleId], map: "CustomerTransaction_saleId_idx")
+
+  @@map("CustomerTransaction")
 }
 
 model expense {
@@ -105,6 +113,8 @@ model expense {
   @@index([expenseDate], map: "Expense_expenseDate_idx")
   @@index([paymentMethodId], map: "Expense_paymentMethodId_fkey")
   @@index([status], map: "Expense_status_idx")
+
+  @@map("Expense")
 }
 
 model expensecategory {
@@ -115,6 +125,8 @@ model expensecategory {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime
   expense     expense[]
+
+  @@map("ExpenseCategory")
 }
 
 model job {
@@ -150,6 +162,8 @@ model job {
   @@index([dueDate], map: "Job_dueDate_idx")
   @@index([saleId], map: "Job_saleId_idx")
   @@index([status], map: "Job_status_idx")
+
+  @@map("Job")
 }
 
 model jobitem {
@@ -165,6 +179,8 @@ model jobitem {
 
   @@index([jobId], map: "JobItem_jobId_idx")
   @@index([serviceId], map: "JobItem_serviceId_idx")
+
+  @@map("JobItem")
 }
 
 model jobpayment {
@@ -178,6 +194,8 @@ model jobpayment {
 
   @@index([jobId], map: "JobPayment_jobId_idx")
   @@index([paymentDate], map: "JobPayment_paymentDate_idx")
+
+  @@map("JobPayment")
 }
 
 model jobstatushistory {
@@ -191,6 +209,8 @@ model jobstatushistory {
 
   @@index([createdAt], map: "JobStatusHistory_createdAt_idx")
   @@index([jobId], map: "JobStatusHistory_jobId_idx")
+
+  @@map("JobStatusHistory")
 }
 
 model payment {
@@ -207,6 +227,8 @@ model payment {
   @@index([paymentDate], map: "Payment_paymentDate_idx")
   @@index([paymentMethodId], map: "Payment_paymentMethodId_idx")
   @@index([saleId], map: "Payment_saleId_idx")
+
+  @@map("Payment")
 }
 
 model paymentmethod {
@@ -219,6 +241,8 @@ model paymentmethod {
   expense         expense[]
   payment         payment[]
   purchasepayment purchasepayment[]
+
+  @@map("PaymentMethod")
 }
 
 model permission {
@@ -228,6 +252,8 @@ model permission {
   description    String?          @db.VarChar(255)
   createdAt      DateTime         @default(now())
   rolepermission rolepermission[]
+
+  @@map("Permission")
 }
 
 model product {
@@ -263,6 +289,8 @@ model product {
   @@index([status], map: "Product_status_idx")
   @@index([taxId], map: "Product_taxId_idx")
   @@index([unitId], map: "Product_unitId_idx")
+
+  @@map("Product")
 }
 
 model purchase {
@@ -289,6 +317,8 @@ model purchase {
   @@index([createdById], map: "Purchase_createdById_idx")
   @@index([purchaseDate], map: "Purchase_purchaseDate_idx")
   @@index([supplierId], map: "Purchase_supplierId_idx")
+
+  @@map("Purchase")
 }
 
 model purchaseitem {
@@ -304,6 +334,8 @@ model purchaseitem {
 
   @@index([productId], map: "PurchaseItem_productId_idx")
   @@index([purchaseId], map: "PurchaseItem_purchaseId_idx")
+
+  @@map("PurchaseItem")
 }
 
 model purchasepayment {
@@ -320,6 +352,8 @@ model purchasepayment {
   @@index([paymentDate], map: "PurchasePayment_paymentDate_idx")
   @@index([paymentMethodId], map: "PurchasePayment_paymentMethodId_idx")
   @@index([purchaseId], map: "PurchasePayment_purchaseId_idx")
+
+  @@map("PurchasePayment")
 }
 
 model role {
@@ -331,6 +365,8 @@ model role {
   updatedAt      DateTime
   rolepermission rolepermission[]
   user           User[]
+
+  @@map("Role")
 }
 
 model rolepermission {
@@ -344,6 +380,8 @@ model rolepermission {
   @@unique([roleId, permissionId], map: "RolePermission_roleId_permissionId_key")
   @@index([permissionId], map: "RolePermission_permissionId_idx")
   @@index([roleId], map: "RolePermission_roleId_idx")
+
+  @@map("RolePermission")
 }
 
 model sale {
@@ -373,6 +411,8 @@ model sale {
   @@index([customerId], map: "Sale_customerId_idx")
   @@index([saleDate], map: "Sale_saleDate_idx")
   @@index([status], map: "Sale_status_idx")
+
+  @@map("Sale")
 }
 
 model saleitem {
@@ -394,6 +434,8 @@ model saleitem {
   @@index([productId], map: "SaleItem_productId_idx")
   @@index([saleId], map: "SaleItem_saleId_idx")
   @@index([serviceId], map: "SaleItem_serviceId_idx")
+
+  @@map("SaleItem")
 }
 
 model service {
@@ -416,6 +458,8 @@ model service {
   @@index([categoryId], map: "Service_categoryId_idx")
   @@index([status], map: "Service_status_idx")
   @@index([taxId], map: "Service_taxId_idx")
+
+  @@map("Service")
 }
 
 model servicecategory {
@@ -426,6 +470,8 @@ model servicecategory {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime
   service     service[]
+
+  @@map("ServiceCategory")
 }
 
 model serviceprice {
@@ -439,6 +485,8 @@ model serviceprice {
   service   service  @relation(fields: [serviceId], references: [id], onDelete: Cascade, map: "ServicePrice_serviceId_fkey")
 
   @@index([serviceId], map: "ServicePrice_serviceId_idx")
+
+  @@map("ServicePrice")
 }
 
 model stock {
@@ -448,6 +496,8 @@ model stock {
   reservedQuantity Decimal  @default(0.000) @db.Decimal(12, 3)
   updatedAt        DateTime
   product          product  @relation(fields: [productId], references: [id], onDelete: Cascade, map: "Stock_productId_fkey")
+
+  @@map("Stock")
 }
 
 model stockadjustment {
@@ -457,6 +507,8 @@ model stockadjustment {
   createdById         Int
   createdAt           DateTime              @default(now())
   stockadjustmentitem stockadjustmentitem[]
+
+  @@map("StockAdjustment")
 }
 
 model stockadjustmentitem {
@@ -470,6 +522,8 @@ model stockadjustmentitem {
 
   @@index([adjustmentId], map: "StockAdjustmentItem_adjustmentId_idx")
   @@index([productId], map: "StockAdjustmentItem_productId_idx")
+
+  @@map("StockAdjustmentItem")
 }
 
 model stockmovement {
@@ -485,6 +539,8 @@ model stockmovement {
   @@index([createdAt], map: "StockMovement_createdAt_idx")
   @@index([productId], map: "StockMovement_productId_idx")
   @@index([type], map: "StockMovement_type_idx")
+
+  @@map("StockMovement")
 }
 
 model supplier {
@@ -504,6 +560,8 @@ model supplier {
   @@index([isActive], map: "Supplier_isActive_idx")
   @@index([name], map: "Supplier_name_idx")
   @@index([phone], map: "Supplier_phone_idx")
+
+  @@map("Supplier")
 }
 
 model suppliertransaction {
@@ -520,6 +578,8 @@ model suppliertransaction {
   @@index([createdAt], map: "SupplierTransaction_createdAt_idx")
   @@index([purchaseId], map: "SupplierTransaction_purchaseId_idx")
   @@index([supplierId], map: "SupplierTransaction_supplierId_idx")
+
+  @@map("SupplierTransaction")
 }
 
 model tax {
@@ -531,6 +591,8 @@ model tax {
   updatedAt DateTime  @updatedAt
   product   product[]
   service   service[]
+
+  @@map("Tax")
 }
 
 model unit {
@@ -542,6 +604,8 @@ model unit {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   product     product[]
+
+  @@map("Unit")
 }
 
 model User {
@@ -567,7 +631,6 @@ model User {
 
   @@index([roleId], map: "User_roleId_idx")
   @@index([status], map: "User_status_idx")
-  @@map("user")
 }
 
 model Notification {
