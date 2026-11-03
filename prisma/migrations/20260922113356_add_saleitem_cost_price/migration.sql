@@ -1,2 +1,1 @@
--- AlterTable
-ALTER TABLE `saleitem` ADD COLUMN `costPrice` DECIMAL(12, 2) NULL;
+ALTER TABLE `SaleItem` ADD COLUMN `costPrice` DECIMAL(12, 2) NULL;
