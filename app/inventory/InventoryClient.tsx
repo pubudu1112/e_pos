@@ -1,6 +1,8 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import {
   AlertTriangle,
   Boxes,
@@ -9,9 +11,20 @@ import {
   Search,
   TrendingDown,
   XCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 
 import StockAdjustmentModal from "./StockAdjustmentModal";
+
+// ============================================================
+// TYPES
+// ============================================================
 
 type InventoryItem = {
   id: number;
@@ -41,16 +54,50 @@ type AdjustmentProduct = {
   unit: string;
 };
 
+type SortColumn =
+  | "name"
+  | "category"
+  | "unit"
+  | "quantity"
+  | "reservedQuantity"
+  | "availableQuantity"
+  | "minimumStock"
+  | "status"
+  | "updatedAt";
+
+type SortDirection = "asc" | "desc";
+
+// ============================================================
+// COMPONENT
+// ============================================================
+
 export default function InventoryClient() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Sorting
+  const [sortColumn, setSortColumn] =
+    useState<SortColumn>("name");
+
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>("asc");
+
+  // Stock Adjustment
   const [adjustmentOpen, setAdjustmentOpen] = useState(false);
+
   const [adjustmentProducts, setAdjustmentProducts] = useState<
     AdjustmentProduct[]
   >([]);
+
+  // ============================================================
+  // LOAD INVENTORY
+  // ============================================================
 
   async function loadInventory() {
     try {
@@ -83,6 +130,10 @@ export default function InventoryClient() {
       setLoading(false);
     }
   }
+
+  // ============================================================
+  // LOAD ADJUSTMENT PRODUCTS
+  // ============================================================
 
   async function loadAdjustmentProducts() {
     try {
@@ -118,9 +169,17 @@ export default function InventoryClient() {
     }
   }
 
+  // ============================================================
+  // INITIAL LOAD
+  // ============================================================
+
   useEffect(() => {
     loadInventory();
   }, []);
+
+  // ============================================================
+  // SEARCH INVENTORY
+  // ============================================================
 
   const filteredItems = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -131,24 +190,20 @@ export default function InventoryClient() {
 
     return items.filter((item) => {
       return (
-        item.product.name
-          .toLowerCase()
-          .includes(keyword) ||
-        item.product.code
-          .toLowerCase()
-          .includes(keyword) ||
+        item.product.name.toLowerCase().includes(keyword) ||
+        item.product.code.toLowerCase().includes(keyword) ||
         (item.product.barcode || "")
           .toLowerCase()
           .includes(keyword) ||
-        item.product.category
-          .toLowerCase()
-          .includes(keyword) ||
-        item.product.brand
-          .toLowerCase()
-          .includes(keyword)
+        item.product.category.toLowerCase().includes(keyword) ||
+        item.product.brand.toLowerCase().includes(keyword)
       );
     });
   }, [items, search]);
+
+  // ============================================================
+  // SUMMARY CARDS
+  // ============================================================
 
   const summary = useMemo(() => {
     return {
@@ -168,20 +223,9 @@ export default function InventoryClient() {
     };
   }, [items]);
 
-  function formatQuantity(value: number) {
-    return Number(value).toLocaleString("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
-  }
-
-  function formatDate(value: string) {
-    return new Date(value).toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-  }
+  // ============================================================
+  // STATUS LABEL
+  // ============================================================
 
   function getStatusLabel(
     status: InventoryItem["status"]
@@ -201,6 +245,10 @@ export default function InventoryClient() {
     }
   }
 
+  // ============================================================
+  // STATUS CLASS
+  // ============================================================
+
   function getStatusClass(
     status: InventoryItem["status"]
   ) {
@@ -219,6 +267,219 @@ export default function InventoryClient() {
     }
   }
 
+  // ============================================================
+  // SORTING
+  // ============================================================
+
+  function handleSort(column: SortColumn) {
+    if (sortColumn === column) {
+      setSortDirection((previous) =>
+        previous === "asc" ? "desc" : "asc"
+      );
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+
+    // Return to first page after sorting
+    setCurrentPage(1);
+  }
+
+  // Sort all filtered records before pagination
+  const sortedItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortColumn) {
+        case "name":
+          comparison = a.product.name.localeCompare(
+            b.product.name,
+            undefined,
+            { sensitivity: "base" }
+          );
+          break;
+
+        case "category":
+          comparison = (
+            a.product.category || ""
+          ).localeCompare(
+            b.product.category || "",
+            undefined,
+            { sensitivity: "base" }
+          );
+          break;
+
+        case "unit":
+          comparison = (
+            a.product.unit || ""
+          ).localeCompare(
+            b.product.unit || "",
+            undefined,
+            { sensitivity: "base" }
+          );
+          break;
+
+        case "quantity":
+          comparison = a.quantity - b.quantity;
+          break;
+
+        case "reservedQuantity":
+          comparison =
+            a.reservedQuantity - b.reservedQuantity;
+          break;
+
+        case "availableQuantity":
+          comparison =
+            a.availableQuantity - b.availableQuantity;
+          break;
+
+        case "minimumStock":
+          comparison =
+            a.minimumStock - b.minimumStock;
+          break;
+
+        case "status":
+          comparison = getStatusLabel(a.status).localeCompare(
+            getStatusLabel(b.status)
+          );
+          break;
+
+        case "updatedAt":
+          comparison =
+            new Date(a.updatedAt).getTime() -
+            new Date(b.updatedAt).getTime();
+          break;
+      }
+
+      return sortDirection === "asc"
+        ? comparison
+        : -comparison;
+    });
+  }, [filteredItems, sortColumn, sortDirection]);
+
+  // Sorting icon
+  function getSortIcon(column: SortColumn) {
+    if (sortColumn !== column) {
+      return (
+        <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+      );
+    }
+
+    return sortDirection === "asc" ? (
+      <ArrowUp className="h-3.5 w-3.5 text-blue-600" />
+    ) : (
+      <ArrowDown className="h-3.5 w-3.5 text-blue-600" />
+    );
+  }
+
+  // ============================================================
+  // PAGINATION
+  // ============================================================
+
+  const totalRecords = sortedItems.length;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / pageSize)
+  );
+
+  const safeCurrentPage = Math.min(
+    currentPage,
+    totalPages
+  );
+
+  const startIndex =
+    (safeCurrentPage - 1) * pageSize;
+
+  const endIndex = Math.min(
+    startIndex + pageSize,
+    totalRecords
+  );
+
+  // Records for current page
+  const paginatedItems = useMemo(() => {
+    return sortedItems.slice(
+      startIndex,
+      startIndex + pageSize
+    );
+  }, [sortedItems, startIndex, pageSize]);
+
+  // Reset page when searching
+  function handleSearch(value: string) {
+    setSearch(value);
+    setCurrentPage(1);
+  }
+
+  // Change page size
+  function handlePageSizeChange(value: number) {
+    setPageSize(value);
+    setCurrentPage(1);
+  }
+
+  // Change page
+  function handlePageChange(page: number) {
+    if (page < 1 || page > totalPages) {
+      return;
+    }
+
+    setCurrentPage(page);
+  }
+
+  // Keep current page valid after data changes
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  // Generate maximum 5 visible page numbers
+  const pageNumbers = useMemo(() => {
+    const maxVisiblePages = 5;
+
+    let startPage = Math.max(
+      1,
+      safeCurrentPage - Math.floor(maxVisiblePages / 2)
+    );
+
+    let endPage = Math.min(
+      totalPages,
+      startPage + maxVisiblePages - 1
+    );
+
+    startPage = Math.max(
+      1,
+      endPage - maxVisiblePages + 1
+    );
+
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, index) => startPage + index
+    );
+  }, [safeCurrentPage, totalPages]);
+
+  // ============================================================
+  // FORMAT FUNCTIONS
+  // ============================================================
+
+  function formatQuantity(value: number) {
+    return Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3,
+    });
+  }
+
+  function formatDate(value: string) {
+    return new Date(value).toLocaleDateString("en-GB", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }
+
+  // ============================================================
+  // STOCK ADJUSTMENT
+  // ============================================================
+
   async function handleOpenAdjustment() {
     await loadAdjustmentProducts();
     setAdjustmentOpen(true);
@@ -228,12 +489,64 @@ export default function InventoryClient() {
     await loadInventory();
   }
 
+  // ============================================================
+  // TABLE SORT HEADER
+  // ============================================================
+
+  function SortHeader({
+    column,
+    children,
+    align = "left",
+  }: {
+    column: SortColumn;
+    children: React.ReactNode;
+    align?: "left" | "right" | "center";
+  }) {
+    return (
+      <th
+        className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${
+          align === "right"
+            ? "text-right"
+            : align === "center"
+            ? "text-center"
+            : "text-left"
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => handleSort(column)}
+          className={`inline-flex items-center gap-2 whitespace-nowrap transition hover:text-slate-900 ${
+            align === "right"
+              ? "ml-auto"
+              : align === "center"
+              ? "mx-auto"
+              : ""
+          }`}
+          aria-label={`Sort by ${column}`}
+        >
+          {children}
+          {getSortIcon(column)}
+        </button>
+      </th>
+    );
+  }
+
+  // ============================================================
+  // RENDER
+  // ============================================================
+
   return (
     <div className="p-4 sm:p-6">
-      {/* Header */}
+
+      {/* ====================================================== */}
+      {/* HEADER */}
+      {/* ====================================================== */}
+
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
         <div>
           <div className="flex items-center gap-3">
+
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900">
               <Boxes className="h-5 w-5 text-white" />
             </div>
@@ -247,11 +560,13 @@ export default function InventoryClient() {
                 Monitor product stock and availability
               </p>
             </div>
+
           </div>
         </div>
 
         {/* Header Buttons */}
         <div className="flex flex-wrap items-center gap-3">
+
           <button
             type="button"
             onClick={handleOpenAdjustment}
@@ -264,18 +579,25 @@ export default function InventoryClient() {
           <button
             type="button"
             onClick={loadInventory}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+            disabled={loading}
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Refresh Stock
           </button>
+
         </div>
       </div>
 
-      {/* Summary Cards */}
+      {/* ====================================================== */}
+      {/* SUMMARY CARDS */}
+      {/* ====================================================== */}
+
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
         {/* Total */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
+
             <div>
               <p className="text-sm font-medium text-slate-500">
                 Total Products
@@ -289,12 +611,14 @@ export default function InventoryClient() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
               <Package className="h-5 w-5 text-slate-700" />
             </div>
+
           </div>
         </div>
 
         {/* In Stock */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
+
             <div>
               <p className="text-sm font-medium text-slate-500">
                 In Stock
@@ -308,12 +632,14 @@ export default function InventoryClient() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
               <Boxes className="h-5 w-5 text-emerald-600" />
             </div>
+
           </div>
         </div>
 
         {/* Low Stock */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
+
             <div>
               <p className="text-sm font-medium text-slate-500">
                 Low Stock
@@ -327,12 +653,14 @@ export default function InventoryClient() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
               <TrendingDown className="h-5 w-5 text-amber-600" />
             </div>
+
           </div>
         </div>
 
         {/* Out of Stock */}
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
+
             <div>
               <p className="text-sm font-medium text-slate-500">
                 Out of Stock
@@ -346,32 +674,54 @@ export default function InventoryClient() {
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50">
               <XCircle className="h-5 w-5 text-red-600" />
             </div>
+
           </div>
         </div>
+
       </div>
 
-      {/* Main Card */}
+      {/* ====================================================== */}
+      {/* MAIN INVENTORY CARD */}
+      {/* ====================================================== */}
+
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+
         {/* Search */}
         <div className="border-b border-slate-200 p-4">
+
           <div className="relative max-w-xl">
+
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
             <input
               type="text"
               value={search}
               onChange={(event) =>
-                setSearch(event.target.value)
+                handleSearch(event.target.value)
               }
               placeholder="Search product, code, barcode, category..."
               className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white"
             />
+
           </div>
+
+          {/* Search Result Information */}
+          {search.trim() && (
+            <p className="mt-2 text-xs text-slate-500">
+              Found{" "}
+              <span className="font-semibold text-slate-700">
+                {totalRecords}
+              </span>{" "}
+              matching inventory records
+            </p>
+          )}
+
         </div>
 
         {/* Error */}
         {error && (
           <div className="m-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
 
             <div>
@@ -381,72 +731,112 @@ export default function InventoryClient() {
 
               <p className="mt-1">{error}</p>
             </div>
+
           </div>
         )}
 
         {/* Loading */}
         {loading ? (
+
           <div className="flex min-h-[300px] items-center justify-center">
+
             <div className="text-center">
+
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
 
               <p className="mt-3 text-sm text-slate-500">
                 Loading inventory...
               </p>
+
             </div>
+
           </div>
+
         ) : (
+
           <>
-            {/* Table */}
+
+            {/* ================================================== */}
+            {/* INVENTORY TABLE */}
+            {/* ================================================== */}
+
             <div className="overflow-x-auto">
+
               <table className="w-full min-w-[1100px] text-left">
+
                 <thead className="bg-slate-50">
+
                   <tr className="border-b border-slate-200">
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+
+                    <SortHeader column="name">
                       Product
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader column="category">
                       Category
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader column="unit">
                       Unit
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader
+                      column="quantity"
+                      align="right"
+                    >
                       Stock
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader
+                      column="reservedQuantity"
+                      align="right"
+                    >
                       Reserved
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader
+                      column="availableQuantity"
+                      align="right"
+                    >
                       Available
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader
+                      column="minimumStock"
+                      align="right"
+                    >
                       Minimum
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader
+                      column="status"
+                      align="center"
+                    >
                       Status
-                    </th>
+                    </SortHeader>
 
-                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <SortHeader
+                      column="updatedAt"
+                      align="right"
+                    >
                       Updated
-                    </th>
+                    </SortHeader>
+
                   </tr>
+
                 </thead>
 
                 <tbody className="divide-y divide-slate-100">
-                  {filteredItems.length === 0 ? (
+
+                  {paginatedItems.length === 0 ? (
+
                     <tr>
+
                       <td
                         colSpan={9}
                         className="px-4 py-16 text-center"
                       >
+
                         <Boxes className="mx-auto h-10 w-10 text-slate-300" />
 
                         <p className="mt-3 text-sm font-medium text-slate-600">
@@ -458,17 +848,25 @@ export default function InventoryClient() {
                             ? "Try a different search term."
                             : "There are no stock records available yet."}
                         </p>
+
                       </td>
+
                     </tr>
+
                   ) : (
-                    filteredItems.map((item) => (
+
+                    paginatedItems.map((item) => (
+
                       <tr
                         key={item.id}
                         className="transition hover:bg-slate-50"
                       >
+
                         {/* Product */}
                         <td className="px-4 py-4">
+
                           <div>
+
                             <p className="font-medium text-slate-900">
                               {item.product.name}
                             </p>
@@ -482,7 +880,9 @@ export default function InventoryClient() {
                                 Barcode: {item.product.barcode}
                               </p>
                             )}
+
                           </div>
+
                         </td>
 
                         {/* Category */}
@@ -502,27 +902,22 @@ export default function InventoryClient() {
 
                         {/* Reserved */}
                         <td className="px-4 py-4 text-right text-sm text-slate-600">
-                          {formatQuantity(
-                            item.reservedQuantity
-                          )}
+                          {formatQuantity(item.reservedQuantity)}
                         </td>
 
                         {/* Available */}
                         <td className="px-4 py-4 text-right text-sm font-semibold text-slate-900">
-                          {formatQuantity(
-                            item.availableQuantity
-                          )}
+                          {formatQuantity(item.availableQuantity)}
                         </td>
 
                         {/* Minimum */}
                         <td className="px-4 py-4 text-right text-sm text-slate-600">
-                          {formatQuantity(
-                            item.minimumStock
-                          )}
+                          {formatQuantity(item.minimumStock)}
                         </td>
 
                         {/* Status */}
                         <td className="px-4 py-4 text-center">
+
                           <span
                             className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${getStatusClass(
                               item.status
@@ -530,44 +925,243 @@ export default function InventoryClient() {
                           >
                             {getStatusLabel(item.status)}
                           </span>
+
                         </td>
 
                         {/* Updated */}
                         <td className="px-4 py-4 text-right text-sm text-slate-500">
                           {formatDate(item.updatedAt)}
                         </td>
+
                       </tr>
+
                     ))
+
                   )}
+
                 </tbody>
+
               </table>
+
             </div>
 
-            {/* Footer */}
-            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-xs text-slate-500">
-                Showing{" "}
-                <span className="font-semibold text-slate-700">
-                  {filteredItems.length}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-slate-700">
-                  {items.length}
-                </span>{" "}
-                inventory records
-              </p>
+            {/* ================================================== */}
+            {/* PAGINATION FOOTER */}
+            {/* ================================================== */}
+
+            <div className="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+              {/* Record Information */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+
+                <p className="text-xs text-slate-500">
+
+                  Showing{" "}
+
+                  <span className="font-semibold text-slate-800">
+                    {totalRecords === 0 ? 0 : startIndex + 1}
+                  </span>
+
+                  {" - "}
+
+                  <span className="font-semibold text-slate-800">
+                    {endIndex}
+                  </span>
+
+                  {" of "}
+
+                  <span className="font-semibold text-slate-800">
+                    {totalRecords}
+                  </span>
+
+                  {" records"}
+
+                </p>
+
+                {/* Rows Per Page */}
+                <div className="flex items-center gap-2">
+
+                  <label
+                    htmlFor="inventory-page-size"
+                    className="whitespace-nowrap text-xs text-slate-500"
+                  >
+                    Rows per page:
+                  </label>
+
+                  <select
+                    id="inventory-page-size"
+                    value={pageSize}
+                    onChange={(event) =>
+                      handlePageSizeChange(
+                        Number(event.target.value)
+                      )
+                    }
+                    className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 outline-none focus:border-slate-400"
+                  >
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+
+                </div>
+
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex flex-wrap items-center justify-center gap-1">
+
+                {/* First Page */}
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(1)}
+                  disabled={
+                    safeCurrentPage === 1 ||
+                    totalRecords === 0
+                  }
+                  title="First page"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </button>
+
+                {/* Previous */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePageChange(safeCurrentPage - 1)
+                  }
+                  disabled={
+                    safeCurrentPage === 1 ||
+                    totalRecords === 0
+                  }
+                  title="Previous page"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                {/* First Page Shortcut */}
+                {pageNumbers.length > 0 &&
+                  pageNumbers[0] > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handlePageChange(1)}
+                        className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+                      >
+                        1
+                      </button>
+
+                      {pageNumbers[0] > 2 && (
+                        <span className="px-1 text-xs text-slate-400">
+                          ...
+                        </span>
+                      )}
+                    </>
+                  )}
+
+                {/* Page Numbers */}
+                {pageNumbers.map((page) => (
+
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    aria-current={
+                      safeCurrentPage === page
+                        ? "page"
+                        : undefined
+                    }
+                    className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${
+                      safeCurrentPage === page
+                        ? "bg-slate-900 text-white shadow-sm"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+
+                ))}
+
+                {/* Last Page Shortcut */}
+                {pageNumbers.length > 0 &&
+                  pageNumbers[pageNumbers.length - 1] <
+                    totalPages && (
+                    <>
+                      {pageNumbers[
+                        pageNumbers.length - 1
+                      ] < totalPages - 1 && (
+                        <span className="px-1 text-xs text-slate-400">
+                          ...
+                        </span>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handlePageChange(totalPages)
+                        }
+                        className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+
+                {/* Next */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePageChange(safeCurrentPage + 1)
+                  }
+                  disabled={
+                    safeCurrentPage === totalPages ||
+                    totalRecords === 0
+                  }
+                  title="Next page"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+
+                {/* Last Page */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handlePageChange(totalPages)
+                  }
+                  disabled={
+                    safeCurrentPage === totalPages ||
+                    totalRecords === 0
+                  }
+                  title="Last page"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </button>
+
+              </div>
+
             </div>
+
           </>
+
         )}
+
       </div>
 
-      {/* Stock Adjustment Modal */}
+      {/* ====================================================== */}
+      {/* STOCK ADJUSTMENT MODAL */}
+      {/* ====================================================== */}
+
       <StockAdjustmentModal
         open={adjustmentOpen}
         products={adjustmentProducts}
         onClose={() => setAdjustmentOpen(false)}
         onSuccess={handleAdjustmentSuccess}
       />
+
     </div>
   );
 }
