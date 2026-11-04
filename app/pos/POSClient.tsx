@@ -1359,7 +1359,7 @@ export default function POSClient() {
 
                       {/* Product Name & Code */}
                       <div className="mt-3">
-                        <h4 className="line-clamp-2 text-xs font-bold leading-snug text-slate-900 group-hover:text-emerald-700">
+                        <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 group-hover:text-emerald-700">
                           {item.name}
                         </h4>
                         <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400">
