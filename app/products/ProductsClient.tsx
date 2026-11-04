@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   ImageIcon,
   Package,
   Pencil,
@@ -145,6 +148,54 @@ export default function ProductsClient() {
   >(null);
 
   const [search, setSearch] = useState("");
+  type SortKey =
+    | "code"
+    | "name"
+    | "category"
+    | "brand"
+    | "unit"
+    | "sellingPrice"
+    | "minimumStock"
+    | "status";
+  const [sortConfig, setSortConfig] = useState<{
+    key: SortKey;
+    direction: "asc" | "desc";
+  }>({ key: "name", direction: "asc" });
+
+  function handleSort(key: SortKey) {
+    setSortConfig((current) => ({
+      key,
+      direction:
+        current.key === key && current.direction === "asc"
+          ? "desc"
+          : "asc",
+    }));
+  }
+
+  function renderSortHeader(label: string, key: SortKey, align: "left" | "right" | "center" = "left") {
+    const active = sortConfig.key === key;
+    return (
+      <button
+        type="button"
+        onClick={() => handleSort(key)}
+        className={`inline-flex items-center gap-1.5 hover:text-slate-900 ${
+          align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""
+        }`}
+        title={`Sort ${label} ${active && sortConfig.direction === "asc" ? "Z to A" : "A to Z"}`}
+      >
+        <span>{label}</span>
+        {active ? (
+          sortConfig.direction === "asc" ? (
+            <ArrowUp className="h-3.5 w-3.5 text-emerald-600" />
+          ) : (
+            <ArrowDown className="h-3.5 w-3.5 text-emerald-600" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+        )}
+      </button>
+    );
+  }
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -819,34 +870,41 @@ export default function ProductsClient() {
   }
 
   const filteredProducts = useMemo(() => {
-    const searchText = search
-      .toLowerCase()
-      .trim();
+    const searchText = search.toLowerCase().trim();
 
-    if (!searchText) {
-      return products;
-    }
+    const filtered = !searchText
+      ? [...products]
+      : products.filter((product) =>
+          product.code.toLowerCase().includes(searchText) ||
+          product.name.toLowerCase().includes(searchText) ||
+          (product.barcode || "").toLowerCase().includes(searchText) ||
+          (product.category?.name || "").toLowerCase().includes(searchText) ||
+          (product.brand?.name || "").toLowerCase().includes(searchText)
+        );
 
-    return products.filter((product) => {
-      return (
-        product.code
-          .toLowerCase()
-          .includes(searchText) ||
-        product.name
-          .toLowerCase()
-          .includes(searchText) ||
-        (product.barcode || "")
-          .toLowerCase()
-          .includes(searchText) ||
-        (product.category?.name || "")
-          .toLowerCase()
-          .includes(searchText) ||
-        (product.brand?.name || "")
-          .toLowerCase()
-          .includes(searchText)
-      );
+    const getSortValue = (product: Product): string | number => {
+      switch (sortConfig.key) {
+        case "code": return product.code || "";
+        case "name": return product.name || "";
+        case "category": return product.category?.name || "";
+        case "brand": return product.brand?.name || "";
+        case "unit": return product.unit?.shortName || product.unit?.name || "";
+        case "sellingPrice": return Number(product.sellingPrice) || 0;
+        case "minimumStock": return Number(product.minimumStock) || 0;
+        case "status": return product.status || "";
+      }
+    };
+
+    return filtered.sort((a, b) => {
+      const aValue = getSortValue(a);
+      const bValue = getSortValue(b);
+      const comparison =
+        typeof aValue === "number" && typeof bValue === "number"
+          ? aValue - bValue
+          : String(aValue).localeCompare(String(bValue), undefined, { numeric: true, sensitivity: "base" });
+      return sortConfig.direction === "asc" ? comparison : -comparison;
     });
-  }, [products, search]);
+  }, [products, search, sortConfig]);
 
   function formatPrice(
     value: number | string | null
@@ -917,37 +975,21 @@ export default function ProductsClient() {
                     #
                   </th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">
-                    Code
-                  </th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Code", "code")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">
-                    Product
-                  </th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Product", "name")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">
-                    Category
-                  </th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Category", "category")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">
-                    Brand
-                  </th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Brand", "brand")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">
-                    Unit
-                  </th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Unit", "unit")}</th>
 
-                  <th className="px-5 py-3 text-right font-semibold text-slate-600">
-                    Selling Price
-                  </th>
+                  <th className="px-5 py-3 text-right font-semibold text-slate-600">{renderSortHeader("Selling Price", "sellingPrice", "right")}</th>
 
-                  <th className="px-5 py-3 text-right font-semibold text-slate-600">
-                    Min. Stock
-                  </th>
+                  <th className="px-5 py-3 text-right font-semibold text-slate-600">{renderSortHeader("Min. Stock", "minimumStock", "right")}</th>
 
-                  <th className="px-5 py-3 text-center font-semibold text-slate-600">
-                    Status
-                  </th>
+                  <th className="px-5 py-3 text-center font-semibold text-slate-600">{renderSortHeader("Status", "status", "center")}</th>
 
                   <th className="px-5 py-3 text-right font-semibold text-slate-600">
                     Actions
