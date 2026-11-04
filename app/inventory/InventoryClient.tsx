@@ -50,6 +50,7 @@ type AdjustmentProduct = {
   id: number;
   code: string;
   name: string;
+  brand: string | null;
   quantity: number;
   unit: string;
 };
@@ -156,11 +157,13 @@ export default function InventoryClient() {
         id: item.product.id,
         code: item.product.code,
         name: item.product.name,
+        brand: item.product.brand || null,
         quantity: item.quantity,
         unit: item.product.unit,
       }));
 
       setAdjustmentProducts(products);
+
     } catch (error) {
       console.error(
         "LOAD ADJUSTMENT PRODUCTS ERROR:",
@@ -504,24 +507,22 @@ export default function InventoryClient() {
   }) {
     return (
       <th
-        className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${
-          align === "right"
+        className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${align === "right"
             ? "text-right"
             : align === "center"
-            ? "text-center"
-            : "text-left"
-        }`}
+              ? "text-center"
+              : "text-left"
+          }`}
       >
         <button
           type="button"
           onClick={() => handleSort(column)}
-          className={`inline-flex items-center gap-2 whitespace-nowrap transition hover:text-slate-900 ${
-            align === "right"
+          className={`inline-flex items-center gap-2 whitespace-nowrap transition hover:text-slate-900 ${align === "right"
               ? "ml-auto"
               : align === "center"
-              ? "mx-auto"
-              : ""
-          }`}
+                ? "mx-auto"
+                : ""
+            }`}
           aria-label={`Sort by ${column}`}
         >
           {children}
@@ -1073,11 +1074,10 @@ export default function InventoryClient() {
                         ? "page"
                         : undefined
                     }
-                    className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${
-                      safeCurrentPage === page
+                    className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${safeCurrentPage === page
                         ? "bg-slate-900 text-white shadow-sm"
                         : "text-slate-600 hover:bg-slate-100"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -1087,15 +1087,15 @@ export default function InventoryClient() {
                 {/* Last Page Shortcut */}
                 {pageNumbers.length > 0 &&
                   pageNumbers[pageNumbers.length - 1] <
-                    totalPages && (
+                  totalPages && (
                     <>
                       {pageNumbers[
                         pageNumbers.length - 1
                       ] < totalPages - 1 && (
-                        <span className="px-1 text-xs text-slate-400">
-                          ...
-                        </span>
-                      )}
+                          <span className="px-1 text-xs text-slate-400">
+                            ...
+                          </span>
+                        )}
 
                       <button
                         type="button"

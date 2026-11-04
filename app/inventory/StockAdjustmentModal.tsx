@@ -16,6 +16,7 @@ type Product = {
   id: number;
   code: string;
   name: string;
+  brand?: string | null;
   quantity: number;
   unit: string;
 };
@@ -45,26 +46,32 @@ export default function StockAdjustmentModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Product search wrapper reference
   const productSearchRef = useRef<HTMLDivElement>(null);
 
-  // Reset form when modal closes
+  // ============================================================
+  // RESET FORM
+  // ============================================================
+
   useEffect(() => {
     if (!open) {
       setProductId("");
       setProductSearch("");
       setProductDropdownOpen(false);
+
       setType("IN");
       setQuantity("");
       setReason("");
       setNote("");
+
       setError("");
       setSaving(false);
     }
   }, [open]);
 
-  // Close dropdown when clicking outside product search
-  // Clear unfinished search automatically
+  // ============================================================
+  // OUTSIDE CLICK
+  // ============================================================
+
   useEffect(() => {
     if (!open) return;
 
@@ -77,42 +84,66 @@ export default function StockAdjustmentModal({
       ) {
         setProductDropdownOpen(false);
 
-        // Clear search only when no product is selected
+        // Clear unfinished search when clicking outside.
+        // Keep selected product name visible.
         if (!productId) {
           setProductSearch("");
         }
       }
     }
 
-    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener(
+      "pointerdown",
+      handleOutsideClick
+    );
 
     return () => {
-      document.removeEventListener("pointerdown", handleOutsideClick);
+      document.removeEventListener(
+        "pointerdown",
+        handleOutsideClick
+      );
     };
   }, [open, productId]);
 
-  // Selected product
+  // ============================================================
+  // SELECTED PRODUCT
+  // ============================================================
+
   const selectedProduct = useMemo(() => {
     return products.find(
       (product) => product.id === Number(productId)
     );
   }, [products, productId]);
 
-  // Filter products by name or code
+  // ============================================================
+  // FILTER PRODUCTS
+  // Search by name, brand or code
+  // ============================================================
+
   const filteredProducts = useMemo(() => {
     const search = productSearch.trim().toLowerCase();
 
     if (!search) return products;
 
-    return products.filter((product) =>
-      `${product.name} ${product.code}`
-        .toLowerCase()
-        .includes(search)
-    );
+    return products.filter((product) => {
+      const searchableText = [
+        product.name,
+        product.brand || "",
+        product.code,
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(search);
+    });
   }, [products, productSearch]);
 
-  // Stock calculations
+  // ============================================================
+  // STOCK CALCULATIONS
+  // ============================================================
+
   const currentStock = selectedProduct?.quantity ?? 0;
+
   const adjustmentQuantity = Number(quantity) || 0;
 
   const resultingStock =
@@ -120,18 +151,24 @@ export default function StockAdjustmentModal({
       ? currentStock + adjustmentQuantity
       : currentStock - adjustmentQuantity;
 
-  // Select product
+  // ============================================================
+  // SELECT PRODUCT
+  // ============================================================
+
   function handleSelectProduct(product: Product) {
     setProductId(String(product.id));
 
-    // Display product name as the main search value
+    // Keep only product name in search field
     setProductSearch(product.name);
 
     setProductDropdownOpen(false);
     setError("");
   }
 
-  // Clear selected product
+  // ============================================================
+  // CLEAR PRODUCT
+  // ============================================================
+
   function handleClearProduct() {
     setProductId("");
     setProductSearch("");
@@ -139,15 +176,24 @@ export default function StockAdjustmentModal({
     setError("");
   }
 
-  // Handle search input
+  // ============================================================
+  // SEARCH INPUT
+  // ============================================================
+
   function handleProductSearch(value: string) {
     setProductSearch(value);
+
+    // Clear previous selection when searching another product
     setProductId("");
+
     setProductDropdownOpen(true);
     setError("");
   }
 
-  // Submit stock adjustment
+  // ============================================================
+  // SUBMIT STOCK ADJUSTMENT
+  // ============================================================
+
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -213,7 +259,7 @@ export default function StockAdjustmentModal({
       if (!response.ok || !result.success) {
         throw new Error(
           result.message ||
-            "Unable to create stock adjustment."
+          "Unable to create stock adjustment."
         );
       }
 
@@ -239,12 +285,16 @@ export default function StockAdjustmentModal({
     return null;
   }
 
+  // ============================================================
+  // RENDER
+  // ============================================================
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
 
       <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
 
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
 
           <div>
@@ -268,13 +318,16 @@ export default function StockAdjustmentModal({
 
         </div>
 
-        {/* Form */}
+        {/* FORM */}
         <form
           onSubmit={handleSubmit}
           className="space-y-5 p-6"
         >
 
-          {/* Product Search */}
+          {/* ================================================ */}
+          {/* PRODUCT SEARCH */}
+          {/* ================================================ */}
+
           <div
             ref={productSearchRef}
             className="relative"
@@ -284,7 +337,7 @@ export default function StockAdjustmentModal({
               Product
             </label>
 
-            {/* Search Input */}
+            {/* SEARCH INPUT */}
             <div className="relative">
 
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -299,7 +352,7 @@ export default function StockAdjustmentModal({
                   setProductDropdownOpen(true);
                 }}
                 disabled={saving}
-                placeholder="Search product name or code..."
+                placeholder="Search product name, brand or code..."
                 autoComplete="off"
                 className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
@@ -317,7 +370,10 @@ export default function StockAdjustmentModal({
 
             </div>
 
-            {/* Search Results Dropdown */}
+            {/* ============================================ */}
+            {/* PRODUCT SEARCH RESULTS */}
+            {/* ============================================ */}
+
             {productDropdownOpen && !saving && (
               <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl">
 
@@ -328,29 +384,38 @@ export default function StockAdjustmentModal({
                     <button
                       key={product.id}
                       type="button"
-                      onClick={() => handleSelectProduct(product)}
-                      className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-left transition last:border-0 hover:bg-blue-50 ${
-                        productId === String(product.id)
+                      onClick={() =>
+                        handleSelectProduct(product)
+                      }
+                      className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-left transition last:border-0 hover:bg-blue-50 ${productId === String(product.id)
                           ? "bg-blue-50"
                           : "bg-white"
-                      }`}
+                        }`}
                     >
 
-                      {/* Product Name - Primary */}
+                      {/* PRODUCT INFORMATION */}
                       <div className="min-w-0 flex-1">
 
+                        {/* Product Name */}
                         <p className="truncate text-sm font-semibold text-slate-900">
                           {product.name}
                         </p>
 
-                        {/* Product Code - Secondary */}
+                        {/* Brand */}
+                        {product.brand && (
+                          <p className="mt-1 truncate text-xs font-medium text-blue-600">
+                            Brand: {product.brand}
+                          </p>
+                        )}
+
+                        {/* Product Code */}
                         <p className="mt-1 text-xs text-slate-400">
                           Code: {product.code}
                         </p>
 
                       </div>
 
-                      {/* Current Stock */}
+                      {/* CURRENT STOCK */}
                       <div className="shrink-0 text-right">
 
                         <p className="text-xs text-slate-400">
@@ -358,14 +423,18 @@ export default function StockAdjustmentModal({
                         </p>
 
                         <p className="text-sm font-semibold text-slate-700">
-                          {product.quantity.toLocaleString("en-US", {
-                            maximumFractionDigits: 3,
-                          })}{" "}
+                          {product.quantity.toLocaleString(
+                            "en-US",
+                            {
+                              maximumFractionDigits: 3,
+                            }
+                          )}{" "}
                           {product.unit}
                         </p>
 
                       </div>
 
+                      {/* SELECTED INDICATOR */}
                       {productId === String(product.id) && (
                         <Check className="h-4 w-4 shrink-0 text-blue-600" />
                       )}
@@ -385,7 +454,7 @@ export default function StockAdjustmentModal({
                     </p>
 
                     <p className="mt-1 text-xs text-slate-400">
-                      Try another product name or code.
+                      Try another product name, brand or code.
                     </p>
 
                   </div>
@@ -395,7 +464,7 @@ export default function StockAdjustmentModal({
               </div>
             )}
 
-            {/* Selected Product Indicator */}
+            {/* SELECTED PRODUCT INDICATOR */}
             {selectedProduct && (
               <p className="mt-2 flex items-center gap-1 text-xs text-emerald-600">
                 <Check className="h-3.5 w-3.5" />
@@ -405,28 +474,39 @@ export default function StockAdjustmentModal({
 
           </div>
 
-          {/* Selected Product Stock */}
+          {/* ================================================ */}
+          {/* SELECTED PRODUCT INFORMATION */}
+          {/* ================================================ */}
+
           {selectedProduct && (
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
 
               <div className="flex items-center gap-3">
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-sm">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
                   <Package className="h-5 w-5 text-slate-600" />
                 </div>
 
+                {/* PRODUCT DETAILS */}
                 <div className="min-w-0 flex-1">
 
                   <p className="truncate text-sm font-semibold text-slate-900">
                     {selectedProduct.name}
                   </p>
 
-                  <p className="text-xs text-slate-500">
+                  {selectedProduct.brand && (
+                    <p className="mt-1 truncate text-xs font-medium text-blue-600">
+                      Brand: {selectedProduct.brand}
+                    </p>
+                  )}
+
+                  <p className="mt-1 text-xs text-slate-500">
                     Code: {selectedProduct.code}
                   </p>
 
                 </div>
 
+                {/* CURRENT STOCK */}
                 <div className="shrink-0 text-right">
 
                   <p className="text-xs text-slate-500">
@@ -447,7 +527,10 @@ export default function StockAdjustmentModal({
             </div>
           )}
 
-          {/* Adjustment Type */}
+          {/* ================================================ */}
+          {/* ADJUSTMENT TYPE */}
+          {/* ================================================ */}
+
           <div>
 
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -460,11 +543,10 @@ export default function StockAdjustmentModal({
                 type="button"
                 onClick={() => setType("IN")}
                 disabled={saving}
-                className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
-                  type === "IN"
+                className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition ${type === "IN"
                     ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 <ArrowDownToLine className="h-4 w-4" />
                 Stock In
@@ -474,11 +556,10 @@ export default function StockAdjustmentModal({
                 type="button"
                 onClick={() => setType("OUT")}
                 disabled={saving}
-                className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
-                  type === "OUT"
+                className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition ${type === "OUT"
                     ? "border-red-500 bg-red-50 text-red-700"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                }`}
+                  }`}
               >
                 <ArrowUpFromLine className="h-4 w-4" />
                 Stock Out
@@ -488,7 +569,10 @@ export default function StockAdjustmentModal({
 
           </div>
 
-          {/* Quantity */}
+          {/* ================================================ */}
+          {/* QUANTITY */}
+          {/* ================================================ */}
+
           <div>
 
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -510,16 +594,18 @@ export default function StockAdjustmentModal({
 
           </div>
 
-          {/* Resulting Stock */}
+          {/* ================================================ */}
+          {/* RESULTING STOCK */}
+          {/* ================================================ */}
+
           {selectedProduct && adjustmentQuantity > 0 && (
             <div
-              className={`rounded-lg border p-3 text-sm ${
-                resultingStock < 0
+              className={`rounded-lg border p-3 text-sm ${resultingStock < 0
                   ? "border-red-200 bg-red-50 text-red-700"
                   : type === "IN"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-amber-200 bg-amber-50 text-amber-700"
-              }`}
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-amber-200 bg-amber-50 text-amber-700"
+                }`}
             >
 
               <div className="flex items-center justify-between">
@@ -540,7 +626,10 @@ export default function StockAdjustmentModal({
             </div>
           )}
 
-          {/* Reason */}
+          {/* ================================================ */}
+          {/* REASON */}
+          {/* ================================================ */}
+
           <div>
 
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -561,7 +650,10 @@ export default function StockAdjustmentModal({
 
           </div>
 
-          {/* Note */}
+          {/* ================================================ */}
+          {/* NOTE */}
+          {/* ================================================ */}
+
           <div>
 
             <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -582,14 +674,20 @@ export default function StockAdjustmentModal({
 
           </div>
 
-          {/* Error */}
+          {/* ================================================ */}
+          {/* ERROR */}
+          {/* ================================================ */}
+
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
-          {/* Buttons */}
+          {/* ================================================ */}
+          {/* FOOTER BUTTONS */}
+          {/* ================================================ */}
+
           <div className="flex justify-end gap-3 border-t border-slate-200 pt-5">
 
             <button
@@ -604,17 +702,16 @@ export default function StockAdjustmentModal({
             <button
               type="submit"
               disabled={saving}
-              className={`h-10 rounded-lg px-5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                type === "IN"
+              className={`h-10 rounded-lg px-5 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${type === "IN"
                   ? "bg-emerald-600 hover:bg-emerald-700"
                   : "bg-red-600 hover:bg-red-700"
-              }`}
+                }`}
             >
               {saving
                 ? "Saving..."
                 : type === "IN"
-                ? "Add Stock"
-                : "Remove Stock"}
+                  ? "Add Stock"
+                  : "Remove Stock"}
             </button>
 
           </div>
