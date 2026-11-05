@@ -1,2 +1,1 @@
--- AlterTable
-ALTER TABLE `product` ADD COLUMN `imageUrl` VARCHAR(500) NULL;
+ALTER TABLE `Product` ADD COLUMN `imageUrl` VARCHAR(500) NULL;
