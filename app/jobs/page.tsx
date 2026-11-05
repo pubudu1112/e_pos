@@ -1,17 +1,25 @@
+import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
+import { getSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
+import JobsClient from "./JobsClient";
 
-export default function JobsPage() {
+export default async function JobsPage() {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const allowed = await hasPermission("JOB_VIEW");
+
+  if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+    redirect("/access-denied?permission=JOB_VIEW");
+  }
+
   return (
     <AppShell>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Jobs
-        </h1>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Job management module is under development.
-        </p>
-      </div>
+      <JobsClient />
     </AppShell>
   );
 }

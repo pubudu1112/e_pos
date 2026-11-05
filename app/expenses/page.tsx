@@ -1,17 +1,25 @@
+import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
+import { getSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
+import ExpensesClient from "./ExpensesClient";
 
-export default function ExpensesPage() {
+export default async function ExpensesPage() {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const allowed = await hasPermission("EXPENSE_VIEW");
+
+  if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+    redirect("/access-denied?permission=EXPENSE_VIEW");
+  }
+
   return (
     <AppShell>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Expenses
-        </h1>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Expense management module is under development.
-        </p>
-      </div>
+      <ExpensesClient />
     </AppShell>
   );
 }

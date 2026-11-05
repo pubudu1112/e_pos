@@ -1,17 +1,25 @@
+import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
+import { getSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
+import CustomersClient from "./CustomersClient";
 
-export default function CustomersPage() {
+export default async function CustomersPage() {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const allowed = await hasPermission("CUSTOMER_VIEW");
+
+  if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+    redirect("/access-denied?permission=CUSTOMER_VIEW");
+  }
+
   return (
     <AppShell>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Customers
-        </h1>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Customer management module is under development.
-        </p>
-      </div>
+      <CustomersClient />
     </AppShell>
   );
 }

@@ -87,13 +87,13 @@ export default function PermissionsClient() {
     const groups = new Map<string, Permission[]>();
 
     permissions.forEach((permission) => {
-      const module = getModuleName(permission.code);
+      const moduleName = getModuleName(permission.code);
 
-      if (!groups.has(module)) {
-        groups.set(module, []);
+      if (!groups.has(moduleName)) {
+        groups.set(moduleName, []);
       }
 
-      groups.get(module)!.push(permission);
+      groups.get(moduleName)!.push(permission);
     });
 
     return Array.from(groups.entries()).map(
@@ -164,7 +164,7 @@ export default function PermissionsClient() {
 
   async function loadInitialData() {
     try {
-      setLoading(true);
+      // loading is true by default
 
       const response = await fetch(
         "/api/settings/permissions?role=SUPER_ADMIN",

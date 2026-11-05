@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Brain,
-  CalendarDays,
-  FileDown,
+    FileDown,
   Loader2,
   Printer,
   RefreshCw,
@@ -67,13 +66,13 @@ export default function SalesReportClient() {
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [data, setData] = useState<ReportData | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
 
   async function loadReport() {
     try {
-      setLoading(true);
+      // loading is true
       setAiSummary("");
 
       const response = await fetch(

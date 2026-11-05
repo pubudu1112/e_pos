@@ -1,17 +1,18 @@
+import { redirect } from "next/navigation";
 import AppShell from "@/components/AppShell";
+import { getSession } from "@/lib/auth/session";
+import ReportsOverviewClient from "./ReportsOverviewClient";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
   return (
     <AppShell>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Reports
-        </h1>
-
-        <p className="mt-2 text-sm text-slate-500">
-          Reports module is under development.
-        </p>
-      </div>
+      <ReportsOverviewClient />
     </AppShell>
   );
 }
