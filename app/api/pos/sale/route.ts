@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/auth/permissions";
 import { getStoredSettings } from "@/app/api/settings/general/route";
+import { parseServiceDescription } from "@/lib/services/service-helpers";
 
 type SaleItemInput = {
   id: number;
   type: "PRODUCT" | "SERVICE";
   quantity: number;
   unitPrice?: number;
+  warrantyMonths?: number | null;
 };
 
 function generateInvoiceNo() {
@@ -383,6 +385,12 @@ export async function POST(
             durationMonths: number;
             expiryDate: string;
           }> = [];
+          const serviceMaterialConsumptions: Array<{
+            productId: number;
+            productName: string;
+            quantity: number;
+            serviceName: string;
+          }> = [];
 
           // ==================================================
           // LOW STOCK PRODUCT TRACKING
@@ -497,6 +505,11 @@ export async function POST(
               taxTotal +=
                 lineTax;
 
+              const chosenWarranty =
+                item.warrantyMonths !== undefined && item.warrantyMonths !== null
+                  ? Number(item.warrantyMonths)
+                  : (product.warrantyMonths ? Number(product.warrantyMonths) : 0);
+
               saleItems.push({
                 productId:
                   product.id,
@@ -519,6 +532,9 @@ export async function POST(
                 tax: lineTax,
 
                 total: lineTotal,
+
+                warrantyMonths:
+                  chosenWarranty > 0 ? chosenWarranty : null,
               });
 
               continue;
@@ -565,10 +581,29 @@ export async function POST(
                   ? Number(item.unitPrice)
                   : catalogPrice;
 
+              const parsedDesc = parseServiceDescription(service.description);
+              const customComponentsCost = parsedDesc.costComponents.reduce(
+                (sum, c) => sum + (Number(c.cost) || 0),
+                0
+              );
+
               const serviceCost =
                 Number(service.paperCost || 0) +
                 Number(service.tonerCost || 0) +
-                Number(service.machineCost || 0);
+                Number(service.machineCost || 0) +
+                customComponentsCost;
+
+              // Collect inventory material deductions for this service
+              for (const comp of parsedDesc.costComponents) {
+                if (comp.productId && Number(comp.quantity) > 0) {
+                  serviceMaterialConsumptions.push({
+                    productId: Number(comp.productId),
+                    productName: comp.name || "Material Part",
+                    quantity: item.quantity * Number(comp.quantity),
+                    serviceName: service.name,
+                  });
+                }
+              }
 
               const lineSubtotal =
                 unitPrice *
@@ -979,6 +1014,66 @@ export async function POST(
 
                   note:
                     `POS Sale ${invoiceNo}`,
+                },
+              });
+            }
+          }
+
+          // ==================================================
+          // SERVICE MATERIAL CONSUMPTIONS (STOCK DEDUCTION)
+          // ==================================================
+
+          for (const mat of serviceMaterialConsumptions) {
+            const stockUpdate = await tx.stock.updateMany({
+              where: {
+                productId: mat.productId,
+                quantity: {
+                  gte: mat.quantity,
+                },
+              },
+              data: {
+                quantity: {
+                  decrement: mat.quantity,
+                },
+                updatedAt: new Date(),
+              },
+            });
+
+            if (stockUpdate.count === 1) {
+              lowStockProductIds.add(mat.productId);
+
+              await tx.stockmovement.create({
+                data: {
+                  productId: mat.productId,
+                  type: "SALE",
+                  quantity: mat.quantity,
+                  referenceId: invoiceNo,
+                  note: `Service material: ${mat.serviceName} (${mat.productName} x${mat.quantity})`,
+                },
+              });
+            } else {
+              // Decrement whatever available stock
+              await tx.stock.updateMany({
+                where: {
+                  productId: mat.productId,
+                },
+                data: {
+                  quantity: {
+                    decrement: mat.quantity,
+                  },
+                  updatedAt: new Date(),
+                },
+              });
+
+              lowStockProductIds.add(mat.productId);
+
+              await tx.stockmovement.create({
+                data: {
+                  productId: mat.productId,
+                  type: "SALE",
+                  quantity: mat.quantity,
+                  referenceId: invoiceNo,
+                  note: `Service material: ${mat.serviceName} (${mat.productName} x${mat.quantity})`,
                 },
               });
             }

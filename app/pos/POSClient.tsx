@@ -61,10 +61,13 @@ type POSItem = {
     name: string;
     rate: number;
   } | null;
+  warrantyMonths?: number;
 };
 
 type CartItem = POSItem & {
   quantity: number;
+  originalPrice?: number;
+  warrantyMonths?: number;
 };
 
 type CategoryInfo = {
@@ -123,6 +126,12 @@ type CompletedSaleBill = {
   changeAmount: number;
   reference?: string;
   note?: string;
+  warranties?: Array<{
+    warrantyCode: string;
+    productName: string;
+    durationMonths: number;
+    expiryDate: string;
+  }>;
 };
 
 // =========================================================
@@ -308,6 +317,15 @@ export default function POSClient() {
   // Editable unit price in cart during transaction
   const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
   const [editPriceValue, setEditPriceValue] = useState<string>("");
+
+  // Dedicated Price Edit Modal State for any product / service
+  const [priceEditModalItem, setPriceEditModalItem] = useState<{
+    item: POSItem | CartItem;
+    initialPrice: number;
+    originalPrice: number;
+    inCart: boolean;
+  } | null>(null);
+  const [priceModalInputValue, setPriceModalInputValue] = useState<string>("");
 
   // Responsive Mobile Drawer
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
@@ -560,8 +578,26 @@ export default function POSClient() {
         );
       }
 
-      return [...curr, { ...item, quantity: 1 }];
+      return [
+        ...curr,
+        {
+          ...item,
+          quantity: 1,
+          originalPrice: item.price,
+          warrantyMonths: item.warrantyMonths ?? 0,
+        },
+      ];
     });
+  }, []);
+
+  const updateItemWarranty = useCallback((item: CartItem, months: number) => {
+    setCart((curr) =>
+      curr.map((c) =>
+        c.id === item.id && c.type === item.type
+          ? { ...c, warrantyMonths: months }
+          : c
+      )
+    );
   }, []);
 
   const updateQuantity = useCallback(
@@ -621,6 +657,95 @@ export default function POSClient() {
     setDiscountInput("");
   }, []);
 
+  const handleStartEditPrice = useCallback((item: CartItem) => {
+    setEditingPriceKey(`${item.type}-${item.id}`);
+    setEditPriceValue(item.price.toString());
+  }, []);
+
+  const handleSavePrice = useCallback(
+    (item: CartItem) => {
+      const newPrice = parseFloat(editPriceValue);
+      if (!isNaN(newPrice) && newPrice >= 0) {
+        setCart((curr) =>
+          curr.map((c) =>
+            c.id === item.id && c.type === item.type
+              ? { ...c, price: newPrice, originalPrice: c.originalPrice ?? c.price }
+              : c
+          )
+        );
+        toast.success(`Updated ${item.name} unit price to ${formatRs(newPrice)}`);
+      } else {
+        toast.error("Please enter a valid price.");
+      }
+      setEditingPriceKey(null);
+    },
+    [editPriceValue]
+  );
+
+  const openPriceEditModal = useCallback(
+    (item: POSItem | CartItem) => {
+      const existingInCart = cart.find(
+        (c) => c.id === item.id && c.type === item.type
+      );
+      const currentPrice = existingInCart ? existingInCart.price : item.price;
+      const original =
+        existingInCart &&
+        "originalPrice" in existingInCart &&
+        typeof existingInCart.originalPrice === "number"
+          ? existingInCart.originalPrice
+          : item.price;
+
+      setPriceEditModalItem({
+        item,
+        initialPrice: currentPrice,
+        originalPrice: original,
+        inCart: !!existingInCart,
+      });
+      setPriceModalInputValue(currentPrice.toString());
+    },
+    [cart]
+  );
+
+  const handleApplyModalPrice = useCallback(() => {
+    if (!priceEditModalItem) return;
+
+    const newPrice = parseFloat(priceModalInputValue);
+    if (isNaN(newPrice) || newPrice < 0) {
+      toast.error("Please enter a valid price (greater than or equal to Rs. 0).");
+      return;
+    }
+
+    const { item, originalPrice, inCart } = priceEditModalItem;
+
+    if (inCart) {
+      setCart((curr) =>
+        curr.map((c) =>
+          c.id === item.id && c.type === item.type
+            ? { ...c, price: newPrice, originalPrice: c.originalPrice ?? originalPrice }
+            : c
+        )
+      );
+      toast.success(`Unit price for "${item.name}" updated to ${formatRs(newPrice)}`);
+    } else {
+      if (item.type === "PRODUCT" && item.stock !== null && item.stock <= 0) {
+        toast.error(`${item.name} is currently out of stock.`);
+        return;
+      }
+      setCart((curr) => [
+        ...curr,
+        {
+          ...item,
+          quantity: 1,
+          price: newPrice,
+          originalPrice: item.price,
+        },
+      ]);
+      toast.success(`Added "${item.name}" at custom price ${formatRs(newPrice)}`);
+    }
+
+    setPriceEditModalItem(null);
+  }, [priceEditModalItem, priceModalInputValue]);
+
   // Quick Barcode / Code search add on Enter
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && search.trim()) {
@@ -650,6 +775,7 @@ export default function POSClient() {
     }
     // Pre-fill cash tendered with exact total
     setCashTenderedInput(total.toString());
+    setIsMobileCartOpen(false);
     setIsPaymentModalOpen(true);
   };
 
@@ -691,6 +817,7 @@ export default function POSClient() {
           type: i.type,
           quantity: i.quantity,
           unitPrice: i.price,
+          warrantyMonths: i.warrantyMonths ?? 0,
         })),
       };
 
@@ -750,6 +877,11 @@ export default function POSClient() {
         changeAmount: paymentMethod === "CASH" ? changeAmount : 0,
         reference: paymentReference || undefined,
         note: paymentNote || undefined,
+        warranties: Array.isArray(result.warranties)
+          ? result.warranties
+          : Array.isArray(result.data?.warranties)
+            ? result.data.warranties
+            : [],
       };
 
       setLastCompletedBill(completedBill);
@@ -997,6 +1129,28 @@ export default function POSClient() {
 
           <div class="divider"></div>
 
+          ${
+            bill.warranties && bill.warranties.length > 0
+              ? `
+              <div style="margin: 8px 0; padding: 6px 8px; border: 1px dashed #059669; background: #ecfdf5; border-radius: 4px; font-size: 10px;">
+                <div style="font-weight: bold; color: #065f46; text-transform: uppercase; margin-bottom: 4px; font-size: 9px; letter-spacing: 0.5px;">Official Warranty Issued</div>
+                ${bill.warranties
+                  .map(
+                    (w) => `
+                  <div style="margin-bottom: 4px; border-bottom: 1px dotted #a7f3d0; padding-bottom: 3px;">
+                    <div><strong>Code:</strong> ${w.warrantyCode} (${w.durationMonths} Months)</div>
+                    <div><strong>Item:</strong> ${w.productName}</div>
+                    <div><strong>Expires:</strong> ${w.expiryDate}</div>
+                  </div>
+                `
+                  )
+                  .join("")}
+              </div>
+              <div class="divider"></div>
+            `
+              : ""
+          }
+
           <div class="footer">
             <strong>Thank you for choosing Pubudu Creative Hub!</strong><br />
             Please inspect items before leaving the counter.<br />
@@ -1070,61 +1224,61 @@ export default function POSClient() {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-100 font-sans text-slate-800 antialiased">
       {/* ================================================= */}
-      {/* 1. TOP NAVIGATION / HEADER */}
+      {/* 1. TOP NAVIGATION / HEADER (RESPONSIVE) */}
       {/* ================================================= */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm lg:px-6">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6 shadow-sm gap-2">
         {/* Left: Brand & POS Title */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20">
-            <ShoppingCart className="h-6 w-6" />
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20">
+            <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-black tracking-tight text-slate-900">
-                Pubudu Creative Hub
+          <div className="hidden xs:block">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xs sm:text-base font-black tracking-tight text-slate-900">
+                Pubudu Hub
               </h1>
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+              <span className="rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-emerald-800">
                 POS
               </span>
             </div>
-            <p className="text-[11px] font-medium text-slate-500">
+            <p className="hidden md:block text-[11px] font-medium text-slate-500">
               Sri Lankan Currency (Rs.) • Fast Billing Terminal
             </p>
           </div>
         </div>
 
         {/* Center: Search & Barcode Input */}
-        <div className="mx-4 max-w-xl flex-1">
+        <div className="mx-1 sm:mx-4 max-w-xl flex-1 min-w-0">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-slate-400" />
             <input
               ref={searchInputRef}
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              placeholder="Search product name, item code (PC-001) or press Enter to add barcode..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-10 text-xs font-medium text-slate-900 transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              placeholder="Search product, barcode or code..."
+              className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 sm:pl-10 pr-8 text-xs font-medium text-slate-900 transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         </div>
 
         {/* Right: Quick Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {lastCompletedBill && (
             <button
               type="button"
               onClick={() => setIsBillModalOpen(true)}
-              className="flex h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100"
               title="View or print the last completed bill"
             >
               <Receipt className="h-4 w-4" />
@@ -1136,7 +1290,7 @@ export default function POSClient() {
             type="button"
             onClick={loadItems}
             disabled={loading}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
             title="Refresh Catalog"
           >
             <RefreshCw
@@ -1147,7 +1301,7 @@ export default function POSClient() {
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
-            className="flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
+            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl bg-slate-900 px-3 sm:px-4 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
           >
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -1276,7 +1430,7 @@ export default function POSClient() {
         {/* ================================================= */}
         {/* CENTER COLUMN: PRODUCT CATALOG */}
         {/* ================================================= */}
-        <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-slate-50/50">
+        <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-slate-50/50 pb-24 lg:pb-0">
           {/* Catalog Header Bar */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/70 px-4 py-3 backdrop-blur-sm lg:px-6">
             <div className="flex items-center gap-2.5">
@@ -1297,6 +1451,41 @@ export default function POSClient() {
                 Filtering by &quot;{search}&quot;
               </p>
             )}
+          </div>
+
+          {/* Mobile Horizontal Category Pills (Visible on Mobile & Tablet) */}
+          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 scrollbar-none">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("All")}
+              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${
+                selectedCategory === "All"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <Layers className="h-3 w-3" />
+              <span>All ({items.length})</span>
+            </button>
+            {categoryList.map((cat) => {
+              const isSelected = selectedCategory === cat.name;
+              return (
+                <button
+                  key={cat.name}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.name)}
+                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${
+                    isSelected
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 hover:opacity-90`
+                  }`}
+                >
+                  {renderCategoryIcon(cat.name, "h-3 w-3")}
+                  <span>{cat.name}</span>
+                  <span className="opacity-75">({cat.count})</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Product Grid Area */}
@@ -1406,22 +1595,38 @@ export default function POSClient() {
                           </p>
                         </div>
 
-                        <button
-                          type="button"
-                          disabled={isOutOfStock}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(item);
-                          }}
-                          className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${
-                            isOutOfStock
-                              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                              : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
-                          }`}
-                          title="Add to order"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={isOutOfStock}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openPriceEditModal(item);
+                            }}
+                            className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-[10px] font-bold text-slate-700 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-40"
+                            title="Edit unit price for this product before selling"
+                          >
+                            <Pencil className="h-3 w-3 text-emerald-600" />
+                            <span className="hidden sm:inline">Price</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={isOutOfStock}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item);
+                            }}
+                            className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${
+                              isOutOfStock
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
+                            }`}
+                            title="Add to order"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -1505,67 +1710,166 @@ export default function POSClient() {
                 </p>
               </div>
             ) : (
-              cart.map((item) => (
-                <div key={`${item.type}-${item.id}`} className="p-3.5 hover:bg-slate-50/50">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-bold text-slate-900">
-                        {item.name}
-                      </p>
-                      <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-400">
-                        <span>{item.category}</span>
-                        <span>•</span>
-                        <span>{formatRs(item.price)} each</span>
+              cart.map((item) => {
+                const itemKey = `${item.type}-${item.id}`;
+                const isEditingThisPrice = editingPriceKey === itemKey;
+
+                return (
+                  <div key={itemKey} className="p-3.5 hover:bg-slate-50/50">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-bold text-slate-900">
+                          {item.name}
+                        </p>
+
+                        {/* Inline Unit Price Editor */}
+                        {isEditingThisPrice ? (
+                          <div className="mt-1.5 flex items-center gap-1.5">
+                            <span className="text-[10px] font-bold text-slate-500">Rs.</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              autoFocus
+                              value={editPriceValue}
+                              onChange={(e) => setEditPriceValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleSavePrice(item);
+                                if (e.key === "Escape") setEditingPriceKey(null);
+                              }}
+                              className="h-6 w-20 rounded border border-emerald-400 bg-white px-1.5 text-xs font-bold text-slate-900 focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleSavePrice(item)}
+                              className="rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-700"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingPriceKey(null)}
+                              className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-300"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => openPriceEditModal(item)}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-bold text-slate-800 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition shadow-2xs"
+                              title="Click to edit unit price for this product"
+                            >
+                              <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 font-black" : ""}>
+                                {formatRs(item.price)}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-normal">/ {item.unit}</span>
+                              <Pencil className="h-2.5 w-2.5 text-emerald-600" />
+                            </button>
+
+                            {item.originalPrice !== undefined && item.price !== item.originalPrice ? (
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] line-through text-slate-400">{formatRs(item.originalPrice)}</span>
+                                <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-black text-amber-800">
+                                  Custom Price
+                                </span>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => openPriceEditModal(item)}
+                                className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
+                                title="Edit unit price"
+                              >
+                                Edit Price
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Warranty Selector */}
+                        {item.type === "PRODUCT" && (
+                          <div className="mt-1.5 flex items-center gap-1.5">
+                            <ShieldCheck
+                              className={`h-3.5 w-3.5 shrink-0 ${
+                                (item.warrantyMonths ?? 0) > 0
+                                  ? "text-emerald-600"
+                                  : "text-slate-400"
+                              }`}
+                            />
+                            <select
+                              value={item.warrantyMonths ?? 0}
+                              onChange={(e) =>
+                                updateItemWarranty(item, Number(e.target.value))
+                              }
+                              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${
+                                (item.warrantyMonths ?? 0) > 0
+                                  ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
+                                  : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                              }`}
+                              title="Set product warranty duration"
+                            >
+                              <option value="0">No Warranty</option>
+                              <option value="1">1 Month</option>
+                              <option value="3">3 Months (Cables/Audio)</option>
+                              <option value="6">6 Months (Chargers)</option>
+                              <option value="12">12 Months (Power Banks)</option>
+                              <option value="24">24 Months (Extended)</option>
+                            </select>
+                          </div>
+                        )}
                       </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item)}
-                      className="text-slate-300 transition hover:text-rose-500"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-
-                  {/* Quantity Stepper & Line Total */}
-                  <div className="mt-2.5 flex items-center justify-between">
-                    <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm">
-                      <button
-                        type="button"
-                        onClick={() => decreaseQuantity(item)}
-                        className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-
-                      <input
-                        type="number"
-                        min="1"
-                        max={item.stock ?? 9999}
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10);
-                          updateQuantity(item, isNaN(val) ? 1 : val);
-                        }}
-                        className="h-7 w-12 border-x border-slate-200 text-center text-xs font-black text-slate-800 focus:outline-none"
-                      />
 
                       <button
                         type="button"
-                        onClick={() => increaseQuantity(item)}
-                        className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                        onClick={() => removeItem(item)}
+                        className="text-slate-300 transition hover:text-rose-500"
                       >
-                        <Plus className="h-3 w-3" />
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
 
-                    <p className="text-xs font-black text-slate-900">
-                      {formatRs(item.price * item.quantity)}
-                    </p>
+                    {/* Quantity Stepper & Line Total */}
+                    <div className="mt-2.5 flex items-center justify-between">
+                      <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm">
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(item)}
+                          className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+
+                        <input
+                          type="number"
+                          min="1"
+                          max={item.stock ?? 9999}
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            updateQuantity(item, isNaN(val) ? 1 : val);
+                          }}
+                          className="h-7 w-12 border-x border-slate-200 text-center text-xs font-black text-slate-800 focus:outline-none"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => increaseQuantity(item)}
+                          className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+
+                      <p className="text-xs font-black text-slate-900">
+                        {formatRs(item.price * item.quantity)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
@@ -1654,11 +1958,354 @@ export default function POSClient() {
       </div>
 
       {/* ================================================= */}
+      {/* MOBILE STICKY FLOATING CART BAR (Screens < lg) */}
+      {/* ================================================= */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-2xl backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+              <ShoppingCart className="h-5 w-5" />
+              {totalItemsCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white">
+                  {totalItemsCount}
+                </span>
+              )}
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                {totalItemsCount} item{totalItemsCount === 1 ? "" : "s"}
+              </div>
+              <div className="text-sm font-black text-slate-900">
+                {formatRs(total)}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileCartOpen(true)}
+            className="flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 active:scale-95"
+          >
+            <span>View Cart ({totalItemsCount})</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* ================================================= */}
+      {/* MOBILE SLIDE-OVER CART DRAWER (Screens < lg) */}
+      {/* ================================================= */}
+      {isMobileCartOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="relative flex h-full w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right">
+            {/* Header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-slate-800" />
+                <h2 className="text-sm font-black text-slate-900">Current Order</h2>
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800">
+                  {totalItemsCount} items
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {cart.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearCart}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-700 mr-2"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Clear</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileCartOpen(false)}
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Customer Selection Bar */}
+            <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 bg-slate-50/60 p-3">
+              <div className="relative flex-1">
+                <UserRound className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <select
+                  value={selectedCustomerId ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedCustomerId(val ? Number(val) : null);
+                  }}
+                  className="h-9 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-8 pr-7 text-xs font-semibold text-slate-700 transition focus:border-emerald-500 focus:outline-none"
+                >
+                  <option value="">Walk-in Customer</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.phone ? `(${c.phone})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsNewCustomerModalOpen(true)}
+                className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>New</span>
+              </button>
+            </div>
+
+            {/* Cart Items List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+              {cart.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-300">
+                    <ShoppingCart className="h-7 w-7" />
+                  </div>
+                  <h3 className="mt-3 text-sm font-bold text-slate-700">Cart is empty</h3>
+                  <p className="mt-1 text-xs text-slate-400 max-w-[200px]">
+                    Select products from any category to build the customer&apos;s bill.
+                  </p>
+                </div>
+              ) : (
+                cart.map((item) => {
+                  const itemKey = `${item.type}-${item.id}`;
+                  const isEditingThisPrice = editingPriceKey === itemKey;
+
+                  return (
+                    <div key={itemKey} className="p-3.5 hover:bg-slate-50/50">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-bold text-slate-900">{item.name}</p>
+
+                          {/* Editable unit price */}
+                          {isEditingThisPrice ? (
+                            <div className="mt-1.5 flex items-center gap-1.5">
+                              <span className="text-[10px] font-bold text-slate-500">Rs.</span>
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                autoFocus
+                                value={editPriceValue}
+                                onChange={(e) => setEditPriceValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleSavePrice(item);
+                                  if (e.key === "Escape") setEditingPriceKey(null);
+                                }}
+                                className="h-6 w-20 rounded border border-emerald-400 bg-white px-1.5 text-xs font-bold text-slate-900 focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSavePrice(item)}
+                                className="rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-700"
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditingPriceKey(null)}
+                                className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-300"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => openPriceEditModal(item)}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-bold text-slate-800 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition shadow-2xs"
+                                title="Click to edit unit price for this product"
+                              >
+                                <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 font-black" : ""}>
+                                  {formatRs(item.price)}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-normal">/ {item.unit}</span>
+                                <Pencil className="h-2.5 w-2.5 text-emerald-600" />
+                              </button>
+
+                              {item.originalPrice !== undefined && item.price !== item.originalPrice ? (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] line-through text-slate-400">{formatRs(item.originalPrice)}</span>
+                                  <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-black text-amber-800">
+                                    Custom Price
+                                  </span>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => openPriceEditModal(item)}
+                                  className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
+                                  title="Edit unit price"
+                                >
+                                  Edit Price
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Warranty Selector */}
+                          {item.type === "PRODUCT" && (
+                            <div className="mt-1.5 flex items-center gap-1.5">
+                              <ShieldCheck
+                                className={`h-3.5 w-3.5 shrink-0 ${
+                                  (item.warrantyMonths ?? 0) > 0
+                                    ? "text-emerald-600"
+                                    : "text-slate-400"
+                                }`}
+                              />
+                              <select
+                                value={item.warrantyMonths ?? 0}
+                                onChange={(e) =>
+                                  updateItemWarranty(item, Number(e.target.value))
+                                }
+                                className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${
+                                  (item.warrantyMonths ?? 0) > 0
+                                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
+                                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                                }`}
+                                title="Set product warranty duration"
+                              >
+                                <option value="0">No Warranty</option>
+                                <option value="1">1 Month</option>
+                                <option value="3">3 Months (Cables/Audio)</option>
+                                <option value="6">6 Months (Chargers)</option>
+                                <option value="12">12 Months (Power Banks)</option>
+                                <option value="24">24 Months (Extended)</option>
+                              </select>
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item)}
+                          className="text-slate-300 transition hover:text-rose-500"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      {/* Quantity Stepper & Line Total */}
+                      <div className="mt-2.5 flex items-center justify-between">
+                        <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => decreaseQuantity(item)}
+                            className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+
+                          <input
+                            type="number"
+                            min="1"
+                            max={item.stock ?? 9999}
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              updateQuantity(item, isNaN(val) ? 1 : val);
+                            }}
+                            className="h-7 w-12 border-x border-slate-200 text-center text-xs font-black text-slate-800 focus:outline-none"
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => increaseQuantity(item)}
+                            className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+
+                        <p className="text-xs font-black text-slate-900">
+                          {formatRs(item.price * item.quantity)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Totals & Checkout Button */}
+            <div className="shrink-0 border-t border-slate-200 bg-slate-50/90 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-slate-600">Discount (Rs.)</span>
+                <div className="relative w-32">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                    Rs.
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={subtotal + taxTotal}
+                    value={discountInput}
+                    onChange={(e) => setDiscountInput(e.target.value)}
+                    placeholder="0.00"
+                    className="h-8 w-full rounded-lg border border-slate-200 bg-white pl-7 pr-2 text-right text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1 text-xs text-slate-600">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-slate-800">{formatRs(subtotal)}</span>
+                </div>
+                {taxTotal > 0 && (
+                  <div className="flex justify-between">
+                    <span>Tax</span>
+                    <span className="font-semibold text-slate-800">{formatRs(taxTotal)}</span>
+                  </div>
+                )}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-rose-600 font-semibold">
+                    <span>Discount</span>
+                    <span>- {formatRs(discountAmount)}</span>
+                  </div>
+                )}
+                <div className="border-t border-dashed border-slate-200 pt-1.5" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-slate-900">Total Payable</span>
+                  <span className="text-xl font-black text-slate-900">{formatRs(total)}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                disabled={cart.length === 0}
+                onClick={openPaymentModal}
+                className="mt-3.5 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                <div className="flex items-center gap-2">
+                  <Banknote className="h-5 w-5" />
+                  <span className="text-xs font-black uppercase tracking-wide">
+                    Charge & Generate Bill
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 font-black">
+                  <span>{formatRs(total)}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================= */}
       {/* 3. PAYMENT MODAL (FULLY RESPONSIVE WITH FIXED FOOTER) */}
       {/* ================================================= */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="relative flex flex-col w-full max-w-lg max-h-[92vh] sm:max-h-[90vh] rounded-2xl bg-white shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden my-auto overscroll-contain">
             {/* Modal Fixed Header */}
             <div className="shrink-0 flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-white">
               <div>
@@ -1883,8 +2530,8 @@ export default function POSClient() {
       {/* 4. BILL / RECEIPT GENERATED MODAL (RESPONSIVE) */}
       {/* ================================================= */}
       {isBillModalOpen && lastCompletedBill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="relative flex flex-col w-full max-w-lg max-h-[92vh] sm:max-h-[90vh] rounded-2xl bg-white shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden my-auto overscroll-contain">
             {/* Header / Success Indicator */}
             <div className="shrink-0 flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-white">
               <div className="flex items-center gap-2 text-emerald-600">
@@ -2016,6 +2663,34 @@ export default function POSClient() {
 
                 <div className="my-3 border-t border-dashed border-slate-300" />
 
+                {/* Warranties Issued */}
+                {lastCompletedBill.warranties && lastCompletedBill.warranties.length > 0 && (
+                  <div className="mb-3 rounded-xl border border-emerald-300 bg-emerald-50/90 p-3 text-xs text-emerald-950">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-emerald-800 mb-1.5 text-[11px]">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                      Official Warranty Certificates ({lastCompletedBill.warranties.length})
+                    </div>
+                    <div className="space-y-1.5 text-[11px]">
+                      {lastCompletedBill.warranties.map((w, idx) => (
+                        <div key={idx} className="rounded-lg bg-white/90 p-2 border border-emerald-200 shadow-2xs">
+                          <div className="flex items-center justify-between font-mono font-bold text-emerald-700">
+                            <span>{w.warrantyCode}</span>
+                            <span className="rounded bg-emerald-100 px-1.5 py-0.2 text-[10px] text-emerald-800">
+                              {w.durationMonths} Months
+                            </span>
+                          </div>
+                          <div className="text-slate-800 truncate font-sans text-xs font-semibold mt-0.5">
+                            {w.productName}
+                          </div>
+                          <div className="text-slate-500 text-[10px] mt-0.5">
+                            Valid Until: <strong className="text-slate-700">{w.expiryDate}</strong>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Bill Footer Note */}
                 <div className="text-center text-[10px] text-slate-500">
                   <p>*** Thank You for Your Business! ***</p>
@@ -2128,6 +2803,190 @@ export default function POSClient() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* ================================================= */}
+      {/* 6. DEDICATED PRODUCT / SERVICE PRICE EDIT MODAL */}
+      {/* ================================================= */}
+      {priceEditModalItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative flex flex-col w-full max-w-md max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden my-auto overscroll-contain">
+            {/* Header */}
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-white">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <Pencil className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">
+                    Edit Unit Selling Price (Rs.)
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Custom rate for this sale transaction
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPriceEditModalItem(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* Product Info Card */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="rounded-md bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 shadow-2xs">
+                    {priceEditModalItem.item.category}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {priceEditModalItem.item.code}
+                  </span>
+                </div>
+                <h4 className="mt-1.5 text-sm font-extrabold text-slate-900">
+                  {priceEditModalItem.item.name}
+                </h4>
+                <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                  <span>Catalog Base Price:</span>
+                  <span className="font-bold text-slate-800">
+                    {formatRs(priceEditModalItem.originalPrice)}
+                  </span>
+                  <span>per {priceEditModalItem.item.unit}</span>
+                </div>
+              </div>
+
+              {/* New Price Input Field */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                  New Unit Price for this Customer (Rs.)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">
+                    Rs.
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    autoFocus
+                    value={priceModalInputValue}
+                    onChange={(e) => setPriceModalInputValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleApplyModalPrice();
+                      if (e.key === "Escape") setPriceEditModalItem(null);
+                    }}
+                    onFocus={(e) => e.target.select()}
+                    placeholder="0.00"
+                    className="h-12 w-full rounded-xl border-2 border-emerald-500/50 bg-white pl-10 pr-4 text-xl font-black text-slate-900 shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                  />
+                </div>
+              </div>
+
+              {/* Quick Preset Discount & Price Adjustment Buttons */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Quick Adjustments &amp; Discounts
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setPriceModalInputValue(priceEditModalItem.originalPrice.toString())}
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs"
+                  >
+                    Reset (Rs. {priceEditModalItem.originalPrice})
+                  </button>
+                  {[5, 10, 15, 20].map((pct) => {
+                    const discounted = Math.max(0, Math.round(priceEditModalItem.originalPrice * (1 - pct / 100)));
+                    return (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => setPriceModalInputValue(discounted.toString())}
+                        className="rounded-lg border border-emerald-200 bg-emerald-50/70 px-2 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100 shadow-2xs"
+                      >
+                        -{pct}% (Rs. {discounted})
+                      </button>
+                    );
+                  })}
+                  {[10, 50, 100, 200].map((amt) => {
+                    if (priceEditModalItem.originalPrice > amt) {
+                      const reduced = priceEditModalItem.originalPrice - amt;
+                      return (
+                        <button
+                          key={amt}
+                          type="button"
+                          onClick={() => setPriceModalInputValue(reduced.toString())}
+                          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs"
+                        >
+                          -Rs. {amt}
+                        </button>
+                      );
+                    }
+                    return null;
+                  })}
+                  <button
+                    type="button"
+                    onClick={() => setPriceModalInputValue("0")}
+                    className="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100 shadow-2xs"
+                  >
+                    Free (Rs. 0)
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Calculation Preview */}
+              {(() => {
+                const val = parseFloat(priceModalInputValue) || 0;
+                const diff = val - priceEditModalItem.originalPrice;
+                const pctDiff = priceEditModalItem.originalPrice > 0 ? (diff / priceEditModalItem.originalPrice) * 100 : 0;
+                return (
+                  <div className={`rounded-xl p-3 border text-xs ${
+                    diff === 0
+                      ? "bg-slate-50 border-slate-200 text-slate-600"
+                      : diff < 0
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                        : "bg-blue-50 border-blue-200 text-blue-800"
+                  }`}>
+                    <div className="flex justify-between items-center font-bold">
+                      <span>Rate Difference:</span>
+                      <span className="text-sm font-black">
+                        {diff > 0 ? `+Rs. ${diff.toFixed(2)}` : diff < 0 ? `-Rs. ${Math.abs(diff).toFixed(2)}` : "No change"}
+                        {diff !== 0 && ` (${pctDiff.toFixed(1)}%)`}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] opacity-80">
+                      {priceEditModalItem.inCart
+                        ? `Unit price will be applied to current cart item.`
+                        : `Item will be added to the customer's order with this custom unit price.`}
+                    </p>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Fixed Footer */}
+            <div className="shrink-0 border-t border-slate-100 bg-slate-50/90 p-4 flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => setPriceEditModalItem(null)}
+                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-sm transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyModalPrice}
+                className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20 active:scale-[0.99] transition"
+              >
+                Apply Custom Price
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

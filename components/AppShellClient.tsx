@@ -93,7 +93,7 @@ export default function AppShellClient({
           userRole={user.role.name}
         />
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 flex flex-col w-full overflow-x-hidden">
           {/* DESKTOP TOP NAVBAR */}
           <header className="sticky top-0 z-30 hidden h-20 border-b border-border bg-background/95 backdrop-blur lg:flex">
             <div className="flex w-full items-center justify-between px-6">
@@ -147,7 +147,7 @@ export default function AppShellClient({
             </div>
           </header>
 
-          <main className="min-w-0">{children}</main>
+          <main className="min-w-0 flex-1 w-full overflow-x-hidden">{children}</main>
         </div>
       </div>
     </div>

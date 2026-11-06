@@ -147,6 +147,10 @@ export async function GET(request: Request) {
               ),
             }
           : null,
+
+        warrantyMonths: product.warrantyMonths
+          ? Number(product.warrantyMonths)
+          : 0,
       })
     );
 

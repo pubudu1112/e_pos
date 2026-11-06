@@ -444,7 +444,7 @@ export default function InventoryClient() {
       safeCurrentPage - Math.floor(maxVisiblePages / 2)
     );
 
-    let endPage = Math.min(
+    const endPage = Math.min(
       totalPages,
       startPage + maxVisiblePages - 1
     );

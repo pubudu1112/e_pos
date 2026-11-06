@@ -37,6 +37,31 @@ export async function GET() {
       );
     }
 
+    // Ensure standard service categories exist
+    const standardCategories = [
+      { name: "Photocopy", description: "B&W Photocopying and duplication services" },
+      { name: "Color printing", description: "Color laser printing, photo and sticker printing" },
+      { name: "Binding", description: "Spiral, comb, tape, and hardcover book binding" },
+      { name: "Laminating", description: "Thermal film lamination for documents, posters, and cards" },
+      { name: "Scanning", description: "Document and photo digital scanning services" },
+    ];
+
+    for (const cat of standardCategories) {
+      const existing = await prisma.servicecategory.findFirst({
+        where: { name: cat.name },
+      });
+      if (!existing) {
+        await prisma.servicecategory.create({
+          data: {
+            name: cat.name,
+            description: cat.description,
+            isActive: true,
+            updatedAt: new Date(),
+          },
+        });
+      }
+    }
+
     const categories =
       await prisma.servicecategory.findMany({
         orderBy: {

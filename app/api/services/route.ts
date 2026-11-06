@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
+import {
+  parseServiceDescription,
+  serializeServiceDescription,
+} from "@/lib/services/service-helpers";
 
 // ============================================================
-// DEFAULT SERVICES SEED (Photo & Printing Services with Cost Breakdown)
+// DEFAULT SERVICES SEED (Photocopy, Printing, Binding, Laminating)
 // ============================================================
 
 const DEFAULT_PRINTING_SERVICES = [
+  // --- PHOTOCOPY SERVICES ---
   {
     code: "SRV-PC-A4-SS",
     name: "A4 One Side Photocopy",
@@ -48,6 +53,8 @@ const DEFAULT_PRINTING_SERVICES = [
     tonerCost: 5.0,
     machineCost: 2.5,
   },
+
+  // --- COLOR PRINTING SERVICES ---
   {
     code: "SRV-CP-A4",
     name: "Colour Printing (A4)",
@@ -77,6 +84,112 @@ const DEFAULT_PRINTING_SERVICES = [
     paperCost: 15.0,
     tonerCost: 16.0,
     machineCost: 4.0,
+  },
+
+  // --- BINDING SERVICES (Spine/Spiral Material + Cover Sheets + Punch & Labor) ---
+  {
+    code: "SRV-BND-SP-SM",
+    name: "A4 Spiral Binding (Small: 1-50 pages)",
+    description: "Spiral wire/plastic coil with clear PVC front and card back cover",
+    categoryName: "Binding",
+    basePrice: 150.0,
+    paperCost: 25.0, // Spiral Ring coil
+    tonerCost: 30.0, // Front PVC sheet + Back Board
+    machineCost: 15.0, // Punch machine & Labor
+  },
+  {
+    code: "SRV-BND-SP-MD",
+    name: "A4 Spiral Binding (Medium: 51-150 pages)",
+    description: "Medium spiral wire/plastic coil with clear PVC front and card back cover",
+    categoryName: "Binding",
+    basePrice: 250.0,
+    paperCost: 45.0, // Spiral Ring
+    tonerCost: 35.0, // Heavy Front PVC + Back Board
+    machineCost: 20.0, // Punch & Labor
+  },
+  {
+    code: "SRV-BND-SP-LG",
+    name: "A4 Spiral Binding (Large: 151-300 pages)",
+    description: "Large heavy-duty spiral coil binding for reports & manuals",
+    categoryName: "Binding",
+    basePrice: 400.0,
+    paperCost: 75.0, // Large Spiral Ring
+    tonerCost: 40.0, // Premium Cover sheets
+    machineCost: 25.0, // Machine & Labor
+  },
+  {
+    code: "SRV-BND-COMB",
+    name: "Plastic Comb Binding (A4 Standard)",
+    description: "Plastic comb spine binding with transparent front cover",
+    categoryName: "Binding",
+    basePrice: 180.0,
+    paperCost: 30.0, // Comb spine
+    tonerCost: 30.0, // Front PVC + Back Board
+    machineCost: 15.0, // Machine wear & Labor
+  },
+  {
+    code: "SRV-BND-TAPE",
+    name: "Tape / Strip Binding (A4 Fast Binding)",
+    description: "Thermal or pressure spine cloth tape binding",
+    categoryName: "Binding",
+    basePrice: 120.0,
+    paperCost: 15.0, // Spine cloth tape
+    tonerCost: 30.0, // Front PVC + Back Board
+    machineCost: 10.0, // Labor
+  },
+  {
+    code: "SRV-BND-HARD",
+    name: "Hard Cover Project / Thesis Book Binding",
+    description: "Deluxe hardcover book binding with gold embossed foil lettering",
+    categoryName: "Binding",
+    basePrice: 1200.0,
+    paperCost: 350.0, // Hardcover board, gold foil lettering
+    tonerCost: 120.0, // Inner stitching tapes, endpapers & glue
+    machineCost: 130.0, // Machine press wear & technician labor
+  },
+
+  // --- LAMINATING SERVICES (Film Pouch + Heat/Electric + Machine) ---
+  {
+    code: "SRV-LAM-A4",
+    name: "A4 Document Laminating",
+    description: "Heavy 100-micron thermal lamination for A4 certificates and documents",
+    categoryName: "Laminating",
+    basePrice: 80.0,
+    paperCost: 25.0, // A4 Laminating pouch film
+    tonerCost: 8.0, // Electricity & heat
+    machineCost: 5.0, // Machine wear
+  },
+  {
+    code: "SRV-LAM-A3",
+    name: "A3 Poster / Chart Laminating",
+    description: "Heavy thermal lamination for large format A3 documents",
+    categoryName: "Laminating",
+    basePrice: 150.0,
+    paperCost: 50.0, // A3 pouch film
+    tonerCost: 15.0, // Electricity & heat
+    machineCost: 10.0, // Machine wear
+  },
+  {
+    code: "SRV-LAM-ID",
+    name: "ID Card / Badge Laminating",
+    description: "Compact high-gloss pouch lamination for ID cards and badges",
+    categoryName: "Laminating",
+    basePrice: 40.0,
+    paperCost: 8.0, // ID pouch
+    tonerCost: 3.0, // Heat & electricity
+    machineCost: 2.0, // Machine wear
+  },
+
+  // --- SCANNING SERVICES ---
+  {
+    code: "SRV-SCN-DOC",
+    name: "Document Scanning to PDF / Email (per page)",
+    description: "High-resolution optical scanning sent to email or saved to USB",
+    categoryName: "Scanning",
+    basePrice: 30.0,
+    paperCost: 0.0,
+    tonerCost: 5.0, // Cloud / digital storage & bandwidth
+    machineCost: 5.0, // Scanner lamp & feeder wear
   },
 ];
 
@@ -174,33 +287,59 @@ export async function GET() {
 
     await ensureDefaultServicesSeeded();
 
-    const services = await prisma.service.findMany({
-      include: {
-        servicecategory: {
-          select: {
-            id: true,
-            name: true,
+    const [services, inventoryProducts] = await Promise.all([
+      prisma.service.findMany({
+        include: {
+          servicecategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          tax: {
+            select: {
+              id: true,
+              name: true,
+              rate: true,
+            },
           },
         },
-        tax: {
-          select: {
-            id: true,
-            name: true,
-            rate: true,
+        orderBy: {
+          name: "asc",
+        },
+      }),
+      prisma.product.findMany({
+        where: {
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          sellingPrice: true,
+          stock: {
+            select: {
+              quantity: true,
+            },
           },
         },
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
+        orderBy: {
+          name: "asc",
+        },
+      }),
+    ]);
 
     const enrichedServices = services.map((s) => {
       const basePrice = Number(s.basePrice || 0);
       const paperCost = Number(s.paperCost || 0);
       const tonerCost = Number(s.tonerCost || 0);
       const machineCost = Number(s.machineCost || 0);
-      const totalCost = paperCost + tonerCost + machineCost;
+      const parsedDesc = parseServiceDescription(s.description);
+      const customCost = parsedDesc.costComponents.reduce(
+        (sum, c) => sum + (Number(c.cost) || 0),
+        0
+      );
+      const totalCost = paperCost + tonerCost + machineCost + customCost;
       const netProfit = basePrice - totalCost;
       const marginPercent =
         basePrice > 0 ? (netProfit / basePrice) * 100 : 0;
@@ -209,7 +348,10 @@ export async function GET() {
         id: s.id,
         code: s.code,
         name: s.name,
-        description: s.description,
+        description: parsedDesc.notes,
+        rawDescription: s.description,
+        costComponents: parsedDesc.costComponents,
+        customCost,
         categoryId: s.categoryId,
         taxId: s.taxId,
         basePrice,
@@ -236,6 +378,13 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: enrichedServices,
+      inventoryProducts: inventoryProducts.map((p) => ({
+        id: p.id,
+        code: p.code,
+        name: p.name,
+        sellingPrice: Number(p.sellingPrice),
+        stockQty: p.stock ? Number(p.stock.quantity) : 0,
+      })),
     });
   } catch (error) {
     console.error("GET SERVICES ERROR:", error);
@@ -385,12 +534,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const costComponents = Array.isArray(body.costComponents)
+      ? body.costComponents
+      : [];
+    const serializedDescription = serializeServiceDescription(
+      typeof body.description === "string" ? body.description : "",
+      costComponents
+    );
+
     // Create service
     const service = await prisma.service.create({
       data: {
         code,
         name,
-        description: description || null,
+        description: serializedDescription,
         categoryId,
         taxId,
         basePrice,
@@ -417,8 +574,14 @@ export async function POST(request: Request) {
       },
     });
 
-    const totalCost = paperCost + tonerCost + machineCost;
+    const customCost = costComponents.reduce(
+      (sum: number, c: any) => sum + (Math.max(0, Number(c.cost)) || 0),
+      0
+    );
+    const totalCost = paperCost + tonerCost + machineCost + customCost;
     const netProfit = basePrice - totalCost;
+    const marginPercent =
+      basePrice > 0 ? (netProfit / basePrice) * 100 : 0;
 
     return NextResponse.json(
       {
@@ -426,12 +589,17 @@ export async function POST(request: Request) {
         message: "Service created successfully.",
         data: {
           ...service,
+          description: description || null,
+          rawDescription: service.description,
+          costComponents,
+          customCost,
           basePrice: Number(service.basePrice),
           paperCost: Number(service.paperCost),
           tonerCost: Number(service.tonerCost),
           machineCost: Number(service.machineCost),
           totalCost,
           netProfit,
+          marginPercent: Math.round(marginPercent * 10) / 10,
         },
       },
       { status: 201 }
@@ -574,12 +742,20 @@ export async function PUT(request: Request) {
       );
     }
 
+    const costComponents = Array.isArray(body.costComponents)
+      ? body.costComponents
+      : [];
+    const serializedDescription = serializeServiceDescription(
+      typeof body.description === "string" ? body.description : "",
+      costComponents
+    );
+
     const service = await prisma.service.update({
       where: { id },
       data: {
         code,
         name,
-        description: description || null,
+        description: serializedDescription,
         categoryId,
         taxId,
         basePrice,
@@ -606,20 +782,31 @@ export async function PUT(request: Request) {
       },
     });
 
-    const totalCost = paperCost + tonerCost + machineCost;
+    const customCost = costComponents.reduce(
+      (sum: number, c: any) => sum + (Math.max(0, Number(c.cost)) || 0),
+      0
+    );
+    const totalCost = paperCost + tonerCost + machineCost + customCost;
     const netProfit = basePrice - totalCost;
+    const marginPercent =
+      basePrice > 0 ? (netProfit / basePrice) * 100 : 0;
 
     return NextResponse.json({
       success: true,
       message: "Service updated successfully.",
       data: {
         ...service,
+        description: description || null,
+        rawDescription: service.description,
+        costComponents,
+        customCost,
         basePrice: Number(service.basePrice),
         paperCost: Number(service.paperCost),
         tonerCost: Number(service.tonerCost),
         machineCost: Number(service.machineCost),
         totalCost,
         netProfit,
+        marginPercent: Math.round(marginPercent * 10) / 10,
       },
     });
   } catch (error) {

@@ -562,7 +562,7 @@ export default function ServiceCategoriesClient() {
   ============================================================ */
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
       {/* HEADER */}
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -572,7 +572,7 @@ export default function ServiceCategoriesClient() {
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            Manage categories used for services.
+            Manage service categories for Pubudu Creative Hub (Photocopy, Color Printing, Binding, Laminating, Scanning).
           </p>
         </div>
 
@@ -602,13 +602,43 @@ export default function ServiceCategoriesClient() {
               onClick={
                 openAddModal
               }
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 shadow-sm"
             >
               <Plus className="h-4 w-4" />
 
               Add Category
             </button>
           )}
+        </div>
+      </div>
+
+      {/* SPECIALIZED SERVICES INFO CARDS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="rounded-xl border bg-card p-4 shadow-sm border-l-4 border-l-indigo-500">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+            Binding Category
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Supports hidden cost tracking: Spiral / Comb / Wire / Tape material cost, front PVC + back board covers, and machine punch labor to compute exact Net Profit per book.
+          </p>
+        </div>
+
+        <div className="rounded-xl border bg-card p-4 shadow-sm border-l-4 border-l-purple-500">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+            Photocopy &amp; Color Printing
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Tracks per-sheet Paper Cost, Toner/Ink Cartridge consumption, and drum machine maintenance for accurate gross-to-net copy profit margins.
+          </p>
+        </div>
+
+        <div className="rounded-xl border bg-card p-4 shadow-sm border-l-4 border-l-emerald-500">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            Laminating &amp; Scanning
+          </h3>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Includes thermal pouch film, pre-heat electricity consumption, and document digitizing services with real-time margin calculation.
+          </p>
         </div>
       </div>
 
@@ -635,7 +665,7 @@ export default function ServiceCategoriesClient() {
       {/* TABLE */}
 
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto min-w-full">
           <table className="w-full text-sm">
             <thead className="border-b bg-muted/50">
               <tr>
@@ -649,6 +679,10 @@ export default function ServiceCategoriesClient() {
 
                 <th className="px-4 py-3 text-left font-semibold">
                   Description
+                </th>
+
+                <th className="px-4 py-3 text-left font-semibold">
+                  Cost Breakdown System
                 </th>
 
                 <th className="px-4 py-3 text-center font-semibold">
@@ -665,7 +699,7 @@ export default function ServiceCategoriesClient() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-10 text-center text-muted-foreground"
                   >
                     Loading service categories...
@@ -675,7 +709,7 @@ export default function ServiceCategoriesClient() {
                 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-10 text-center text-muted-foreground"
                   >
                     No service categories found.
@@ -686,85 +720,105 @@ export default function ServiceCategoriesClient() {
                   (
                     category,
                     index
-                  ) => (
-                    <tr
-                      key={
-                        category.id
-                      }
-                      className="border-b last:border-b-0 hover:bg-muted/30"
-                    >
-                      <td className="px-4 py-3">
-                        {index + 1}
-                      </td>
+                  ) => {
+                    const catName = category.name.toLowerCase();
+                    let costSystemBadge = "Material & Overheads";
+                    if (catName.includes("bind")) {
+                      costSystemBadge = "Spine + Cover Sheets + Punch Labor";
+                    } else if (catName.includes("photo") || catName.includes("print")) {
+                      costSystemBadge = "Paper + Toner/Ink + Machine Wear";
+                    } else if (catName.includes("lam")) {
+                      costSystemBadge = "Pouch Film + Power + Roller Wear";
+                    } else if (catName.includes("scan")) {
+                      costSystemBadge = "Scanner Wear & Digital Labor";
+                    }
 
-                      <td className="px-4 py-3 font-medium">
-                        {
-                          category.name
+                    return (
+                      <tr
+                        key={
+                          category.id
                         }
-                      </td>
+                        className="border-b last:border-b-0 hover:bg-muted/30"
+                      >
+                        <td className="px-4 py-3">
+                          {index + 1}
+                        </td>
 
-                      <td className="max-w-md px-4 py-3 text-muted-foreground">
-                        {
-                          category.description ||
-                          "-"
-                        }
-                      </td>
+                        <td className="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">
+                          {
+                            category.name
+                          }
+                        </td>
 
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                            category.isActive
-                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                          }`}
-                        >
-                          {category.isActive
-                            ? "Active"
-                            : "Inactive"}
-                        </span>
-                      </td>
+                        <td className="max-w-md px-4 py-3 text-muted-foreground">
+                          {
+                            category.description ||
+                            "-"
+                          }
+                        </td>
 
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          {canUpdate && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openEditModal(
-                                    category
-                                  )
-                                }
-                                className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            {costSystemBadge}
+                          </span>
+                        </td>
 
-                                Edit
-                              </button>
+                        <td className="px-4 py-3 text-center">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                              category.isActive
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                            }`}
+                          >
+                            {category.isActive
+                              ? "Active"
+                              : "Inactive"}
+                          </span>
+                        </td>
 
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openStatusConfirmation(
-                                    category
-                                  )
-                                }
-                                className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-                                  category.isActive
-                                    ? "border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
-                                    : "border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:hover:bg-emerald-950/30"
-                                }`}
-                              >
-                                {category.isActive
-                                  ? "Deactivate"
-                                  : "Activate"}
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            {canUpdate && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openEditModal(
+                                      category
+                                    )
+                                  }
+                                  className="inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+
+                                  Edit
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openStatusConfirmation(
+                                      category
+                                    )
+                                  }
+                                  className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                                    category.isActive
+                                      ? "border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
+                                      : "border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:hover:bg-emerald-950/30"
+                                  }`}
+                                >
+                                  {category.isActive
+                                    ? "Deactivate"
+                                    : "Activate"}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
                 )
               )}
             </tbody>
@@ -775,27 +829,29 @@ export default function ServiceCategoriesClient() {
       {/* ADD / EDIT MODAL */}
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-xl border bg-background p-6 shadow-xl">
-            <div className="mb-5">
-              <h2 className="text-lg font-semibold">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-3 sm:p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="shrink-0 border-b border-border p-5 bg-card">
+              <h2 className="text-lg font-bold">
                 {editingCategory
                   ? "Edit Service Category"
                   : "Add Service Category"}
               </h2>
 
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {editingCategory
-                  ? "Update service category details."
-                  : "Create a new service category."}
+                  ? "Update service category details and description."
+                  : "Create a new service category for Pubudu Creative Hub."}
               </p>
             </div>
 
-            <div className="space-y-4">
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {/* NAME */}
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Category Name
                 </label>
 
@@ -808,15 +864,15 @@ export default function ServiceCategoriesClient() {
                     )
                   }
                   maxLength={100}
-                  placeholder="e.g. Printing"
-                  className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. Binding"
+                  className="w-full rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary font-medium"
                 />
               </div>
 
               {/* DESCRIPTION */}
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Description
                 </label>
 
@@ -829,13 +885,14 @@ export default function ServiceCategoriesClient() {
                   }
                   maxLength={255}
                   rows={4}
-                  placeholder="Enter category description..."
-                  className="w-full resize-none rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. Spiral binding, plastic comb binding, and hardcover thesis binding services..."
+                  className="w-full resize-none rounded-xl border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2">
+            {/* Footer */}
+            <div className="shrink-0 border-t border-border bg-muted/40 p-4 flex justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() =>
@@ -844,7 +901,7 @@ export default function ServiceCategoriesClient() {
                   )
                 }
                 disabled={saving}
-                className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+                className="rounded-xl border px-4 py-2 text-xs font-bold hover:bg-muted disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -860,7 +917,7 @@ export default function ServiceCategoriesClient() {
                     ? !canUpdate
                     : !canCreate)
                 }
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm"
               >
                 {saving
                   ? "Saving..."
