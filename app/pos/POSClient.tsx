@@ -19,6 +19,7 @@ import {
   Layers,
   Loader2,
   Minus,
+  Pencil,
   PenTool,
   Plus,
   Printer,
@@ -303,6 +304,13 @@ export default function POSClient() {
   // Last completed sale / bill
   const [lastCompletedBill, setLastCompletedBill] =
     useState<CompletedSaleBill | null>(null);
+
+  // Editable unit price in cart during transaction
+  const [editingPriceKey, setEditingPriceKey] = useState<string | null>(null);
+  const [editPriceValue, setEditPriceValue] = useState<string>("");
+
+  // Responsive Mobile Drawer
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
 
   // =======================================================
   // FETCH ITEMS & CUSTOMERS FROM DATABASE
@@ -1426,7 +1434,7 @@ export default function POSClient() {
         {/* ================================================= */}
         {/* RIGHT COLUMN: CURRENT ORDER & BILL SUMMARY */}
         {/* ================================================= */}
-        <aside className="flex w-80 shrink-0 flex-col border-l border-slate-200 bg-white sm:w-96 lg:w-[410px]">
+        <aside className="hidden lg:flex w-80 shrink-0 flex-col border-l border-slate-200 bg-white sm:w-96 lg:w-[410px]">
           {/* Header */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5">
             <div className="flex items-center gap-2">

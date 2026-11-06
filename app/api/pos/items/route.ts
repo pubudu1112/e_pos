@@ -190,6 +190,20 @@ export async function GET(request: Request) {
 
         minimumStock: null,
 
+        // Service Costs & Profit (Sri Lankan Rupees)
+        paperCost: Number(service.paperCost || 0),
+        tonerCost: Number(service.tonerCost || 0),
+        machineCost: Number(service.machineCost || 0),
+        costPrice:
+          Number(service.paperCost || 0) +
+          Number(service.tonerCost || 0) +
+          Number(service.machineCost || 0),
+        netProfit:
+          Number(service.basePrice) -
+          (Number(service.paperCost || 0) +
+            Number(service.tonerCost || 0) +
+            Number(service.machineCost || 0)),
+
         // Service Tax
         tax: service.tax
           ? {

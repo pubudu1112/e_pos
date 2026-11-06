@@ -66,6 +66,7 @@ model customer {
   customertransaction customertransaction[]
   job                 job[]
   sale                sale[]
+  warranty            Warranty[]
 
   @@index([isActive], map: "Customer_isActive_idx")
   @@index([name], map: "Customer_name_idx")
@@ -144,6 +145,11 @@ model job {
   total                       Decimal            @default(0.00) @db.Decimal(12, 2)
   advanceAmount               Decimal            @default(0.00) @db.Decimal(12, 2)
   balanceAmount               Decimal            @default(0.00) @db.Decimal(12, 2)
+  isOutsourced                Boolean            @default(false)
+  supplierId                  Int?
+  outsourcedCost              Decimal            @default(0.00) @db.Decimal(12, 2)
+  supplierBillNo              String?            @db.VarChar(100)
+  supplierPaid                Boolean            @default(false)
   createdById                 Int
   assignedToId                Int?
   createdAt                   DateTime           @default(now())
@@ -152,6 +158,7 @@ model job {
   user_job_createdByIdTouser  User               @relation("job_createdByIdTouser", fields: [createdById], references: [id], map: "Job_createdById_fkey")
   customer                    customer?          @relation(fields: [customerId], references: [id], map: "Job_customerId_fkey")
   sale                        sale?              @relation(fields: [saleId], references: [id], map: "Job_saleId_fkey")
+  supplier                    supplier?          @relation(fields: [supplierId], references: [id], map: "Job_supplierId_fkey")
   jobitem                     jobitem[]
   jobpayment                  jobpayment[]
   jobstatushistory            jobstatushistory[]
@@ -162,6 +169,7 @@ model job {
   @@index([dueDate], map: "Job_dueDate_idx")
   @@index([saleId], map: "Job_saleId_idx")
   @@index([status], map: "Job_status_idx")
+  @@index([supplierId], map: "Job_supplierId_idx")
 
   @@map("Job")
 }
@@ -271,6 +279,7 @@ model product {
   sellingPrice        Decimal               @db.Decimal(12, 2)
   wholesalePrice      Decimal?              @db.Decimal(12, 2)
   minimumStock        Decimal               @default(0.000) @db.Decimal(12, 3)
+  warrantyMonths      Int?                  @default(0)
   status              product_status        @default(ACTIVE)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime
@@ -283,6 +292,7 @@ model product {
   stock               stock?
   stockadjustmentitem stockadjustmentitem[]
   stockmovement       stockmovement[]
+  warranty            Warranty[]
 
   @@index([brandId], map: "Product_brandId_idx")
   @@index([categoryId], map: "Product_categoryId_idx")
@@ -406,6 +416,7 @@ model sale {
   user                User                  @relation(fields: [createdById], references: [id], map: "Sale_createdById_fkey")
   customer            customer?             @relation(fields: [customerId], references: [id], map: "Sale_customerId_fkey")
   saleitem            saleitem[]
+  warranty            Warranty[]
 
   @@index([createdById], map: "Sale_createdById_idx")
   @@index([customerId], map: "Sale_customerId_idx")
@@ -446,6 +457,9 @@ model service {
   categoryId      Int
   taxId           Int?
   basePrice       Decimal         @db.Decimal(12, 2)
+  paperCost       Decimal         @default(0.00) @db.Decimal(12, 2)
+  tonerCost       Decimal         @default(0.00) @db.Decimal(12, 2)
+  machineCost     Decimal         @default(0.00) @db.Decimal(12, 2)
   status          service_status  @default(ACTIVE)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime
@@ -555,6 +569,7 @@ model supplier {
   createdAt           DateTime              @default(now())
   updatedAt           DateTime
   purchase            purchase[]
+  job                 job[]
   suppliertransaction suppliertransaction[]
 
   @@index([isActive], map: "Supplier_isActive_idx")
@@ -628,6 +643,7 @@ model User {
   sale                       sale[]
   role                       role          @relation(fields: [roleId], references: [id], map: "User_roleId_fkey")
   sessions                   UserSession[]
+  warrantyclaim              WarrantyClaim[]
 
   @@index([roleId], map: "User_roleId_idx")
   @@index([status], map: "User_status_idx")
@@ -752,4 +768,73 @@ enum sale_paymentStatus {
 enum product_status {
   ACTIVE
   INACTIVE
+}
+
+model Warranty {
+  id             Int             @id @default(autoincrement())
+  warrantyCode   String          @unique(map: "Warranty_warrantyCode_key") @db.VarChar(50)
+  saleId         Int
+  productId      Int
+  customerId     Int?
+  customerName   String?         @db.VarChar(150)
+  customerPhone  String?         @db.VarChar(30)
+  startDate      DateTime        @default(now())
+  durationMonths Int             @default(0)
+  expiryDate     DateTime
+  status         warranty_status @default(ACTIVE)
+  notes          String?         @db.Text
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sale           sale            @relation(fields: [saleId], references: [id], onDelete: Cascade, map: "Warranty_saleId_fkey")
+  product        product         @relation(fields: [productId], references: [id], map: "Warranty_productId_fkey")
+  customer       customer?       @relation(fields: [customerId], references: [id], map: "Warranty_customerId_fkey")
+  claims         WarrantyClaim[]
+
+  @@index([warrantyCode], map: "Warranty_warrantyCode_idx")
+  @@index([saleId], map: "Warranty_saleId_idx")
+  @@index([productId], map: "Warranty_productId_idx")
+  @@index([customerId], map: "Warranty_customerId_idx")
+  @@index([customerPhone], map: "Warranty_customerPhone_idx")
+  @@index([status], map: "Warranty_status_idx")
+  @@index([expiryDate], map: "Warranty_expiryDate_idx")
+
+  @@map("Warranty")
+}
+
+model WarrantyClaim {
+  id           Int                   @id @default(autoincrement())
+  claimNo      String                @unique(map: "WarrantyClaim_claimNo_key") @db.VarChar(50)
+  warrantyId   Int
+  issue        String                @db.Text
+  actionTaken  String?               @db.Text
+  status       warranty_claim_status @default(PENDING)
+  handledById  Int?
+  claimDate    DateTime              @default(now())
+  resolvedDate DateTime?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  warranty     Warranty              @relation(fields: [warrantyId], references: [id], onDelete: Cascade, map: "WarrantyClaim_warrantyId_fkey")
+  user         User?                 @relation(fields: [handledById], references: [id], map: "WarrantyClaim_handledById_fkey")
+
+  @@index([warrantyId], map: "WarrantyClaim_warrantyId_idx")
+  @@index([claimNo], map: "WarrantyClaim_claimNo_idx")
+  @@index([status], map: "WarrantyClaim_status_idx")
+
+  @@map("WarrantyClaim")
+}
+
+enum warranty_status {
+  ACTIVE
+  EXPIRED
+  CLAIMED
+  VOID
+}
+
+enum warranty_claim_status {
+  PENDING
+  IN_PROGRESS
+  REPLACED
+  REPAIRED
+  REJECTED
+  RESOLVED
 }

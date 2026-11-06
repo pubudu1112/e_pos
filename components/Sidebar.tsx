@@ -20,6 +20,7 @@ import {
   Percent,
   Receipt,
   Settings,
+  ShieldCheck,
   ShoppingCart,
   Store,
   Tags,
@@ -74,6 +75,12 @@ const mainMenu: MenuItem[] = [
     href: "/jobs",
     icon: BriefcaseBusiness,
     permission: "JOB_VIEW",
+  },
+  {
+    label: "Warranty",
+    href: "/warranty",
+    icon: ShieldCheck,
+    permission: "POS_VIEW",
   },
 ];
 

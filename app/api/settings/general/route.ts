@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS = {
   businessRegNumber: "PV-987654",
 };
 
-async function getStoredSettings() {
+export async function getStoredSettings() {
   try {
     const raw = await fs.readFile(SETTINGS_FILE, "utf-8");
     return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };

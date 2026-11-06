@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/auth/permissions";
+import { getStoredSettings } from "@/app/api/settings/general/route";
 
 type SaleItemInput = {
   id: number;
@@ -88,6 +89,24 @@ export async function POST(
       }
 
       createdById = activeUser.id;
+    }
+
+    // ========================================================
+    // Settings & Price Editing Permission Check
+    // ========================================================
+    const generalSettings = await getStoredSettings();
+    const allowPriceEditMode = generalSettings.posAllowPriceEdit || "ADMIN_MANAGER";
+    const userRoleName = (session?.user?.role?.name || "").toUpperCase();
+    const isSuperAdmin = userRoleName.includes("SUPER_ADMIN") || userRoleName.includes("SUPER ADMIN") || userRoleName.includes("OWNER");
+    const isManager = isSuperAdmin || userRoleName.includes("ADMIN") || userRoleName.includes("MANAGER");
+
+    let isPriceEditAllowed = false;
+    if (allowPriceEditMode === "ALL") {
+      isPriceEditAllowed = true;
+    } else if (allowPriceEditMode === "ADMIN_MANAGER") {
+      isPriceEditAllowed = isManager;
+    } else if (allowPriceEditMode === "SUPER_ADMIN") {
+      isPriceEditAllowed = isSuperAdmin;
     }
 
     // ========================================================
@@ -356,6 +375,13 @@ export async function POST(
             discount: number;
             tax: number;
             total: number;
+            warrantyMonths?: number | null;
+          }> = [];
+          const createdWarranties: Array<{
+            warrantyCode: string;
+            productName: string;
+            durationMonths: number;
+            expiryDate: string;
           }> = [];
 
           // ==================================================
@@ -431,10 +457,11 @@ export async function POST(
               // Server-side selling price
               // ----------------------------------------------
 
+              const catalogPrice = Number(product.sellingPrice);
               const unitPrice =
-                Number(
-                  product.sellingPrice
-                );
+                typeof item.unitPrice === "number" && item.unitPrice >= 0
+                  ? Number(item.unitPrice)
+                  : catalogPrice;
 
               // ----------------------------------------------
               // Cost price snapshot
@@ -532,10 +559,16 @@ export async function POST(
                 );
               }
 
+              const catalogPrice = Number(service.basePrice);
               const unitPrice =
-                Number(
-                  service.basePrice
-                );
+                typeof item.unitPrice === "number" && item.unitPrice >= 0
+                  ? Number(item.unitPrice)
+                  : catalogPrice;
+
+              const serviceCost =
+                Number(service.paperCost || 0) +
+                Number(service.tonerCost || 0) +
+                Number(service.machineCost || 0);
 
               const lineSubtotal =
                 unitPrice *
@@ -577,16 +610,19 @@ export async function POST(
 
                 unitPrice,
 
-                // Services currently don't
-                // have cost tracking.
+                // Track production cost (Paper + Toner + Machine) for net profit calculation
                 costPrice:
-                  null,
+                  serviceCost > 0
+                    ? serviceCost
+                    : null,
 
                 discount: 0,
 
                 tax: lineTax,
 
                 total: lineTotal,
+
+                warrantyMonths: null,
               });
             }
           }
@@ -791,6 +827,59 @@ export async function POST(
                   ),
               },
             });
+
+            // ==============================================
+            // WARRANTY CREATION (FOR PHONE ACCESSORIES & WARRANTY PRODUCTS)
+            // ==============================================
+            if (
+              saleItem.productId &&
+              saleItem.warrantyMonths &&
+              saleItem.warrantyMonths > 0
+            ) {
+              const now = new Date();
+              const year = now.getFullYear();
+              const month = String(now.getMonth() + 1).padStart(2, "0");
+              const randCode = Math.floor(10000 + Math.random() * 90000);
+              const warrantyCode = `WAR-${year}${month}-${randCode}`;
+
+              const expiryDate = new Date(now.getTime());
+              expiryDate.setMonth(expiryDate.getMonth() + Number(saleItem.warrantyMonths));
+
+              let customerRecord = null;
+              if (customerId) {
+                customerRecord = await tx.customer.findUnique({
+                  where: { id: customerId },
+                  select: { name: true, phone: true },
+                });
+              }
+
+              await tx.warranty.create({
+                data: {
+                  warrantyCode,
+                  saleId: sale.id,
+                  productId: saleItem.productId,
+                  customerId: customerId || null,
+                  customerName: customerRecord?.name || "Walk-in Customer",
+                  customerPhone: customerRecord?.phone || null,
+                  startDate: now,
+                  durationMonths: Number(saleItem.warrantyMonths),
+                  expiryDate,
+                  status: "ACTIVE",
+                  notes: `Warranty issued on POS sale ${invoiceNo} for ${saleItem.description}`,
+                },
+              });
+
+              createdWarranties.push({
+                warrantyCode,
+                productName: saleItem.description,
+                durationMonths: Number(saleItem.warrantyMonths),
+                expiryDate: expiryDate.toLocaleDateString("en-LK", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                }),
+              });
+            }
 
             // ==============================================
             // PRODUCT STOCK
@@ -1166,6 +1255,8 @@ export async function POST(
 
             itemCount:
               saleItems.length,
+
+            warranties: createdWarranties,
           };
         }
       );
