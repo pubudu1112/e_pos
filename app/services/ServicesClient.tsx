@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import {
   Plus,
   Pencil,
@@ -88,11 +89,12 @@ function getCostFieldLabels(categoryName: string) {
 
 type CostComponent = {
   id: string;
+  costType: "INVENTORY" | "MANUAL";
   name: string;
   cost: number;
   productId?: number | null;
   productName?: string | null;
-  quantity?: number;
+  quantity: number;
 };
 
 type CostComponentForm = {
@@ -108,6 +110,7 @@ type InventoryProductItem = {
   code: string;
   name: string;
   sellingPrice: number;
+  purchasePrice: number;
   stockQty: number;
 };
 
@@ -117,6 +120,8 @@ type Service = {
   name: string;
   description: string | null;
   costComponents?: CostComponent[];
+  inventoryCost?: number;
+  manualCost?: number;
   customCost?: number;
   categoryId: number;
   taxId: number | null;
@@ -202,11 +207,14 @@ export default function ServicesClient() {
   const [tonerCost, setTonerCost] = useState("");
   const [machineCost, setMachineCost] = useState("");
 
-  // Additional Sub-Costs & Consumable Inventory Materials
+  // Keep stock-linked parts and manual expenses in separate form groups.
   const [inventoryProducts, setInventoryProducts] = useState<
     InventoryProductItem[]
   >([]);
-  const [costComponents, setCostComponents] = useState<
+  const [inventoryCostComponents, setInventoryCostComponents] = useState<
+    CostComponentForm[]
+  >([]);
+  const [manualCostComponents, setManualCostComponents] = useState<
     CostComponentForm[]
   >([]);
 
@@ -254,7 +262,7 @@ export default function ServicesClient() {
       ) {
         throw new Error(
           result.message ||
-            "Failed to load permissions."
+          "Failed to load permissions."
         );
       }
 
@@ -304,8 +312,8 @@ export default function ServicesClient() {
       if (!response.ok) {
         throw new Error(
           result?.error ||
-            result?.message ||
-            "Failed to load services."
+          result?.message ||
+          "Failed to load services."
         );
       }
 
@@ -356,8 +364,8 @@ export default function ServicesClient() {
       if (!response.ok) {
         throw new Error(
           result?.error ||
-            result?.message ||
-            "Failed to load service categories."
+          result?.message ||
+          "Failed to load service categories."
         );
       }
 
@@ -408,8 +416,8 @@ export default function ServicesClient() {
       if (!response.ok) {
         throw new Error(
           result?.error ||
-            result?.message ||
-            "Failed to load taxes."
+          result?.message ||
+          "Failed to load taxes."
         );
       }
 
@@ -552,9 +560,9 @@ export default function ServicesClient() {
     const avgMargin =
       workshopServices.length > 0
         ? workshopServices.reduce(
-            (acc, s) => acc + (Number(s.marginPercent) || 0),
-            0
-          ) / workshopServices.length
+          (acc, s) => acc + (Number(s.marginPercent) || 0),
+          0
+        ) / workshopServices.length
         : 0;
 
     return {
@@ -583,45 +591,70 @@ export default function ServicesClient() {
     setPaperCost("");
     setTonerCost("");
     setMachineCost("");
-    setCostComponents([]);
+    setInventoryCostComponents([]);
+    setManualCostComponents([]);
     setEditingService(null);
   }
 
-  function addCostComponent() {
-    setCostComponents((prev) => [
-      ...prev,
-      {
-        id: "part-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
-        name: "",
-        cost: "",
-        productId: "",
-        quantity: "1",
-      },
-    ]);
+  function createCostComponent(): CostComponentForm {
+    return {
+      id: "part-" + Date.now() + "-" + Math.random().toString(36).substring(2, 8),
+      name: "",
+      cost: "",
+      productId: "",
+      quantity: "1",
+    };
   }
 
-  function removeCostComponent(id: string) {
-    setCostComponents((prev) => prev.filter((c) => c.id !== id));
+  function addInventoryCostComponent() {
+    setInventoryCostComponents((prev) => [...prev, createCostComponent()]);
   }
 
-  function updateCostComponent(
+  function addManualCostComponent() {
+    setManualCostComponents((prev) => [...prev, createCostComponent()]);
+  }
+
+  function updateComponentList(
+    setter: Dispatch<SetStateAction<CostComponentForm[]>>,
     id: string,
     field: keyof CostComponentForm,
-    value: string
+    value: string,
+    isInventory: boolean
   ) {
-    setCostComponents((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c;
-        const updated = { ...c, [field]: value };
-        if (field === "productId" && value) {
-          const prod = inventoryProducts.find((p) => String(p.id) === value);
-          if (prod && !updated.name) {
-            updated.name = prod.name;
+    setter((prev) =>
+      prev.map((component) => {
+        if (component.id !== id) return component;
+        const updated = { ...component, [field]: value };
+        if (isInventory && field === "productId") {
+          const product = inventoryProducts.find((p) => String(p.id) === value);
+          if (product) {
+            updated.name = product.name;
+            // Default to the product purchase cost. The user can edit this value afterwards.
+            updated.cost = String(Number(product.purchasePrice) || 0);
+          } else {
+            updated.name = "";
+            updated.cost = "";
           }
         }
         return updated;
       })
     );
+  }
+
+  function updateInventoryCostComponent(
+    id: string,
+    field: keyof CostComponentForm,
+    value: string
+  ) {
+    updateComponentList(setInventoryCostComponents, id, field, value, true);
+  }
+
+  function updateManualCostComponent(
+    id: string,
+    field: keyof CostComponentForm,
+    value: string
+  ) {
+    updateComponentList(setManualCostComponents, id, field, value, false);
   }
 
   /* ============================================================
@@ -697,19 +730,53 @@ export default function ServicesClient() {
         : ""
     );
 
-    if (Array.isArray(service.costComponents) && service.costComponents.length > 0) {
-      setCostComponents(
-        service.costComponents.map((c) => ({
-          id: c.id || String(Date.now() + Math.random()),
-          name: c.name || "",
-          cost: c.cost !== undefined && c.cost !== null ? String(c.cost) : "",
-          productId: c.productId ? String(c.productId) : "",
-          quantity: c.quantity ? String(c.quantity) : "1",
+    const existingComponents = Array.isArray(service.costComponents)
+      ? service.costComponents
+      : [];
+
+    setInventoryCostComponents(
+      existingComponents
+        .filter((component) => component.costType === "INVENTORY")
+        .map((component) => ({
+          id: component.id || String(Date.now() + Math.random()),
+          name: component.name || "",
+          cost: (() => {
+            const savedCost =
+              component.cost !== undefined && component.cost !== null
+                ? Number(component.cost)
+                : 0;
+
+            // When an existing inventory component has no saved unit cost,
+            // use the selected product's purchase price as the default.
+            // A non-zero saved cost is preserved so manual edits are not lost.
+            if (savedCost > 0) {
+              return String(savedCost);
+            }
+
+            const selectedProduct = inventoryProducts.find(
+              (product) => String(product.id) === String(component.productId)
+            );
+
+            return selectedProduct
+              ? String(Number(selectedProduct.purchasePrice) || 0)
+              : String(savedCost);
+          })(),
+          productId: component.productId ? String(component.productId) : "",
+          quantity: component.quantity ? String(component.quantity) : "1",
         }))
-      );
-    } else {
-      setCostComponents([]);
-    }
+    );
+
+    setManualCostComponents(
+      existingComponents
+        .filter((component) => component.costType === "MANUAL")
+        .map((component) => ({
+          id: component.id || String(Date.now() + Math.random()),
+          name: component.name || "",
+          cost: component.cost !== undefined && component.cost !== null ? String(component.cost) : "",
+          productId: "",
+          quantity: "1",
+        }))
+    );
 
     setModalOpen(true);
   }
@@ -796,22 +863,57 @@ export default function ServicesClient() {
       return;
     }
 
-    const paper = Number(paperCost) || 0;
-    const toner = Number(tonerCost) || 0;
-    const machine = Number(machineCost) || 0;
+    // Unit costs are now managed only through Inventory Parts and Manual Cost Parts.
+    const paper = 0;
+    const toner = 0;
+    const machine = 0;
 
-    const formattedComponents = costComponents
-      .filter((c) => c.name.trim() || Number(c.cost) > 0)
-      .map((c) => ({
-        id: c.id,
-        name: c.name.trim(),
-        cost: Math.max(0, Number(c.cost) || 0),
-        productId: c.productId ? Number(c.productId) : null,
-        productName:
-          inventoryProducts.find((p) => String(p.id) === c.productId)?.name ||
-          null,
-        quantity: Math.max(1, Number(c.quantity) || 1),
-      }));
+    const incompleteInventoryPart = inventoryCostComponents.find(
+      (component) =>
+        !component.productId ||
+        !Number.isFinite(Number(component.quantity)) ||
+        Number(component.quantity) <= 0 ||
+        !Number.isFinite(Number(component.cost)) ||
+        Number(component.cost) < 0
+    );
+
+    if (incompleteInventoryPart) {
+      toast.error("Please select an inventory product and enter a valid positive quantity and unit cost.");
+      return;
+    }
+
+    const incompleteManualPart = manualCostComponents.find(
+      (component) =>
+        !component.name.trim() ||
+        !Number.isFinite(Number(component.cost)) ||
+        Number(component.cost) < 0
+    );
+
+    if (incompleteManualPart) {
+      toast.error("Please enter a name and valid cost for every manual cost part.");
+      return;
+    }
+
+    const formattedComponents = [
+      ...inventoryCostComponents
+        .filter((c) => c.productId && (c.name.trim() || Number(c.cost) > 0))
+        .map((c) => ({
+          costType: "INVENTORY" as const,
+          name: c.name.trim(),
+          cost: Math.max(0, Number(c.cost) || 0),
+          productId: Number(c.productId),
+          quantity: Math.max(0.001, Number(c.quantity) || 1),
+        })),
+      ...manualCostComponents
+        .filter((c) => c.name.trim() || Number(c.cost) > 0)
+        .map((c) => ({
+          costType: "MANUAL" as const,
+          name: c.name.trim(),
+          cost: Math.max(0, Number(c.cost) || 0),
+          productId: null,
+          quantity: 1,
+        })),
+    ];
 
     try {
       setSaving(true);
@@ -819,42 +921,42 @@ export default function ServicesClient() {
       const payload =
         editingService
           ? {
-              id: editingService.id,
-              code: trimmedCode,
-              name: trimmedName,
-              description:
-                trimmedDescription ||
-                null,
-              categoryId:
-                Number(categoryId),
-              taxId: taxId
-                ? Number(taxId)
-                : null,
-              basePrice: price,
-              paperCost: paper,
-              tonerCost: toner,
-              machineCost: machine,
-              costComponents: formattedComponents,
-              status:
-                editingService.status,
-            }
+            id: editingService.id,
+            code: trimmedCode,
+            name: trimmedName,
+            description:
+              trimmedDescription ||
+              null,
+            categoryId:
+              Number(categoryId),
+            taxId: taxId
+              ? Number(taxId)
+              : null,
+            basePrice: price,
+            paperCost: paper,
+            tonerCost: toner,
+            machineCost: machine,
+            costComponents: formattedComponents,
+            status:
+              editingService.status,
+          }
           : {
-              code: trimmedCode,
-              name: trimmedName,
-              description:
-                trimmedDescription ||
-                null,
-              categoryId:
-                Number(categoryId),
-              taxId: taxId
-                ? Number(taxId)
-                : null,
-              basePrice: price,
-              paperCost: paper,
-              tonerCost: toner,
-              machineCost: machine,
-              costComponents: formattedComponents,
-            };
+            code: trimmedCode,
+            name: trimmedName,
+            description:
+              trimmedDescription ||
+              null,
+            categoryId:
+              Number(categoryId),
+            taxId: taxId
+              ? Number(taxId)
+              : null,
+            basePrice: price,
+            paperCost: paper,
+            tonerCost: toner,
+            machineCost: machine,
+            costComponents: formattedComponents,
+          };
 
       const response =
         await fetch(
@@ -882,8 +984,8 @@ export default function ServicesClient() {
       if (!response.ok) {
         throw new Error(
           result?.error ||
-            result?.message ||
-            "Failed to save service."
+          result?.message ||
+          "Failed to save service."
         );
       }
 
@@ -962,30 +1064,29 @@ export default function ServicesClient() {
 
             body: JSON.stringify({
               id: statusService.id,
+              code: statusService.code,
+              name: statusService.name,
+              description: statusService.description,
+              categoryId: statusService.categoryId,
+              taxId: statusService.taxId,
+              basePrice: Number(statusService.basePrice),
 
-              code:
-                statusService.code,
+              paperCost: Number(statusService.paperCost) || 0,
+              tonerCost: Number(statusService.tonerCost) || 0,
+              machineCost: Number(statusService.machineCost) || 0,
 
-              name:
-                statusService.name,
-
-              description:
-                statusService.description,
-
-              categoryId:
-                statusService.categoryId,
-
-              taxId:
-                statusService.taxId,
-
-              basePrice:
-                Number(
-                  statusService.basePrice
-                ),
+              costComponents: (statusService.costComponents || []).map((c) => ({
+                costType: c.costType,
+                name: c.name,
+                cost: Number(c.cost) || 0,
+                productId:
+                  c.costType === "INVENTORY" ? Number(c.productId) : null,
+                quantity:
+                  c.costType === "INVENTORY" ? Number(c.quantity) : 1,
+              })),
 
               status:
-                statusService.status ===
-                "ACTIVE"
+                statusService.status === "ACTIVE"
                   ? "INACTIVE"
                   : "ACTIVE",
             }),
@@ -998,8 +1099,8 @@ export default function ServicesClient() {
       if (!response.ok) {
         throw new Error(
           result?.error ||
-            result?.message ||
-            "Failed to update service status."
+          result?.message ||
+          "Failed to update service status."
         );
       }
 
@@ -1105,11 +1206,10 @@ export default function ServicesClient() {
             className="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RefreshCw
-              className={`h-4 w-4 ${
-                loading
+              className={`h-4 w-4 ${loading
                   ? "animate-spin"
                   : ""
-              }`}
+                }`}
             />
 
             Refresh
@@ -1234,19 +1334,17 @@ export default function ServicesClient() {
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategoryFilter(cat.id)}
-                className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition ${
-                  isSelected
+                className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition ${isSelected
                     ? "bg-slate-900 text-white shadow-sm"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-                }`}
+                  }`}
               >
                 <span>{cat.label}</span>
                 <span
-                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
-                    isSelected
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${isSelected
                       ? "bg-white/20 text-white"
                       : "bg-white text-slate-700 shadow-xs dark:bg-slate-700 dark:text-slate-200"
-                  }`}
+                    }`}
                 >
                   {cat.count}
                 </span>
@@ -1351,15 +1449,31 @@ export default function ServicesClient() {
                     const paper = Number(service.paperCost || 0);
                     const toner = Number(service.tonerCost || 0);
                     const machine = Number(service.machineCost || 0);
-                    const totalCost = Number(service.totalCost ?? (paper + toner + machine));
-                    const netProfit = Number(service.netProfit ?? (Number(service.basePrice) - totalCost));
-                    const margin = Number(
-                      service.marginPercent ??
-                        (Number(service.basePrice) > 0
-                          ? (netProfit / Number(service.basePrice)) * 100
-                          : 0)
+
+                    const totalCost = Number(
+                      service.totalCost ??
+                      (
+                        paper +
+                        toner +
+                        machine +
+                        (Number(service.inventoryCost) || 0) +
+                        (Number(service.manualCost) || 0)
+                      )
                     );
 
+                    const netProfit = Number(
+                      service.netProfit ??
+                      (Number(service.basePrice) - totalCost)
+                    );
+
+                    const margin = Number(
+                      service.marginPercent ??
+                      (
+                        Number(service.basePrice) > 0
+                          ? (netProfit / Number(service.basePrice)) * 100
+                          : 0
+                      )
+                    );
                     const catLabels = getCostFieldLabels(service.servicecategory?.name || "");
 
                     return (
@@ -1426,11 +1540,14 @@ export default function ServicesClient() {
                               <div className="text-[10px] text-muted-foreground">
                                 {catLabels.field1Short}: {paper.toFixed(2)} | {catLabels.field2Short}: {toner.toFixed(2)} | {catLabels.field3Short}: {machine.toFixed(2)}
                               </div>
-                              {service.costComponents && service.costComponents.length > 0 && (
-                                <div className="mt-0.5 text-[10px] font-bold text-primary">
-                                  +{service.costComponents.length} extra parts (Rs. {(service.customCost || 0).toFixed(2)})
-                                </div>
-                              )}
+                              {service.costComponents &&
+                                service.costComponents.length > 0 && (
+                                  <div className="mt-0.5 text-[10px] text-muted-foreground">
+                                    Inventory: Rs. {Number(service.inventoryCost || 0).toFixed(2)}
+                                    {" | "}
+                                    Manual: Rs. {Number(service.manualCost || 0).toFixed(2)}
+                                  </div>
+                                )}
                             </div>
                           ) : (
                             <span className="text-xs text-muted-foreground">No cost set</span>
@@ -1441,11 +1558,10 @@ export default function ServicesClient() {
                           {totalCost > 0 ? (
                             <div>
                               <span
-                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${
-                                  netProfit >= 0
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${netProfit >= 0
                                     ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
                                     : "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
-                                }`}
+                                  }`}
                               >
                                 {netProfit >= 0 ? "+" : ""}Rs. {netProfit.toFixed(2)}
                                 <span className="ml-1 text-[10px] font-normal opacity-80">/{catLabels.unitName}</span>
@@ -1462,24 +1578,23 @@ export default function ServicesClient() {
                         <td className="px-4 py-3">
                           {service.tax
                             ? `${service.tax.name} (${Number(
-                                service.tax.rate
-                              ).toLocaleString(
-                                "en-LK"
-                              )}%)`
+                              service.tax.rate
+                            ).toLocaleString(
+                              "en-LK"
+                            )}%)`
                             : "-"}
                         </td>
 
                         <td className="px-4 py-3 text-center">
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                              service.status ===
-                              "ACTIVE"
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${service.status ===
+                                "ACTIVE"
                                 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                                 : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                            }`}
+                              }`}
                           >
                             {service.status ===
-                            "ACTIVE"
+                              "ACTIVE"
                               ? "Active"
                               : "Inactive"}
                           </span>
@@ -1510,15 +1625,14 @@ export default function ServicesClient() {
                                       service
                                     )
                                   }
-                                  className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
-                                    service.status ===
-                                    "ACTIVE"
+                                  className={`rounded-lg px-3 py-1.5 text-xs font-medium ${service.status ===
+                                      "ACTIVE"
                                       ? "border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
                                       : "border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:hover:bg-emerald-950/30"
-                                  }`}
+                                    }`}
                                 >
                                   {service.status ===
-                                  "ACTIVE"
+                                    "ACTIVE"
                                     ? "Deactivate"
                                     : "Activate"}
                                 </button>
@@ -1540,15 +1654,20 @@ export default function ServicesClient() {
 
       {modalOpen && (() => {
         const livePrice = Number(basePrice) || 0;
-        const livePaper = Number(paperCost) || 0;
-        const liveToner = Number(tonerCost) || 0;
-        const liveMachine = Number(machineCost) || 0;
-        const liveBaseCost = livePaper + liveToner + liveMachine;
-        const liveCustomCost = costComponents.reduce(
-          (sum, c) => sum + (Number(c.cost) || 0),
+        const liveInventoryCost = inventoryCostComponents.reduce(
+          (sum, component) =>
+            sum +
+            (Number(component.cost) || 0) *
+            Math.max(0.001, Number(component.quantity) || 1),
           0
         );
-        const liveTotalCost = liveBaseCost + liveCustomCost;
+
+        const liveManualCost = manualCostComponents.reduce(
+          (sum, component) => sum + (Number(component.cost) || 0),
+          0
+        );
+
+        const liveTotalCost = liveInventoryCost + liveManualCost;
         const liveNetProfit = livePrice - liveTotalCost;
         const liveMargin = livePrice > 0 ? (liveNetProfit / livePrice) * 100 : 0;
 
@@ -1568,7 +1687,7 @@ export default function ServicesClient() {
                 </h2>
 
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Set customer selling price, unit base costs ({catLabels.field1Short}, {catLabels.field2Short}, {catLabels.field3Short}), and add custom parts/sub-expenses to track exact net profit per {catLabels.unitName} (Rs.).
+                  Set the customer selling price, add stock-linked inventory parts and manual expenses, and track net profit per service unit (Rs.).
                 </p>
               </div>
 
@@ -1668,172 +1787,167 @@ export default function ServicesClient() {
                     </div>
                   </div>
 
-                  {/* PRODUCTION & HIDDEN COST BREAKDOWN SECTION */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-900/50 sm:col-span-2 space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-1">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
-                        {catLabels.sectionTitle}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">
-                        {catLabels.sectionSubtitle}
-                      </span>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300 truncate" title={catLabels.field1}>
-                          {catLabels.field1}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={paperCost}
-                          onChange={(e) => setPaperCost(e.target.value)}
-                          placeholder="25.00"
-                          className="w-full rounded-lg border bg-background px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300 truncate" title={catLabels.field2}>
-                          {catLabels.field2}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={tonerCost}
-                          onChange={(e) => setTonerCost(e.target.value)}
-                          placeholder="30.00"
-                          className="w-full rounded-lg border bg-background px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-slate-700 dark:text-slate-300 truncate" title={catLabels.field3}>
-                          {catLabels.field3}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={machineCost}
-                          onChange={(e) => setMachineCost(e.target.value)}
-                          placeholder="15.00"
-                          className="w-full rounded-lg border bg-background px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-primary"
-                        />
-                      </div>
-                    </div>
-
-                    {/* DYNAMIC ADDITIONAL SUB-COSTS & INVENTORY MATERIALS */}
-                    <div className="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-background/60 p-3.5 space-y-3">
+                  <div className="sm:col-span-2 space-y-4">
+                    {/* INVENTORY PARTS */}
+                    <div className="rounded-xl border border-blue-200 bg-blue-50/40 p-3.5 space-y-3 dark:border-blue-900/50 dark:bg-blue-950/10">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <div className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                            <Package className="h-3.5 w-3.5 text-primary" />
-                            Additional Sub-Costs &amp; Inventory Material Parts
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-blue-900 dark:text-blue-200">
+                            <Package className="h-4 w-4" />
+                            Inventory Parts
                           </div>
-                          <p className="text-[11px] text-muted-foreground">
-                            Add extra consumable parts, spiral coils, PVC covers, or stock items to automatically deduct when sold.
+                          <p className="mt-0.5 text-[11px] text-muted-foreground">
+                            Select products from stock. Quantity is deducted for each service sold.
                           </p>
                         </div>
                         <button
                           type="button"
-                          onClick={addCostComponent}
-                          className="inline-flex items-center gap-1 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary hover:bg-primary/20 transition-colors"
+                          onClick={addInventoryCostComponent}
+                          className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-700"
                         >
                           <Plus className="h-3.5 w-3.5" />
-                          Add Cost Part
+                          Add Inventory Part
                         </button>
                       </div>
 
-                      {costComponents.length === 0 ? (
-                        <div className="rounded-lg border border-border/50 bg-muted/20 py-2.5 text-center text-xs text-muted-foreground">
-                          No extra sub-costs added. Click &quot;Add Cost Part&quot; to add specific parts or link to inventory items.
+                      {inventoryCostComponents.length === 0 ? (
+                        <div className="rounded-lg border border-dashed border-blue-200 bg-background/70 px-3 py-3 text-center text-xs text-muted-foreground">
+                          No inventory parts added.
                         </div>
                       ) : (
                         <div className="space-y-2">
-                          {costComponents.map((comp, idx) => (
-                            <div
-                              key={comp.id}
-                              className="rounded-lg border border-border bg-card p-2.5 shadow-2xs space-y-2"
-                            >
-                              <div className="grid gap-2 sm:grid-cols-12 items-center">
-                                {/* Component Name */}
-                                <div className="sm:col-span-4">
-                                  <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-0.5">
-                                    Part Name #{idx + 1}
-                                  </label>
+                          {inventoryCostComponents.map((component, index) => {
+                            const selectedProduct = inventoryProducts.find(
+                              (product) => String(product.id) === component.productId
+                            );
+                            return (
+                              <div key={component.id} className="rounded-lg border bg-card p-3 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-bold">Inventory Part #{index + 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setInventoryCostComponents((prev) => prev.filter((item) => item.id !== component.id))}
+                                    className="rounded-md p-1.5 text-red-500 hover:bg-red-50"
+                                    aria-label="Remove inventory part"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                                <div className="grid gap-2 sm:grid-cols-12">
+                                  <div className="sm:col-span-6">
+                                    <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Inventory Product</label>
+                                    <select
+                                      value={component.productId}
+                                      onChange={(e) => updateInventoryCostComponent(component.id, "productId", e.target.value)}
+                                      className="w-full rounded-md border bg-background px-2.5 py-2 text-xs"
+                                    >
+                                      <option value="">Select inventory product</option>
+                                      {inventoryProducts.map((product) => (
+                                        <option key={product.id} value={product.id}>
+                                          {product.code} - {product.name} (Stock: {product.stockQty})
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                  <div className="sm:col-span-3">
+                                    <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Quantity / Service</label>
+                                    <input
+                                      type="number"
+                                      min="0.001"
+                                      step="0.001"
+                                      value={component.quantity}
+                                      onChange={(e) => updateInventoryCostComponent(component.id, "quantity", e.target.value)}
+                                      className="w-full rounded-md border bg-background px-2.5 py-2 text-xs"
+                                    />
+                                  </div>
+                                  <div className="sm:col-span-3">
+                                    <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Unit Cost (Rs.)</label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={component.cost}
+                                      onChange={(e) => updateInventoryCostComponent(component.id, "cost", e.target.value)}
+                                      placeholder="0.00"
+                                      className="w-full rounded-md border bg-background px-2.5 py-2 text-xs"
+                                    />
+                                  </div>
+                                </div>
+                                {selectedProduct && (
+                                  <p className="text-[10px] text-muted-foreground">
+                                    Selected: {selectedProduct.name} · Available stock: {selectedProduct.stockQty}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* MANUAL COST PARTS */}
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-3.5 space-y-3 dark:border-emerald-900/50 dark:bg-emerald-950/10">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                            <Coins className="h-4 w-4" />
+                            Manual Cost Parts
+                          </div>
+                          <p className="mt-0.5 text-[11px] text-muted-foreground">
+                            Add expenses that are not linked to inventory stock.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={addManualCostComponent}
+                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Add Manual Cost
+                        </button>
+                      </div>
+
+                      {manualCostComponents.length === 0 ? (
+                        <div className="rounded-lg border border-dashed border-emerald-200 bg-background/70 px-3 py-3 text-center text-xs text-muted-foreground">
+                          No manual costs added.
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {manualCostComponents.map((component, index) => (
+                            <div key={component.id} className="rounded-lg border bg-card p-3">
+                              <div className="mb-2 flex items-center justify-between">
+                                <span className="text-xs font-bold">Manual Cost #{index + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setManualCostComponents((prev) => prev.filter((item) => item.id !== component.id))}
+                                  className="rounded-md p-1.5 text-red-500 hover:bg-red-50"
+                                  aria-label="Remove manual cost"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Cost Name</label>
                                   <input
                                     type="text"
-                                    value={comp.name}
-                                    onChange={(e) => updateCostComponent(comp.id, "name", e.target.value)}
-                                    placeholder="e.g. PVC Cover, Spiral 10mm"
-                                    className="w-full rounded-md border bg-background px-2.5 py-1 text-xs font-semibold outline-none focus:ring-1 focus:ring-primary"
+                                    value={component.name}
+                                    onChange={(e) => updateManualCostComponent(component.id, "name", e.target.value)}
+                                    placeholder="e.g. Glue, Labour, Extra Fee"
+                                    className="w-full rounded-md border bg-background px-2.5 py-2 text-xs"
                                   />
                                 </div>
-
-                                {/* Component Cost */}
-                                <div className="sm:col-span-2">
-                                  <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-0.5">
-                                    Cost (Rs.)
-                                  </label>
+                                <div>
+                                  <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Cost per Service (Rs.)</label>
                                   <input
                                     type="number"
                                     min="0"
                                     step="0.01"
-                                    value={comp.cost}
-                                    onChange={(e) => updateCostComponent(comp.id, "cost", e.target.value)}
+                                    value={component.cost}
+                                    onChange={(e) => updateManualCostComponent(component.id, "cost", e.target.value)}
                                     placeholder="0.00"
-                                    className="w-full rounded-md border bg-background px-2.5 py-1 text-xs font-bold outline-none focus:ring-1 focus:ring-primary"
+                                    className="w-full rounded-md border bg-background px-2.5 py-2 text-xs"
                                   />
-                                </div>
-
-                                {/* Linked Inventory Product */}
-                                <div className="sm:col-span-4">
-                                  <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-0.5">
-                                    Deduct from Stock
-                                  </label>
-                                  <select
-                                    value={comp.productId}
-                                    onChange={(e) => updateCostComponent(comp.id, "productId", e.target.value)}
-                                    className="w-full rounded-md border bg-background px-2 py-1 text-xs font-medium outline-none focus:ring-1 focus:ring-primary"
-                                  >
-                                    <option value="">-- No Inventory Link --</option>
-                                    {inventoryProducts.map((p) => (
-                                      <option key={p.id} value={p.id}>
-                                        {p.name} (Stock: {p.stockQty})
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                {/* Quantity & Delete */}
-                                <div className="sm:col-span-2 flex items-end gap-1.5">
-                                  <div className="flex-1">
-                                    <label className="block text-[10px] font-bold text-muted-foreground uppercase mb-0.5 text-center">
-                                      Qty / Srv
-                                    </label>
-                                    <input
-                                      type="number"
-                                      min="1"
-                                      step="1"
-                                      value={comp.quantity}
-                                      onChange={(e) => updateCostComponent(comp.id, "quantity", e.target.value)}
-                                      placeholder="1"
-                                      className="w-full rounded-md border bg-background px-2 py-1 text-xs font-bold outline-none focus:ring-1 focus:ring-primary text-center"
-                                    />
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => removeCostComponent(comp.id)}
-                                    className="p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                                    title="Remove part"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -1851,18 +1965,16 @@ export default function ServicesClient() {
                           </div>
                           <div className="text-xs text-emerald-800 dark:text-emerald-400">
                             Selling Rs. {livePrice.toFixed(2)} - Total Cost Rs. {liveTotalCost.toFixed(2)}
-                            {" "}(Base: Rs. {liveBaseCost.toFixed(2)}
-                            {costComponents.length > 0 ? ` + ${costComponents.length} Parts: Rs. ${liveCustomCost.toFixed(2)}` : ""})
+                            {" "}(Inventory: Rs. {liveInventoryCost.toFixed(2)} + Manual: Rs. {liveManualCost.toFixed(2)})
                           </div>
                         </div>
 
                         <div className="text-right">
                           <div
-                            className={`text-xl font-black ${
-                              liveNetProfit >= 0
+                            className={`text-xl font-black ${liveNetProfit >= 0
                                 ? "text-emerald-700 dark:text-emerald-300"
                                 : "text-rose-600 dark:text-rose-400"
-                            }`}
+                              }`}
                           >
                             {liveNetProfit >= 0 ? "+" : ""}Rs. {liveNetProfit.toFixed(2)}
                           </div>
@@ -1940,7 +2052,7 @@ export default function ServicesClient() {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {statusService?.status ===
-              "ACTIVE"
+                "ACTIVE"
                 ? "Deactivate Service?"
                 : "Activate Service?"}
             </AlertDialogTitle>
@@ -1948,7 +2060,7 @@ export default function ServicesClient() {
             <AlertDialogDescription>
               Are you sure you want to{" "}
               {statusService?.status ===
-              "ACTIVE"
+                "ACTIVE"
                 ? "deactivate"
                 : "activate"}{" "}
               <strong>
@@ -1977,7 +2089,7 @@ export default function ServicesClient() {
               {saving
                 ? "Updating..."
                 : statusService?.status ===
-                    "ACTIVE"
+                  "ACTIVE"
                   ? "Deactivate"
                   : "Activate"}
             </AlertDialogAction>

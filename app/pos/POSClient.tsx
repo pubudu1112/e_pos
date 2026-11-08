@@ -690,8 +690,8 @@ export default function POSClient() {
       const currentPrice = existingInCart ? existingInCart.price : item.price;
       const original =
         existingInCart &&
-        "originalPrice" in existingInCart &&
-        typeof existingInCart.originalPrice === "number"
+          "originalPrice" in existingInCart &&
+          typeof existingInCart.originalPrice === "number"
           ? existingInCart.originalPrice
           : item.price;
 
@@ -1063,11 +1063,10 @@ export default function POSClient() {
               <span><strong>CUSTOMER:</strong> ${bill.customerName}</span>
               <span>${bill.time}</span>
             </div>
-            ${
-              bill.customerPhone
-                ? `<div class="meta-row"><span><strong>TEL:</strong> ${bill.customerPhone}</span></div>`
-                : ""
-            }
+            ${bill.customerPhone
+          ? `<div class="meta-row"><span><strong>TEL:</strong> ${bill.customerPhone}</span></div>`
+          : ""
+        }
             <div class="meta-row">
               <span><strong>PAYMENT:</strong> ${bill.paymentMethod}</span>
               <span><strong>CASHIER:</strong> POS Terminal</span>
@@ -1097,23 +1096,20 @@ export default function POSClient() {
               <span>Subtotal</span>
               <span>${formatRs(bill.subtotal)}</span>
             </div>
-            ${
-              bill.tax > 0
-                ? `<div class="summary-row"><span>Tax</span><span>${formatRs(bill.tax)}</span></div>`
-                : ""
-            }
-            ${
-              bill.discount > 0
-                ? `<div class="summary-row" style="color: #c00;"><span>Discount</span><span>- ${formatRs(bill.discount)}</span></div>`
-                : ""
-            }
+            ${bill.tax > 0
+          ? `<div class="summary-row"><span>Tax</span><span>${formatRs(bill.tax)}</span></div>`
+          : ""
+        }
+            ${bill.discount > 0
+          ? `<div class="summary-row" style="color: #c00;"><span>Discount</span><span>- ${formatRs(bill.discount)}</span></div>`
+          : ""
+        }
             <div class="total-row">
               <span>NET TOTAL</span>
               <span>${formatRs(bill.total)}</span>
             </div>
-            ${
-              bill.paymentMethod === "CASH"
-                ? `
+            ${bill.paymentMethod === "CASH"
+          ? `
                 <div class="summary-row" style="margin-top: 4px;">
                   <span>Cash Tendered</span>
                   <span>${formatRs(bill.cashTendered)}</span>
@@ -1123,33 +1119,32 @@ export default function POSClient() {
                   <span><strong>${formatRs(bill.changeAmount)}</strong></span>
                 </div>
               `
-                : ""
-            }
+          : ""
+        }
           </div>
 
           <div class="divider"></div>
 
-          ${
-            bill.warranties && bill.warranties.length > 0
-              ? `
+          ${bill.warranties && bill.warranties.length > 0
+          ? `
               <div style="margin: 8px 0; padding: 6px 8px; border: 1px dashed #059669; background: #ecfdf5; border-radius: 4px; font-size: 10px;">
                 <div style="font-weight: bold; color: #065f46; text-transform: uppercase; margin-bottom: 4px; font-size: 9px; letter-spacing: 0.5px;">Official Warranty Issued</div>
                 ${bill.warranties
-                  .map(
-                    (w) => `
+            .map(
+              (w) => `
                   <div style="margin-bottom: 4px; border-bottom: 1px dotted #a7f3d0; padding-bottom: 3px;">
                     <div><strong>Code:</strong> ${w.warrantyCode} (${w.durationMonths} Months)</div>
                     <div><strong>Item:</strong> ${w.productName}</div>
                     <div><strong>Expires:</strong> ${w.expiryDate}</div>
                   </div>
                 `
-                  )
-                  .join("")}
+            )
+            .join("")}
               </div>
               <div class="divider"></div>
             `
-              : ""
-          }
+          : ""
+        }
 
           <div class="footer">
             <strong>Thank you for choosing Pubudu Creative Hub!</strong><br />
@@ -1331,41 +1326,37 @@ export default function POSClient() {
             <button
               type="button"
               onClick={() => setSelectedCategory("All")}
-              className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${
-                selectedCategory === "All"
+              className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${selectedCategory === "All"
                   ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
                   : "bg-slate-50 text-slate-700 hover:bg-slate-100"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                    selectedCategory === "All"
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${selectedCategory === "All"
                       ? "bg-white/20 text-white"
                       : "bg-white text-slate-700 shadow-sm"
-                  }`}
+                    }`}
                 >
                   <Layers className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold">All Resources</p>
                   <p
-                    className={`truncate text-[10px] ${
-                      selectedCategory === "All"
+                    className={`truncate text-[10px] ${selectedCategory === "All"
                         ? "text-slate-300"
                         : "text-slate-400"
-                    }`}
+                      }`}
                   >
                     Entire Catalog
                   </p>
                 </div>
               </div>
               <span
-                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                  selectedCategory === "All"
+                className={`rounded-full px-2 py-0.5 text-[10px] font-black ${selectedCategory === "All"
                     ? "bg-white/20 text-white"
                     : "bg-white text-slate-700 shadow-sm"
-                }`}
+                  }`}
               >
                 {items.length}
               </span>
@@ -1379,39 +1370,35 @@ export default function POSClient() {
                   key={cat.name}
                   type="button"
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${
-                    isSelected
+                  className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${isSelected
                       ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/15"
                       : "border border-slate-100 bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-                        isSelected
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isSelected
                           ? "bg-white/20 text-white"
                           : `${cat.colorScheme.bg} ${cat.colorScheme.text}`
-                      }`}
+                        }`}
                     >
                       {renderCategoryIcon(cat.name, "h-4 w-4")}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold">{cat.name}</p>
                       <p
-                        className={`truncate text-[10px] ${
-                          isSelected ? "text-emerald-100" : "text-slate-400"
-                        }`}
+                        className={`truncate text-[10px] ${isSelected ? "text-emerald-100" : "text-slate-400"
+                          }`}
                       >
                         {cat.description}
                       </p>
                     </div>
                   </div>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
-                      isSelected
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-black ${isSelected
                         ? "bg-white/20 text-white"
                         : `${cat.colorScheme.badgeBg}`
-                    }`}
+                      }`}
                   >
                     {cat.count}
                   </span>
@@ -1458,11 +1445,10 @@ export default function POSClient() {
             <button
               type="button"
               onClick={() => setSelectedCategory("All")}
-              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${
-                selectedCategory === "All"
+              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${selectedCategory === "All"
                   ? "bg-slate-900 text-white shadow-sm"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-              }`}
+                }`}
             >
               <Layers className="h-3 w-3" />
               <span>All ({items.length})</span>
@@ -1474,11 +1460,10 @@ export default function POSClient() {
                   key={cat.name}
                   type="button"
                   onClick={() => setSelectedCategory(cat.name)}
-                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${
-                    isSelected
+                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${isSelected
                       ? "bg-emerald-600 text-white shadow-sm"
                       : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 hover:opacity-90`
-                  }`}
+                    }`}
                 >
                   {renderCategoryIcon(cat.name, "h-3 w-3")}
                   <span>{cat.name}</span>
@@ -1532,11 +1517,10 @@ export default function POSClient() {
                     <div
                       key={`${item.type}-${item.id}`}
                       onClick={() => !isOutOfStock && addToCart(item)}
-                      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-3.5 shadow-sm transition-all duration-150 ${
-                        isOutOfStock
+                      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
                           ? "cursor-not-allowed opacity-60 border-slate-200"
                           : "cursor-pointer border-slate-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
-                      } ${inCartQty > 0 ? "ring-2 ring-emerald-500/80 border-emerald-500" : ""}`}
+                        } ${inCartQty > 0 ? "ring-2 ring-emerald-500/80 border-emerald-500" : ""}`}
                     >
                       {/* Top Badges */}
                       <div className="flex items-start justify-between gap-1.5">
@@ -1559,6 +1543,13 @@ export default function POSClient() {
                         <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 group-hover:text-emerald-700">
                           {item.name}
                         </h4>
+
+                        {item.brand?.trim() && (
+                          <p className="mt-1 text-[11px] font-bold text-blue-600">
+                            {item.brand}
+                          </p>
+                        )}
+
                         <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400">
                           <span>{item.code}</span>
                           {item.unit && <span>• {item.unit}</span>}
@@ -1617,11 +1608,10 @@ export default function POSClient() {
                               e.stopPropagation();
                               addToCart(item);
                             }}
-                            className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${
-                              isOutOfStock
+                            className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
                                 ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                                 : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
-                            }`}
+                              }`}
                             title="Add to order"
                           >
                             <Plus className="h-4 w-4" />
@@ -1718,10 +1708,17 @@ export default function POSClient() {
                   <div key={itemKey} className="p-3.5 hover:bg-slate-50/50">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-bold text-slate-900">
-                          {item.name}
-                        </p>
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-slate-900">
+                            {item.name}
+                          </p>
 
+                          {item.brand?.trim() && (
+                            <p className="mt-0.5 text-[10px] font-semibold text-blue-600">
+                              Brand: {item.brand}
+                            </p>
+                          )}
+                        </div>
                         {/* Inline Unit Price Editor */}
                         {isEditingThisPrice ? (
                           <div className="mt-1.5 flex items-center gap-1.5">
@@ -1793,22 +1790,20 @@ export default function POSClient() {
                         {item.type === "PRODUCT" && (
                           <div className="mt-1.5 flex items-center gap-1.5">
                             <ShieldCheck
-                              className={`h-3.5 w-3.5 shrink-0 ${
-                                (item.warrantyMonths ?? 0) > 0
+                              className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
                                   ? "text-emerald-600"
                                   : "text-slate-400"
-                              }`}
+                                }`}
                             />
                             <select
                               value={item.warrantyMonths ?? 0}
                               onChange={(e) =>
                                 updateItemWarranty(item, Number(e.target.value))
                               }
-                              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${
-                                (item.warrantyMonths ?? 0) > 0
+                              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
                                   ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
                                   : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                              }`}
+                                }`}
                               title="Set product warranty duration"
                             >
                               <option value="0">No Warranty</option>
@@ -2081,7 +2076,17 @@ export default function POSClient() {
                     <div key={itemKey} className="p-3.5 hover:bg-slate-50/50">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-bold text-slate-900">{item.name}</p>
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-bold text-slate-900">
+                              {item.name}
+                            </p>
+
+                            {item.brand?.trim() && (
+                              <p className="mt-0.5 text-[10px] font-semibold text-blue-600">
+                                Brand: {item.brand}
+                              </p>
+                            )}
+                          </div>
 
                           {/* Editable unit price */}
                           {isEditingThisPrice ? (
@@ -2154,22 +2159,20 @@ export default function POSClient() {
                           {item.type === "PRODUCT" && (
                             <div className="mt-1.5 flex items-center gap-1.5">
                               <ShieldCheck
-                                className={`h-3.5 w-3.5 shrink-0 ${
-                                  (item.warrantyMonths ?? 0) > 0
+                                className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
                                     ? "text-emerald-600"
                                     : "text-slate-400"
-                                }`}
+                                  }`}
                               />
                               <select
                                 value={item.warrantyMonths ?? 0}
                                 onChange={(e) =>
                                   updateItemWarranty(item, Number(e.target.value))
                                 }
-                                className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${
-                                  (item.warrantyMonths ?? 0) > 0
+                                className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
                                     ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
                                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                                }`}
+                                  }`}
                                 title="Set product warranty duration"
                               >
                                 <option value="0">No Warranty</option>
@@ -2371,11 +2374,10 @@ export default function POSClient() {
                         key={pm.id}
                         type="button"
                         onClick={() => setPaymentMethod(pm.id as PaymentMethodType)}
-                        className={`flex items-center gap-2 rounded-xl border p-2 text-xs font-bold transition ${
-                          isSelected
+                        className={`flex items-center gap-2 rounded-xl border p-2 text-xs font-bold transition ${isSelected
                             ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20"
                             : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="truncate">{pm.label}</span>
@@ -2945,13 +2947,12 @@ export default function POSClient() {
                 const diff = val - priceEditModalItem.originalPrice;
                 const pctDiff = priceEditModalItem.originalPrice > 0 ? (diff / priceEditModalItem.originalPrice) * 100 : 0;
                 return (
-                  <div className={`rounded-xl p-3 border text-xs ${
-                    diff === 0
+                  <div className={`rounded-xl p-3 border text-xs ${diff === 0
                       ? "bg-slate-50 border-slate-200 text-slate-600"
                       : diff < 0
                         ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                         : "bg-blue-50 border-blue-200 text-blue-800"
-                  }`}>
+                    }`}>
                     <div className="flex justify-between items-center font-bold">
                       <span>Rate Difference:</span>
                       <span className="text-sm font-black">

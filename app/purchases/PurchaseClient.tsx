@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     CalendarDays,
     PackagePlus,
@@ -83,10 +83,13 @@ type PurchaseRecord = {
 };
 
 export default function PurchaseClient() {
+
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
 
     const [supplierId, setSupplierId] = useState<number | "">("");
+    const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
+    const productSearchRef = useRef<HTMLDivElement>(null);
     const [purchaseDate, setPurchaseDate] = useState(
         new Date().toISOString().split("T")[0]
     );
@@ -123,6 +126,23 @@ export default function PurchaseClient() {
     const [additionalPaymentReference, setAdditionalPaymentReference] = useState("");
     const [additionalPaymentNote, setAdditionalPaymentNote] = useState("");
     const [paymentSaving, setPaymentSaving] = useState(false);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                productSearchRef.current &&
+                !productSearchRef.current.contains(event.target as Node)
+            ) {
+                setIsProductDropdownOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         loadSuppliers();
@@ -223,26 +243,40 @@ export default function PurchaseClient() {
             return products;
         }
 
-        return products.filter(
-            (product) =>
-                product.name.toLowerCase().includes(value) ||
-                product.code.toLowerCase().includes(value)
-        );
+        return products.filter((product) => {
+            const productName = product.name.toLowerCase();
+            const productCode = product.code.toLowerCase();
+            const fullName =
+                `${product.code} - ${product.name}`.toLowerCase();
+
+            return (
+                productName.includes(value) ||
+                productCode.includes(value) ||
+                fullName.includes(value)
+            );
+        });
     }, [products, search]);
 
     function handleProductChange(productId: number | "") {
         setSelectedProductId(productId);
 
         if (productId === "") {
+            setSearch("");
             setUnitPrice(0);
+            setIsProductDropdownOpen(false);
             return;
         }
 
-        const product = products.find((item) => item.id === productId);
+        const product = products.find(
+            (item) => item.id === productId
+        );
 
         if (product) {
+            setSearch(`${product.code} - ${product.name}`);
             setUnitPrice(product.purchasePrice);
         }
+
+        setIsProductDropdownOpen(false);
     }
 
     function addItem() {
@@ -301,10 +335,11 @@ export default function PurchaseClient() {
         }
 
         setSelectedProductId("");
+        setSearch("");
+        setIsProductDropdownOpen(false);
         setQuantity(1);
         setUnitPrice(0);
         setItemDiscount(0);
-        setSearch("");
     }
 
     function removeItem(productId: number) {
@@ -643,17 +678,83 @@ export default function PurchaseClient() {
                             Search Product
                         </label>
 
-                        <div className="relative">
+                        <div className="relative" ref={productSearchRef}>
                             <Search className="pointer-events-none absolute left-3 top-3 h-5 w-5 text-slate-400" />
 
                             <input
+                                type="text"
                                 value={search}
-                                onChange={(event) =>
-                                    setSearch(event.target.value)
-                                }
-                                placeholder="Search code or product..."
-                                className="h-11 w-full rounded-xl border border-slate-300 pl-10 pr-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                onFocus={() => setIsProductDropdownOpen(true)}
+                                onChange={(event) => {
+                                    setSearch(event.target.value);
+                                    setIsProductDropdownOpen(true);
+                                    setSelectedProductId("");
+                                    setUnitPrice(0);
+                                }}
+                                placeholder="Search product name or code..."
+                                autoComplete="off"
+                                className="h-11 w-full rounded-xl border border-slate-300 pl-10 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                             />
+
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearch("");
+                                        setSelectedProductId("");
+                                        setUnitPrice(0);
+                                        setIsProductDropdownOpen(true);
+                                    }}
+                                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-700"
+                                >
+                                    <X className="h-5 w-5" />
+                                </button>
+                            )}
+
+                            {isProductDropdownOpen && (
+                                <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+
+                                    {filteredProducts.length === 0 ? (
+                                        <div className="px-4 py-6 text-center text-sm text-slate-400">
+                                            No products found.
+                                        </div>
+                                    ) : (
+                                        filteredProducts.map((product) => (
+                                            <button
+                                                key={product.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    handleProductChange(product.id);
+                                                }}
+                                                className={`flex w-full items-center justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-0 hover:bg-emerald-50 ${selectedProductId === product.id
+                                                    ? "bg-emerald-50"
+                                                    : ""
+                                                    }`}
+                                            >
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-bold text-slate-800">
+                                                        {product.name}
+                                                    </p>
+
+                                                    <p className="mt-1 text-xs text-slate-400">
+                                                        {product.code}
+                                                    </p>
+                                                </div>
+
+                                                <div className="ml-3 shrink-0 text-right">
+                                                    <p className="text-xs font-bold text-emerald-700">
+                                                        Rs. {formatMoney(product.purchasePrice)}
+                                                    </p>
+
+                                                    <p className="mt-1 text-[10px] text-slate-400">
+                                                        Stock: {product.stock}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -664,18 +765,18 @@ export default function PurchaseClient() {
 
                         <select
                             value={selectedProductId}
-                            onChange={(event) =>
-                                handleProductChange(
-                                    event.target.value
-                                        ? Number(event.target.value)
-                                        : ""
-                                )
-                            }
+                            onChange={(event) => {
+                                const productId = event.target.value
+                                    ? Number(event.target.value)
+                                    : "";
+
+                                handleProductChange(productId);
+                            }}
                             className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                         >
                             <option value="">Select product</option>
 
-                            {filteredProducts.map((product) => (
+                            {products.map((product) => (
                                 <option
                                     key={product.id}
                                     value={product.id}

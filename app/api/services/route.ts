@@ -2,10 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
-import {
-  parseServiceDescription,
-  serializeServiceDescription,
-} from "@/lib/services/service-helpers";
 
 // ============================================================
 // DEFAULT SERVICES SEED (Photocopy, Printing, Binding, Laminating)
@@ -193,6 +189,99 @@ const DEFAULT_PRINTING_SERVICES = [
   },
 ];
 
+
+// ============================================================
+// COST COMPONENT VALIDATION
+// ============================================================
+
+type NormalizedCostComponent = {
+  costType: "INVENTORY" | "MANUAL";
+  name: string;
+  productId: number | null;
+  quantity: number;
+  cost: number;
+};
+
+async function validateCostComponents(
+  rawComponents: unknown
+): Promise<{ data?: NormalizedCostComponent[]; error?: string }> {
+  if (rawComponents === undefined || rawComponents === null) {
+    return { data: [] };
+  }
+
+  if (!Array.isArray(rawComponents)) {
+    return { error: "Cost components must be an array." };
+  }
+
+  const normalized: NormalizedCostComponent[] = [];
+  const inventoryProductIds: number[] = [];
+
+  for (let index = 0; index < rawComponents.length; index++) {
+    const component = rawComponents[index];
+
+    if (!component || typeof component !== "object") {
+      return { error: `Invalid cost component at row ${index + 1}.` };
+    }
+
+    const costType = component.costType;
+    const name = typeof component.name === "string" ? component.name.trim() : "";
+    const cost = Number(component.cost);
+
+    if (costType !== "INVENTORY" && costType !== "MANUAL") {
+      return { error: `Invalid cost type at row ${index + 1}.` };
+    }
+    if (!name) {
+      return { error: `Cost component name is required at row ${index + 1}.` };
+    }
+    if (!Number.isFinite(cost) || cost < 0) {
+      return { error: `Valid non-negative cost is required at row ${index + 1}.` };
+    }
+
+    if (costType === "INVENTORY") {
+      const productId = Number(component.productId);
+      const quantity = Number(component.quantity);
+
+      if (!Number.isInteger(productId) || productId <= 0) {
+        return { error: `Select a valid inventory product at row ${index + 1}.` };
+      }
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        return { error: `Quantity must be greater than zero at row ${index + 1}.` };
+      }
+
+      inventoryProductIds.push(productId);
+      normalized.push({ costType, name, productId, quantity, cost });
+    } else {
+      normalized.push({ costType, name, productId: null, quantity: 1, cost });
+    }
+  }
+
+  const uniqueProductIds = [...new Set(inventoryProductIds)];
+  if (uniqueProductIds.length > 0) {
+    const products = await prisma.product.findMany({
+      where: { id: { in: uniqueProductIds }, status: "ACTIVE" },
+      select: { id: true },
+    });
+
+    const validIds = new Set(products.map((product) => product.id));
+    const missingId = uniqueProductIds.find((id) => !validIds.has(id));
+    if (missingId !== undefined) {
+      return { error: `Inventory product ID ${missingId} was not found or is inactive.` };
+    }
+  }
+
+  return { data: normalized };
+}
+
+function parseNonNegativeCost(value: unknown, fieldName: string): number {
+  const parsed =
+    value === undefined || value === null || value === "" ? 0 : Number(value);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new Error(`${fieldName} must be a valid non-negative number.`);
+  }
+  return parsed;
+}
+
 async function ensureDefaultServicesSeeded() {
   try {
     for (const item of DEFAULT_PRINTING_SERVICES) {
@@ -303,6 +392,17 @@ export async function GET() {
               rate: true,
             },
           },
+          costComponents: {
+  include: {
+    product: {
+      select: {
+        id: true,
+        code: true,
+        name: true,
+      },
+    },
+  },
+},
         },
         orderBy: {
           name: "asc",
@@ -317,6 +417,7 @@ export async function GET() {
           code: true,
           name: true,
           sellingPrice: true,
+          purchasePrice: true,
           stock: {
             select: {
               quantity: true,
@@ -329,51 +430,49 @@ export async function GET() {
       }),
     ]);
 
-    const enrichedServices = services.map((s) => {
-      const basePrice = Number(s.basePrice || 0);
-      const paperCost = Number(s.paperCost || 0);
-      const tonerCost = Number(s.tonerCost || 0);
-      const machineCost = Number(s.machineCost || 0);
-      const parsedDesc = parseServiceDescription(s.description);
-      const customCost = parsedDesc.costComponents.reduce(
-        (sum, c) => sum + (Number(c.cost) || 0),
-        0
-      );
-      const totalCost = paperCost + tonerCost + machineCost + customCost;
-      const netProfit = basePrice - totalCost;
-      const marginPercent =
-        basePrice > 0 ? (netProfit / basePrice) * 100 : 0;
+   const enrichedServices = services.map((s) => {
+  const basePrice = Number(s.basePrice || 0);
 
-      return {
-        id: s.id,
-        code: s.code,
-        name: s.name,
-        description: parsedDesc.notes,
-        rawDescription: s.description,
-        costComponents: parsedDesc.costComponents,
-        customCost,
-        categoryId: s.categoryId,
-        taxId: s.taxId,
-        basePrice,
-        paperCost,
-        tonerCost,
-        machineCost,
-        totalCost,
-        netProfit,
-        marginPercent: Math.round(marginPercent * 10) / 10,
-        status: s.status,
-        createdAt: s.createdAt.toISOString(),
-        updatedAt: s.updatedAt.toISOString(),
-        servicecategory: s.servicecategory,
-        tax: s.tax
-          ? {
-              id: s.tax.id,
-              name: s.tax.name,
-              rate: Number(s.tax.rate),
-            }
-          : null,
-      };
-    });
+  const costComponents = s.costComponents.map((c) => ({
+    id: String(c.id),
+    costType: c.costType,
+    name: c.name,
+    cost: Number(c.unitCost),
+    productId: c.productId,
+    productName: c.product?.name ?? null,
+    quantity: Number(c.quantity),
+  }));
+
+  const inventoryCost = costComponents
+    .filter((c) => c.costType === "INVENTORY")
+    .reduce((sum, c) => sum + c.cost * c.quantity, 0);
+
+  const manualCost = costComponents
+    .filter((c) => c.costType === "MANUAL")
+    .reduce((sum, c) => sum + c.cost, 0);
+
+  const totalCost = inventoryCost + manualCost;
+
+  const netProfit = basePrice - totalCost;
+
+  return {
+    ...s,
+    description: s.description,
+    costComponents,
+    inventoryCost,
+    manualCost,
+    totalCost,
+    netProfit,
+    marginPercent:
+      basePrice > 0
+        ? Math.round((netProfit / basePrice) * 1000) / 10
+        : 0,
+    basePrice,
+    paperCost: Number(s.paperCost || 0),
+    tonerCost: Number(s.tonerCost || 0),
+    machineCost: Number(s.machineCost || 0),
+  };
+});
 
     return NextResponse.json({
       success: true,
@@ -383,6 +482,7 @@ export async function GET() {
         code: p.code,
         name: p.name,
         sellingPrice: Number(p.sellingPrice),
+        purchasePrice: Number(p.purchasePrice ?? 0),
         stockQty: p.stock ? Number(p.stock.quantity) : 0,
       })),
     });
@@ -449,18 +549,11 @@ export async function POST(request: Request) {
         : Number(body.taxId);
 
     const basePrice = Number(body.basePrice);
-    const paperCost =
-      body.paperCost !== undefined && body.paperCost !== null
-        ? Math.max(0, Number(body.paperCost))
-        : 0;
-    const tonerCost =
-      body.tonerCost !== undefined && body.tonerCost !== null
-        ? Math.max(0, Number(body.tonerCost))
-        : 0;
-    const machineCost =
-      body.machineCost !== undefined && body.machineCost !== null
-        ? Math.max(0, Number(body.machineCost))
-        : 0;
+    // Legacy cost columns are retained for database compatibility.
+    // New service costs are maintained only through Inventory and Manual components.
+    const paperCost = 0;
+    const tonerCost = 0;
+    const machineCost = 0;
 
     // Validation
     if (!code) {
@@ -534,76 +627,164 @@ export async function POST(request: Request) {
       );
     }
 
-    const costComponents = Array.isArray(body.costComponents)
-      ? body.costComponents
-      : [];
-    const serializedDescription = serializeServiceDescription(
-      typeof body.description === "string" ? body.description : "",
-      costComponents
-    );
+    if (taxId !== null) {
+      if (!Number.isInteger(taxId) || taxId <= 0) {
+        return NextResponse.json(
+          { success: false, message: "Valid tax ID is required." },
+          { status: 400 }
+        );
+      }
 
-    // Create service
-    const service = await prisma.service.create({
-      data: {
-        code,
-        name,
-        description: serializedDescription,
-        categoryId,
-        taxId,
-        basePrice,
-        paperCost,
-        tonerCost,
-        machineCost,
-        status: "ACTIVE",
-        updatedAt: new Date(),
+      const tax = await prisma.tax.findUnique({
+        where: { id: taxId },
+        select: { id: true },
+      });
+
+      if (!tax) {
+        return NextResponse.json(
+          { success: false, message: "Tax record not found." },
+          { status: 404 }
+        );
+      }
+    }
+
+// Create service with Cost Components
+const validatedComponents = await validateCostComponents(body.costComponents);
+
+if (validatedComponents.error) {
+  return NextResponse.json(
+    { success: false, message: validatedComponents.error },
+    { status: 400 }
+  );
+}
+
+const costComponents = validatedComponents.data ?? [];
+
+const service = await prisma.service.create({
+  data: {
+    code,
+    name,
+    description,
+    categoryId,
+    taxId,
+    basePrice,
+    paperCost,
+    tonerCost,
+    machineCost,
+    status: "ACTIVE",
+    updatedAt: new Date(),
+
+    // Save cost components into ServiceCostComponent table
+    costComponents: {
+      create: costComponents.map((c: any) => ({
+        costType: c.costType,
+        name: String(c.name || "").trim(),
+        productId:
+          c.costType === "INVENTORY" && c.productId
+            ? Number(c.productId)
+            : null,
+        quantity:
+          c.costType === "INVENTORY"
+            ? Math.max(0, Number(c.quantity) || 0)
+            : 1,
+        unitCost: Math.max(0, Number(c.cost) || 0),
+      })),
+    },
+  },
+
+  include: {
+    servicecategory: {
+      select: {
+        id: true,
+        name: true,
       },
+    },
+    tax: {
+      select: {
+        id: true,
+        name: true,
+        rate: true,
+      },
+    },
+    costComponents: {
       include: {
-        servicecategory: {
+        product: {
           select: {
             id: true,
+            code: true,
             name: true,
           },
         },
-        tax: {
-          select: {
-            id: true,
-            name: true,
-            rate: true,
-          },
-        },
       },
-    });
+    },
+  },
+});
 
-    const customCost = costComponents.reduce(
-      (sum: number, c: any) => sum + (Math.max(0, Number(c.cost)) || 0),
-      0
-    );
-    const totalCost = paperCost + tonerCost + machineCost + customCost;
-    const netProfit = basePrice - totalCost;
-    const marginPercent =
-      basePrice > 0 ? (netProfit / basePrice) * 100 : 0;
+// Calculate Inventory Cost
+const inventoryCost = costComponents
+  .filter((c: any) => c.costType === "INVENTORY")
+  .reduce(
+    (sum: number, c: any) =>
+      sum +
+      (Math.max(0, Number(c.cost)) || 0) *
+        (Math.max(0, Number(c.quantity)) || 0),
+    0
+  );
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Service created successfully.",
-        data: {
-          ...service,
-          description: description || null,
-          rawDescription: service.description,
-          costComponents,
-          customCost,
-          basePrice: Number(service.basePrice),
-          paperCost: Number(service.paperCost),
-          tonerCost: Number(service.tonerCost),
-          machineCost: Number(service.machineCost),
-          totalCost,
-          netProfit,
-          marginPercent: Math.round(marginPercent * 10) / 10,
-        },
-      },
-      { status: 201 }
-    );
+// Calculate Manual Cost
+const manualCost = costComponents
+  .filter((c: any) => c.costType === "MANUAL")
+  .reduce(
+    (sum: number, c: any) =>
+      sum + (Math.max(0, Number(c.cost)) || 0),
+    0
+  );
+
+// Total cost is based only on Inventory and Manual components.
+const totalCost = inventoryCost + manualCost;
+
+// Profit Calculation
+const netProfit = basePrice - totalCost;
+
+const marginPercent =
+  basePrice > 0
+    ? (netProfit / basePrice) * 100
+    : 0;
+
+// Return Response
+return NextResponse.json(
+  {
+    success: true,
+    message: "Service created successfully.",
+    data: {
+      ...service,
+
+      description: description || null,
+
+      costComponents: service.costComponents.map((c) => ({
+        id: String(c.id),
+        costType: c.costType,
+        name: c.name,
+        productId: c.productId,
+        productName: c.product?.name ?? null,
+        quantity: Number(c.quantity),
+        cost: Number(c.unitCost),
+      })),
+
+      basePrice: Number(service.basePrice),
+      paperCost: Number(service.paperCost),
+      tonerCost: Number(service.tonerCost),
+      machineCost: Number(service.machineCost),
+
+      inventoryCost,
+      manualCost,
+      totalCost,
+      netProfit,
+      marginPercent: Math.round(marginPercent * 10) / 10,
+    },
+  },
+  { status: 201 }
+  );
   } catch (error) {
     console.error("CREATE SERVICE ERROR:", error);
 
@@ -668,18 +849,11 @@ export async function PUT(request: Request) {
         : Number(body.taxId);
 
     const basePrice = Number(body.basePrice);
-    const paperCost =
-      body.paperCost !== undefined && body.paperCost !== null
-        ? Math.max(0, Number(body.paperCost))
-        : 0;
-    const tonerCost =
-      body.tonerCost !== undefined && body.tonerCost !== null
-        ? Math.max(0, Number(body.tonerCost))
-        : 0;
-    const machineCost =
-      body.machineCost !== undefined && body.machineCost !== null
-        ? Math.max(0, Number(body.machineCost))
-        : 0;
+    // Legacy cost columns are retained for database compatibility.
+    // New service costs are maintained only through Inventory and Manual components.
+    const paperCost = 0;
+    const tonerCost = 0;
+    const machineCost = 0;
 
     const status =
       body.status === "INACTIVE" ? "INACTIVE" : "ACTIVE";
@@ -724,6 +898,46 @@ export async function PUT(request: Request) {
       );
     }
 
+    if (!Number.isInteger(categoryId) || categoryId <= 0) {
+      return NextResponse.json(
+        { success: false, message: "Valid service category is required." },
+        { status: 400 }
+      );
+    }
+
+    const category = await prisma.servicecategory.findUnique({
+      where: { id: categoryId },
+      select: { id: true },
+    });
+
+    if (!category) {
+      return NextResponse.json(
+        { success: false, message: "Service category not found." },
+        { status: 404 }
+      );
+    }
+
+    if (taxId !== null) {
+      if (!Number.isInteger(taxId) || taxId <= 0) {
+        return NextResponse.json(
+          { success: false, message: "Valid tax ID is required." },
+          { status: 400 }
+        );
+      }
+
+      const tax = await prisma.tax.findUnique({
+        where: { id: taxId },
+        select: { id: true },
+      });
+
+      if (!tax) {
+        return NextResponse.json(
+          { success: false, message: "Tax record not found." },
+          { status: 404 }
+        );
+      }
+    }
+
     // Check duplicate code
     const duplicateCode = await prisma.service.findFirst({
       where: {
@@ -742,73 +956,158 @@ export async function PUT(request: Request) {
       );
     }
 
-    const costComponents = Array.isArray(body.costComponents)
-      ? body.costComponents
-      : [];
-    const serializedDescription = serializeServiceDescription(
-      typeof body.description === "string" ? body.description : "",
-      costComponents
-    );
+    // Replace components only when explicitly supplied.
+    // This protects saved components during status-only updates.
+    let costComponents: NormalizedCostComponent[] | undefined;
 
-    const service = await prisma.service.update({
-      where: { id },
-      data: {
-        code,
-        name,
-        description: serializedDescription,
-        categoryId,
-        taxId,
-        basePrice,
-        paperCost,
-        tonerCost,
-        machineCost,
-        status,
-        updatedAt: new Date(),
+    if (body.costComponents !== undefined) {
+      const validatedComponents = await validateCostComponents(body.costComponents);
+
+      if (validatedComponents.error) {
+        return NextResponse.json(
+          { success: false, message: validatedComponents.error },
+          { status: 400 }
+        );
+      }
+
+      costComponents = validatedComponents.data ?? [];
+    }
+
+// Update Service with Cost Components
+const service = await prisma.service.update({
+  where: { id },
+  data: {
+    code,
+    name,
+    description,
+    categoryId,
+    taxId,
+    basePrice,
+    paperCost,
+    tonerCost,
+    machineCost,
+    status,
+    updatedAt: new Date(),
+
+    ...(costComponents !== undefined
+      ? {
+          costComponents: {
+            deleteMany: {},
+            create: costComponents.map((c) => ({
+              costType: c.costType,
+              name: c.name,
+              productId: c.costType === "INVENTORY" ? c.productId : null,
+              quantity: c.costType === "INVENTORY" ? c.quantity : 1,
+              unitCost: c.cost,
+            })),
+          },
+        }
+      : {}),
+  },
+
+  include: {
+    servicecategory: {
+      select: {
+        id: true,
+        name: true,
       },
+    },
+
+    tax: {
+      select: {
+        id: true,
+        name: true,
+        rate: true,
+      },
+    },
+
+    costComponents: {
       include: {
-        servicecategory: {
+        product: {
           select: {
             id: true,
+            code: true,
             name: true,
           },
         },
-        tax: {
-          select: {
-            id: true,
-            name: true,
-            rate: true,
-          },
-        },
       },
-    });
+    },
+  },
+});
 
-    const customCost = costComponents.reduce(
-      (sum: number, c: any) => sum + (Math.max(0, Number(c.cost)) || 0),
-      0
-    );
-    const totalCost = paperCost + tonerCost + machineCost + customCost;
-    const netProfit = basePrice - totalCost;
-    const marginPercent =
-      basePrice > 0 ? (netProfit / basePrice) * 100 : 0;
+    const effectiveCostComponents =
+      costComponents ??
+      service.costComponents.map((component) => ({
+        costType: component.costType,
+        name: component.name,
+        productId: component.productId,
+        quantity: Number(component.quantity),
+        cost: Number(component.unitCost),
+      }));
 
-    return NextResponse.json({
-      success: true,
-      message: "Service updated successfully.",
-      data: {
-        ...service,
-        description: description || null,
-        rawDescription: service.description,
-        costComponents,
-        customCost,
-        basePrice: Number(service.basePrice),
-        paperCost: Number(service.paperCost),
-        tonerCost: Number(service.tonerCost),
-        machineCost: Number(service.machineCost),
-        totalCost,
-        netProfit,
-        marginPercent: Math.round(marginPercent * 10) / 10,
-      },
-    });
+    const inventoryCost = effectiveCostComponents
+  .filter((c) => c.costType === "INVENTORY")
+  .reduce(
+    (sum: number, c: any) => {
+      const unitCost = Math.max(0, Number(c.cost) || 0);
+      const quantity = Math.max(0, Number(c.quantity) || 0);
+
+      return sum + unitCost * quantity;
+    },
+    0
+  );
+
+const manualCost = effectiveCostComponents
+  .filter((c: any) => c.costType === "MANUAL")
+  .reduce(
+    (sum: number, c: any) => {
+      const cost = Math.max(0, Number(c.cost) || 0);
+
+      return sum + cost;
+    },
+    0
+  );
+
+const totalCost = inventoryCost + manualCost;
+
+const netProfit = basePrice - totalCost;
+
+const marginPercent =
+  basePrice > 0
+    ? (netProfit / basePrice) * 100
+    : 0;
+
+   return NextResponse.json({
+  success: true,
+  message: "Service updated successfully.",
+  data: {
+    ...service,
+
+    description: description || null,
+
+    costComponents: service.costComponents.map((c) => ({
+      id: String(c.id),
+      costType: c.costType,
+      name: c.name,
+      productId: c.productId,
+      productName: c.product?.name ?? null,
+      quantity: Number(c.quantity),
+      cost: Number(c.unitCost),
+    })),
+
+    basePrice: Number(service.basePrice),
+    paperCost: Number(service.paperCost),
+    tonerCost: Number(service.tonerCost),
+    machineCost: Number(service.machineCost),
+
+    inventoryCost,
+    manualCost,
+    totalCost,
+    netProfit,
+    marginPercent: Math.round(marginPercent * 10) / 10,
+  },
+});
+
   } catch (error) {
     console.error("UPDATE SERVICE ERROR:", error);
 

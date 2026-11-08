@@ -402,9 +402,16 @@ model service {
   categoryId      Int
   taxId           Int?
   basePrice       Decimal         @db.Decimal(12, 2)
+
+  // Service Cost Fields
+  paperCost       Decimal         @default(0) @db.Decimal(12, 2)
+  tonerCost       Decimal         @default(0) @db.Decimal(12, 2)
+  machineCost     Decimal         @default(0) @db.Decimal(12, 2)
+
   status          service_status  @default(ACTIVE)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime
+
   jobitem         jobitem[]
   saleitem        saleitem[]
   servicecategory servicecategory @relation(fields: [categoryId], references: [id], map: "Service_categoryId_fkey")

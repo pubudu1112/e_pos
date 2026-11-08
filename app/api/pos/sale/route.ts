@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/auth/permissions";
 import { getStoredSettings } from "@/app/api/settings/general/route";
-import { parseServiceDescription } from "@/lib/services/service-helpers";
 
 type SaleItemInput = {
   id: number;
@@ -548,17 +547,25 @@ export async function POST(
               item.type ===
               "SERVICE"
             ) {
-              const service =
-                await tx.service.findUnique(
-                  {
-                    where: {
-                      id: item.id,
-                    },
-                    include: {
-                      tax: true,
-                    },
-                  }
-                );
+              const service = await tx.service.findUnique({
+  where: {
+    id: item.id,
+  },
+  include: {
+    tax: true,
+    costComponents: {
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          },
+        },
+      },
+    },
+  },
+});
 
               if (!service) {
                 throw new Error(
@@ -581,28 +588,43 @@ export async function POST(
                   ? Number(item.unitPrice)
                   : catalogPrice;
 
-              const parsedDesc = parseServiceDescription(service.description);
-              const customComponentsCost = parsedDesc.costComponents.reduce(
-                (sum, c) => sum + (Number(c.cost) || 0),
-                0
-              );
-
-              const serviceCost =
+              // Calculate service cost from relational ServiceCostComponent records.
+              // INVENTORY components affect both cost and stock; MANUAL affects cost only.
+              let serviceCost =
                 Number(service.paperCost || 0) +
                 Number(service.tonerCost || 0) +
-                Number(service.machineCost || 0) +
-                customComponentsCost;
+                Number(service.machineCost || 0);
 
-              // Collect inventory material deductions for this service
-              for (const comp of parsedDesc.costComponents) {
-                if (comp.productId && Number(comp.quantity) > 0) {
+              for (const comp of service.costComponents) {
+                const unitCost = Number(comp.unitCost || 0);
+                const componentQty = Number(comp.quantity || 0);
+
+                if (!Number.isFinite(unitCost) || unitCost < 0) {
+                  throw new Error(`INVALID_SERVICE_COMPONENT:${comp.name}`);
+                }
+
+                if (comp.costType === "INVENTORY") {
+                  if (!comp.productId || !comp.product || comp.product.status !== "ACTIVE") {
+                    throw new Error(`INVALID_SERVICE_COMPONENT:${comp.name}`);
+                  }
+                  if (!Number.isFinite(componentQty) || componentQty <= 0) {
+                    throw new Error(`INVALID_SERVICE_COMPONENT:${comp.name}`);
+                  }
+
+                  serviceCost += unitCost * componentQty;
                   serviceMaterialConsumptions.push({
-                    productId: Number(comp.productId),
-                    productName: comp.name || "Material Part",
-                    quantity: item.quantity * Number(comp.quantity),
+                    productId: comp.productId,
+                    productName: comp.product.name,
+                    quantity: item.quantity * componentQty,
                     serviceName: service.name,
                   });
+                } else if (comp.costType === "MANUAL") {
+                  serviceCost += unitCost;
                 }
+              }
+
+              if (!Number.isFinite(serviceCost) || serviceCost < 0) {
+                throw new Error(`INVALID_SERVICE_COST:${service.name}`);
               }
 
               const lineSubtotal =
@@ -1023,63 +1045,60 @@ export async function POST(
           // SERVICE MATERIAL CONSUMPTIONS (STOCK DEDUCTION)
           // ==================================================
 
+          // Aggregate repeated material usage so each stock item is deducted once.
+          const aggregatedConsumptions = new Map<
+            number,
+            { productName: string; quantity: number; serviceNames: Set<string> }
+          >();
+
           for (const mat of serviceMaterialConsumptions) {
-            const stockUpdate = await tx.stock.updateMany({
-              where: {
-                productId: mat.productId,
-                quantity: {
-                  gte: mat.quantity,
-                },
-              },
-              data: {
-                quantity: {
-                  decrement: mat.quantity,
-                },
-                updatedAt: new Date(),
-              },
-            });
-
-            if (stockUpdate.count === 1) {
-              lowStockProductIds.add(mat.productId);
-
-              await tx.stockmovement.create({
-                data: {
-                  productId: mat.productId,
-                  type: "SALE",
-                  quantity: mat.quantity,
-                  referenceId: invoiceNo,
-                  note: `Service material: ${mat.serviceName} (${mat.productName} x${mat.quantity})`,
-                },
-              });
+            const existing = aggregatedConsumptions.get(mat.productId);
+            if (existing) {
+              existing.quantity += mat.quantity;
+              existing.serviceNames.add(mat.serviceName);
             } else {
-              // Decrement whatever available stock
-              await tx.stock.updateMany({
-                where: {
-                  productId: mat.productId,
-                },
-                data: {
-                  quantity: {
-                    decrement: mat.quantity,
-                  },
-                  updatedAt: new Date(),
-                },
-              });
-
-              lowStockProductIds.add(mat.productId);
-
-              await tx.stockmovement.create({
-                data: {
-                  productId: mat.productId,
-                  type: "SALE",
-                  quantity: mat.quantity,
-                  referenceId: invoiceNo,
-                  note: `Service material: ${mat.serviceName} (${mat.productName} x${mat.quantity})`,
-                },
+              aggregatedConsumptions.set(mat.productId, {
+                productName: mat.productName,
+                quantity: mat.quantity,
+                serviceNames: new Set([mat.serviceName]),
               });
             }
           }
 
-          // ==================================================
+          for (const [productId, mat] of aggregatedConsumptions) {
+            const requiredQuantity = mat.quantity;
+            const stockUpdate = await tx.stock.updateMany({
+              where: {
+                productId,
+                quantity: { gte: requiredQuantity },
+              },
+              data: {
+                quantity: { decrement: requiredQuantity },
+                updatedAt: new Date(),
+              },
+            });
+
+            if (stockUpdate.count !== 1) {
+              const latestStock = await tx.stock.findUnique({
+                where: { productId },
+                select: { quantity: true },
+              });
+              const available = latestStock ? Number(latestStock.quantity) : 0;
+              throw new Error(`INSUFFICIENT_STOCK:${mat.productName}:${available}`);
+            }
+
+            lowStockProductIds.add(productId);
+            await tx.stockmovement.create({
+              data: {
+                productId,
+                type: "SALE",
+                quantity: requiredQuantity,
+                referenceId: invoiceNo,
+                note: `Service material: ${[...mat.serviceNames].join(", ")} (${mat.productName} x${requiredQuantity})`,
+              },
+            });
+          }
+
           // LOW STOCK NOTIFICATIONS
           // ==================================================
 

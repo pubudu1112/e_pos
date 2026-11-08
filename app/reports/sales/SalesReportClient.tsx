@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   Brain,
-    FileDown,
+  FileDown,
   Loader2,
   Printer,
   RefreshCw,
@@ -26,6 +26,13 @@ type ReportData = {
   productCost: number;
   productGrossProfit: number;
   serviceSalesWithoutCost: number;
+  serviceCost: number;
+  serviceGrossProfit: number;
+  totalSales: number;
+  totalCogs: number;
+  totalGrossProfit: number;
+  missingCostPriceCount: number;
+  costDataComplete: boolean;
   paymentMethods: { name: string; amount: number }[];
   dailySales: { date: string; sales: number; invoices: number }[];
   topProducts: { name: string; quantity: number; sales: number }[];
@@ -234,17 +241,43 @@ export default function SalesReportClient() {
                   <Metric label="Discount" value={data.discount} />
                   <Metric label="Tax" value={data.tax} />
                   <Metric label="Total" value={data.total} />
+
                   <Metric label="Product Sales" value={data.productSales} />
                   <Metric label="Service Sales" value={data.serviceSales} />
+
                   <Metric label="Product Cost" value={data.productCost} />
-                  <Metric label="Product Gross Profit" value={data.productGrossProfit} />
+                  <Metric label="Service Cost" value={data.serviceCost} />
+
+                  <Metric
+                    label="Product Gross Profit"
+                    value={data.productGrossProfit}
+                  />
+
+                  <Metric
+                    label="Service Gross Profit"
+                    value={data.serviceGrossProfit}
+                  />
+
+                  <Metric label="Total COGS" value={data.totalCogs} />
+
+                  <Metric
+                    label="Total Gross Profit"
+                    value={data.totalGrossProfit}
+                  />
                 </div>
 
-                <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-800">
-                  Service cost is not stored in the current sale-item data when
-                  service costPrice is null, so a true service profit is not
-                  calculated in this report.
-                </p>
+                {data.missingCostPriceCount > 0 ? (
+                  <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-800">
+                    Warning: {data.missingCostPriceCount} sale item(s) have
+                    missing cost prices. Gross profit is calculated using
+                    only available cost data. Historical profit may be incomplete.
+                  </p>
+                ) : (
+                  <p className="mt-4 rounded-lg bg-emerald-50 p-3 text-xs leading-5 text-emerald-700">
+                    All product and service cost prices are available.
+                    Gross profit calculation is complete.
+                  </p>
+                )}
               </section>
 
               <section className="rounded-2xl border bg-white p-5 shadow-sm">
