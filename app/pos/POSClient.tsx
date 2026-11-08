@@ -1424,19 +1424,29 @@ export default function POSClient() {
                         } ${inCartQty > 0 ? "ring-2 ring-emerald-500/80 border-emerald-500" : ""}`}
                     >
                       {/* Top Badges */}
-                      <div className="flex items-start justify-between gap-1.5">
+                      <div className="flex w-full min-w-0 items-center justify-between gap-2">
+
+                        {/* Category Badge */}
                         <span
-                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold ${catStyle.bg} ${catStyle.text}`}
+                          className={`inline-flex min-w-0 max-w-[70%] items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold ${catStyle.bg} ${catStyle.text}`}
                         >
-                          {renderCategoryIcon(item.categoryType, "h-3 w-3")}
-                          {item.category}
+                          <span className="shrink-0">
+                            {renderCategoryIcon(item.categoryType, "h-3 w-3")}
+                          </span>
+
+                          <span className="truncate">
+                            {item.category}
+                          </span>
                         </span>
 
+                        {/* In Cart Badge */}
                         {inCartQty > 0 && (
-                          <span className="flex h-5 items-center justify-center rounded-full bg-emerald-600 px-2 text-[10px] font-black text-white shadow-sm">
+                          <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-emerald-600 px-2.5 py-1 text-[9px] font-bold text-white shadow-sm">
+                            <CheckCircle2 className="mr-1 h-3 w-3" />
                             {inCartQty} in cart
                           </span>
                         )}
+
                       </div>
 
                       {/* Product Name & Code */}
