@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hasPermission } from "@/lib/auth/permissions";
-import { getStoredSettings } from "@/app/api/settings/general/route";
+import { getStoredSettings } from "@/lib/settings";
 
 type SaleItemInput = {
   id: number;
