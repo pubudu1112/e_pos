@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "prisma generate && prisma migrate resolve --rolled-back 20261108170000_add_service_cost_component && prisma migrate deploy && next build --webpack",
+    "build": "prisma generate && prisma migrate deploy && next build --webpack",
     "db:deploy": "prisma migrate deploy",
     "start": "next start",
     "lint": "eslint",

@@ -8,6 +8,7 @@ import { hasPermission } from "@/lib/auth/permissions";
 // Permission: SERVICE_CATEGORY_VIEW
 // ============================================================
 
+
 export async function GET() {
   try {
     const session = await getSession();
@@ -37,31 +38,8 @@ export async function GET() {
       );
     }
 
-    // Ensure standard service categories exist
-    const standardCategories = [
-      { name: "Photocopy", description: "B&W Photocopying and duplication services" },
-      { name: "Color printing", description: "Color laser printing, photo and sticker printing" },
-      { name: "Binding", description: "Spiral, comb, tape, and hardcover book binding" },
-      { name: "Laminating", description: "Thermal film lamination for documents, posters, and cards" },
-      { name: "Scanning", description: "Document and photo digital scanning services" },
-    ];
-
-    for (const cat of standardCategories) {
-      const existing = await prisma.servicecategory.findFirst({
-        where: { name: cat.name },
-      });
-      if (!existing) {
-        await prisma.servicecategory.create({
-          data: {
-            name: cat.name,
-            description: cat.description,
-            isActive: true,
-            updatedAt: new Date(),
-          },
-        });
-      }
-    }
-
+    // Only retrieve existing categories.
+    // Do not automatically create default categories.
     const categories =
       await prisma.servicecategory.findMany({
         orderBy: {
@@ -73,6 +51,7 @@ export async function GET() {
       success: true,
       data: categories,
     });
+
   } catch (error) {
     console.error(
       "GET SERVICE CATEGORIES ERROR:",
@@ -82,13 +61,13 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Unable to load service categories.",
+        message: "Unable to load service categories.",
       },
       { status: 500 }
     );
   }
 }
+
 
 // ============================================================
 // POST - Create service category
