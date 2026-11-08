@@ -52,6 +52,8 @@ type POSItem = {
   price: number;
   unit: string;
   category: string;
+  categoryId: number;
+  categoryType: "PRODUCT" | "SERVICE";
   brand: string;
   barcode: string | null;
   stock: number | null;
@@ -84,6 +86,17 @@ type CategoryInfo = {
     activeRing: string;
   };
   description: string;
+  key: string;
+  type: "PRODUCT" | "SERVICE";
+  id: number;
+};
+
+type POSCategory = {
+  id: number;
+  name: string;
+  description: string | null;
+  type: "PRODUCT" | "SERVICE";
+  count: number;
 };
 
 type POSCustomer = {
@@ -149,121 +162,28 @@ function formatRs(amount: number): string {
 }
 
 // =========================================================
-// CATEGORY CONFIGURATION (THE 7 SPECIFIED CATEGORIES)
+// CATEGORY PRESENTATION (NO CATEGORY DATA IS HARDCODED)
 // =========================================================
 
-const CATEGORY_STYLES: Record<
-  string,
-  {
-    icon: string;
-    description: string;
-    bg: string;
-    text: string;
-    border: string;
-    badgeBg: string;
-    activeBg: string;
-    activeText: string;
-    activeRing: string;
-  }
-> = {
-  Photocopy: {
-    icon: "Copy",
-    description: "B&W & document photocopying",
-    bg: "bg-slate-100",
-    text: "text-slate-700",
-    border: "border-slate-200",
-    badgeBg: "bg-slate-200 text-slate-800",
-    activeBg: "bg-slate-900",
-    activeText: "text-white",
-    activeRing: "ring-slate-900",
-  },
-  "Color printing": {
-    icon: "Printer",
-    description: "Laser color, glossy photos & prints",
-    bg: "bg-fuchsia-50",
-    text: "text-fuchsia-700",
-    border: "border-fuchsia-200",
-    badgeBg: "bg-fuchsia-100 text-fuchsia-800",
-    activeBg: "bg-fuchsia-600",
-    activeText: "text-white",
-    activeRing: "ring-fuchsia-500",
-  },
-  Stationary: {
-    icon: "PenTool",
-    description: "Pens, books, papers & desk supplies",
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-amber-200",
-    badgeBg: "bg-amber-100 text-amber-800",
-    activeBg: "bg-amber-600",
-    activeText: "text-white",
-    activeRing: "ring-amber-500",
-  },
-  "Mobile accessories": {
-    icon: "Smartphone",
-    description: "Cables, chargers, earphones & power banks",
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-blue-200",
-    badgeBg: "bg-blue-100 text-blue-800",
-    activeBg: "bg-blue-600",
-    activeText: "text-white",
-    activeRing: "ring-blue-500",
-  },
-  Binding: {
-    icon: "BookOpen",
-    description: "Spiral, hard cover & tape binding",
-    bg: "bg-emerald-50",
-    text: "text-emerald-700",
-    border: "border-emerald-200",
-    badgeBg: "bg-emerald-100 text-emerald-800",
-    activeBg: "bg-emerald-600",
-    activeText: "text-white",
-    activeRing: "ring-emerald-500",
-  },
-  Laminating: {
-    icon: "ShieldCheck",
-    description: "NIC, A4, A3 document lamination",
-    bg: "bg-rose-50",
-    text: "text-rose-700",
-    border: "border-rose-200",
-    badgeBg: "bg-rose-100 text-rose-800",
-    activeBg: "bg-rose-600",
-    activeText: "text-white",
-    activeRing: "ring-rose-500",
-  },
-  Scanning: {
-    icon: "ScanLine",
-    description: "Document & photo scan to PDF",
-    bg: "bg-sky-50",
-    text: "text-sky-700",
-    border: "border-sky-200",
-    badgeBg: "bg-sky-100 text-sky-800",
-    activeBg: "bg-sky-600",
-    activeText: "text-white",
-    activeRing: "ring-sky-500",
-  },
+const DEFAULT_CATEGORY_STYLE = {
+  bg: "bg-slate-50",
+  text: "text-slate-700",
+  border: "border-slate-200",
+  badgeBg: "bg-slate-100 text-slate-700",
+  activeBg: "bg-slate-900",
+  activeText: "text-white",
+  activeRing: "ring-slate-900",
 };
 
-function renderCategoryIcon(categoryName: string, className = "h-4 w-4") {
-  switch (categoryName) {
-    case "Photocopy":
-      return <Copy className={className} />;
-    case "Color printing":
-      return <Printer className={className} />;
-    case "Stationary":
-      return <PenTool className={className} />;
-    case "Mobile accessories":
-      return <Smartphone className={className} />;
-    case "Binding":
-      return <BookOpen className={className} />;
-    case "Laminating":
-      return <ShieldCheck className={className} />;
-    case "Scanning":
-      return <ScanLine className={className} />;
-    default:
-      return <Layers className={className} />;
-  }
+function renderCategoryIcon(
+  type: "PRODUCT" | "SERVICE",
+  className = "h-4 w-4"
+) {
+  return type === "SERVICE" ? (
+    <Printer className={className} />
+  ) : (
+    <Layers className={className} />
+  );
 }
 
 // =========================================================
@@ -276,6 +196,8 @@ export default function POSClient() {
 
   // Data states
   const [items, setItems] = useState<POSItem[]>([]);
+  const [productCategories, setProductCategories] = useState<POSCategory[]>([]);
+  const [serviceCategories, setServiceCategories] = useState<POSCategory[]>([]);
   const [customers, setCustomers] = useState<POSCustomer[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -345,6 +267,8 @@ export default function POSClient() {
       }
 
       setItems(result.data || []);
+      setProductCategories(result.categories?.products || []);
+      setServiceCategories(result.categories?.services || []);
     } catch (err) {
       console.error("LOAD POS ITEMS ERROR:", err);
       const msg = err instanceof Error ? err.message : "Failed to load items.";
@@ -385,6 +309,8 @@ export default function POSClient() {
         if (active) {
           if (itemsRes.ok && itemsJson.success) {
             setItems(itemsJson.data || []);
+            setProductCategories(itemsJson.categories?.products || []);
+            setServiceCategories(itemsJson.categories?.services || []);
           }
           if (custRes.ok && custJson.success) {
             setCustomers(custJson.data || []);
@@ -407,71 +333,37 @@ export default function POSClient() {
   }, []);
 
   // =======================================================
-  // CATEGORIES GROUPING & ITEM COUNTS
+  // DATABASE-DRIVEN PRODUCT & SERVICE CATEGORIES
   // =======================================================
 
   const categoryList = useMemo<CategoryInfo[]>(() => {
-    const counts: Record<string, number> = {};
-    for (const item of items) {
-      const c = item.category?.trim() || "Other";
-      counts[c] = (counts[c] || 0) + 1;
-    }
-
-    const targetList = [
-      "Photocopy",
-      "Color printing",
-      "Stationary",
-      "Mobile accessories",
-      "Binding",
-      "Laminating",
-      "Scanning",
+    const categories = [
+      ...productCategories,
+      ...serviceCategories,
     ];
 
-    const result: CategoryInfo[] = targetList.map((name) => {
-      const styles = CATEGORY_STYLES[name] || {
-        icon: "Layers",
-        description: "Category resources",
-        bg: "bg-slate-50",
-        text: "text-slate-700",
-        border: "border-slate-200",
-        badgeBg: "bg-slate-100 text-slate-700",
-        activeBg: "bg-slate-900",
-        activeText: "text-white",
-        activeRing: "ring-slate-900",
-      };
+    return categories.map((category) => ({
+      name: category.name,
+      count: Number(category.count || 0),
+      iconName: category.type === "SERVICE" ? "Printer" : "Layers",
+      colorScheme: DEFAULT_CATEGORY_STYLE,
+      description:
+        category.description ||
+        (category.type === "SERVICE" ? "Service category" : "Product category"),
+      key: `${category.type}-${category.id}`,
+      type: category.type,
+      id: category.id,
+    }));
+  }, [productCategories, serviceCategories]);
 
-      return {
-        name,
-        count: counts[name] || 0,
-        iconName: styles.icon,
-        colorScheme: styles,
-        description: styles.description,
-      };
-    });
-
-    // Add any other categories that might exist in DB
-    for (const [name, count] of Object.entries(counts)) {
-      if (!targetList.includes(name) && name !== "Other") {
-        result.push({
-          name,
-          count,
-          iconName: "Layers",
-          colorScheme: {
-            bg: "bg-gray-50",
-            text: "text-gray-700",
-            border: "border-gray-200",
-            badgeBg: "bg-gray-100 text-gray-700",
-            activeBg: "bg-gray-900",
-            activeText: "text-white",
-            activeRing: "ring-gray-900",
-          },
-          description: "Other items",
-        });
-      }
+  useEffect(() => {
+    if (
+      selectedCategory !== "All" &&
+      !categoryList.some((category) => category.key === selectedCategory)
+    ) {
+      setSelectedCategory("All");
     }
-
-    return result;
-  }, [items]);
+  }, [categoryList, selectedCategory]);
 
   // =======================================================
   // FILTERED PRODUCTS
@@ -481,8 +373,11 @@ export default function POSClient() {
     let result = items;
 
     if (selectedCategory !== "All") {
+      const [categoryType, categoryId] = selectedCategory.split("-");
       result = result.filter(
-        (i) => (i.category?.trim() || "Other") === selectedCategory
+        (item) =>
+          item.categoryType === categoryType &&
+          item.categoryId === Number(categoryId)
       );
     }
 
@@ -1364,12 +1259,12 @@ export default function POSClient() {
 
             {/* The 7 Categories */}
             {categoryList.map((cat) => {
-              const isSelected = selectedCategory === cat.name;
+              const isSelected = selectedCategory === cat.key;
               return (
                 <button
-                  key={cat.name}
+                  key={cat.key}
                   type="button"
-                  onClick={() => setSelectedCategory(cat.name)}
+                  onClick={() => setSelectedCategory(cat.key)}
                   className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${isSelected
                       ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/15"
                       : "border border-slate-100 bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50"
@@ -1382,7 +1277,7 @@ export default function POSClient() {
                           : `${cat.colorScheme.bg} ${cat.colorScheme.text}`
                         }`}
                     >
-                      {renderCategoryIcon(cat.name, "h-4 w-4")}
+                      {renderCategoryIcon(cat.type, "h-4 w-4")}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold">{cat.name}</p>
@@ -1422,12 +1317,17 @@ export default function POSClient() {
           <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/70 px-4 py-3 backdrop-blur-sm lg:px-6">
             <div className="flex items-center gap-2.5">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
-                {renderCategoryIcon(selectedCategory, "h-4 w-4")}
+                {selectedCategory === "All"
+                  ? <Layers className="h-4 w-4" />
+                  : renderCategoryIcon(
+                      categoryList.find((cat) => cat.key === selectedCategory)?.type || "PRODUCT",
+                      "h-4 w-4"
+                    )}
               </span>
               <span className="text-sm font-black text-slate-800">
                 {selectedCategory === "All"
                   ? "All Products & Services"
-                  : selectedCategory}
+                  : categoryList.find((cat) => cat.key === selectedCategory)?.name || "Category"}
               </span>
               <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
                 {filteredItems.length} items available
@@ -1454,18 +1354,18 @@ export default function POSClient() {
               <span>All ({items.length})</span>
             </button>
             {categoryList.map((cat) => {
-              const isSelected = selectedCategory === cat.name;
+              const isSelected = selectedCategory === cat.key;
               return (
                 <button
-                  key={cat.name}
+                  key={cat.key}
                   type="button"
-                  onClick={() => setSelectedCategory(cat.name)}
+                  onClick={() => setSelectedCategory(cat.key)}
                   className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${isSelected
                       ? "bg-emerald-600 text-white shadow-sm"
                       : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 hover:opacity-90`
                     }`}
                 >
-                  {renderCategoryIcon(cat.name, "h-3 w-3")}
+                  {renderCategoryIcon(cat.type, "h-3 w-3")}
                   <span>{cat.name}</span>
                   <span className="opacity-75">({cat.count})</span>
                 </button>
@@ -1509,9 +1409,7 @@ export default function POSClient() {
                     item.minimumStock !== null &&
                     item.stock <= item.minimumStock;
 
-                  const catStyle =
-                    CATEGORY_STYLES[item.category] ||
-                    CATEGORY_STYLES["Stationary"];
+                  const catStyle = DEFAULT_CATEGORY_STYLE;
 
                   return (
                     <div
@@ -1527,7 +1425,7 @@ export default function POSClient() {
                         <span
                           className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold ${catStyle.bg} ${catStyle.text}`}
                         >
-                          {renderCategoryIcon(item.category, "h-3 w-3")}
+                          {renderCategoryIcon(item.categoryType, "h-3 w-3")}
                           {item.category}
                         </span>
 
