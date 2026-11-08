@@ -1720,10 +1720,13 @@ export default function POSClient() {
                               >
                                 <option value="0">No Warranty</option>
                                 <option value="1">1 Month</option>
-                                <option value="3">3 Months (Cables/Audio)</option>
-                                <option value="6">6 Months (Chargers)</option>
-                                <option value="12">12 Months (Power Banks)</option>
-                                <option value="24">24 Months (Extended)</option>
+                                <option value="2">2 Months</option>
+                                <option value="3">3 Months</option>
+                                <option value="4">4 Months</option>
+                                <option value="5">5 Months</option>
+                                <option value="6">6 Months</option>
+                                <option value="12">12 Months</option>
+                                <option value="24">24 Months</option>
                               </select>
                             </div>
                           )}
@@ -2090,10 +2093,13 @@ export default function POSClient() {
                                 >
                                   <option value="0">No Warranty</option>
                                   <option value="1">1 Month</option>
-                                  <option value="3">3 Months (Cables/Audio)</option>
-                                  <option value="6">6 Months (Chargers)</option>
-                                  <option value="12">12 Months (Power Banks)</option>
-                                  <option value="24">24 Months (Extended)</option>
+                                  <option value="2">2 Months</option>
+                                  <option value="3">3 Months</option>
+                                  <option value="4">4 Months</option>
+                                  <option value="5">5 Months</option>
+                                  <option value="6">6 Months</option>
+                                  <option value="12">12 Months</option>
+                                  <option value="24">24 Months</option>
                                 </select>
                               </div>
                             )}
