@@ -54,6 +54,9 @@ type POSItem = {
   category: string;
   categoryId: number;
   categoryType: "PRODUCT" | "SERVICE";
+
+  warrantyEnabled: boolean;
+
   brand: string;
   barcode: string | null;
   stock: number | null;
@@ -1222,15 +1225,15 @@ export default function POSClient() {
               type="button"
               onClick={() => setSelectedCategory("All")}
               className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${selectedCategory === "All"
-                  ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
-                  : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
+                : "bg-slate-50 text-slate-700 hover:bg-slate-100"
                 }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${selectedCategory === "All"
-                      ? "bg-white/20 text-white"
-                      : "bg-white text-slate-700 shadow-sm"
+                    ? "bg-white/20 text-white"
+                    : "bg-white text-slate-700 shadow-sm"
                     }`}
                 >
                   <Layers className="h-4 w-4" />
@@ -1239,8 +1242,8 @@ export default function POSClient() {
                   <p className="truncate text-xs font-bold">All Resources</p>
                   <p
                     className={`truncate text-[10px] ${selectedCategory === "All"
-                        ? "text-slate-300"
-                        : "text-slate-400"
+                      ? "text-slate-300"
+                      : "text-slate-400"
                       }`}
                   >
                     Entire Catalog
@@ -1249,8 +1252,8 @@ export default function POSClient() {
               </div>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${selectedCategory === "All"
-                    ? "bg-white/20 text-white"
-                    : "bg-white text-slate-700 shadow-sm"
+                  ? "bg-white/20 text-white"
+                  : "bg-white text-slate-700 shadow-sm"
                   }`}
               >
                 {items.length}
@@ -1266,15 +1269,15 @@ export default function POSClient() {
                   type="button"
                   onClick={() => setSelectedCategory(cat.key)}
                   className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${isSelected
-                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/15"
-                      : "border border-slate-100 bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50"
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/15"
+                    : "border border-slate-100 bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50"
                     }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isSelected
-                          ? "bg-white/20 text-white"
-                          : `${cat.colorScheme.bg} ${cat.colorScheme.text}`
+                        ? "bg-white/20 text-white"
+                        : `${cat.colorScheme.bg} ${cat.colorScheme.text}`
                         }`}
                     >
                       {renderCategoryIcon(cat.type, "h-4 w-4")}
@@ -1291,8 +1294,8 @@ export default function POSClient() {
                   </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-black ${isSelected
-                        ? "bg-white/20 text-white"
-                        : `${cat.colorScheme.badgeBg}`
+                      ? "bg-white/20 text-white"
+                      : `${cat.colorScheme.badgeBg}`
                       }`}
                   >
                     {cat.count}
@@ -1320,9 +1323,9 @@ export default function POSClient() {
                 {selectedCategory === "All"
                   ? <Layers className="h-4 w-4" />
                   : renderCategoryIcon(
-                      categoryList.find((cat) => cat.key === selectedCategory)?.type || "PRODUCT",
-                      "h-4 w-4"
-                    )}
+                    categoryList.find((cat) => cat.key === selectedCategory)?.type || "PRODUCT",
+                    "h-4 w-4"
+                  )}
               </span>
               <span className="text-sm font-black text-slate-800">
                 {selectedCategory === "All"
@@ -1346,8 +1349,8 @@ export default function POSClient() {
               type="button"
               onClick={() => setSelectedCategory("All")}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${selectedCategory === "All"
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? "bg-slate-900 text-white shadow-sm"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
             >
               <Layers className="h-3 w-3" />
@@ -1361,8 +1364,8 @@ export default function POSClient() {
                   type="button"
                   onClick={() => setSelectedCategory(cat.key)}
                   className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${isSelected
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 hover:opacity-90`
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 hover:opacity-90`
                     }`}
                 >
                   {renderCategoryIcon(cat.type, "h-3 w-3")}
@@ -1416,8 +1419,8 @@ export default function POSClient() {
                       key={`${item.type}-${item.id}`}
                       onClick={() => !isOutOfStock && addToCart(item)}
                       className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
-                          ? "cursor-not-allowed opacity-60 border-slate-200"
-                          : "cursor-pointer border-slate-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
+                        ? "cursor-not-allowed opacity-60 border-slate-200"
+                        : "cursor-pointer border-slate-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
                         } ${inCartQty > 0 ? "ring-2 ring-emerald-500/80 border-emerald-500" : ""}`}
                     >
                       {/* Top Badges */}
@@ -1507,8 +1510,8 @@ export default function POSClient() {
                               addToCart(item);
                             }}
                             className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
-                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
+                              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                              : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
                               }`}
                             title="Add to order"
                           >
@@ -1685,34 +1688,35 @@ export default function POSClient() {
                         )}
 
                         {/* Warranty Selector */}
-                        {item.type === "PRODUCT" && (
-                          <div className="mt-1.5 flex items-center gap-1.5">
-                            <ShieldCheck
-                              className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
+                        {item.type === "PRODUCT" &&
+                          item.warrantyEnabled && (
+                            <div className="mt-1.5 flex items-center gap-1.5">
+                              <ShieldCheck
+                                className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
                                   ? "text-emerald-600"
                                   : "text-slate-400"
-                                }`}
-                            />
-                            <select
-                              value={item.warrantyMonths ?? 0}
-                              onChange={(e) =>
-                                updateItemWarranty(item, Number(e.target.value))
-                              }
-                              className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
+                                  }`}
+                              />
+                              <select
+                                value={item.warrantyMonths ?? 0}
+                                onChange={(e) =>
+                                  updateItemWarranty(item, Number(e.target.value))
+                                }
+                                className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
                                   ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
                                   : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                                }`}
-                              title="Set product warranty duration"
-                            >
-                              <option value="0">No Warranty</option>
-                              <option value="1">1 Month</option>
-                              <option value="3">3 Months (Cables/Audio)</option>
-                              <option value="6">6 Months (Chargers)</option>
-                              <option value="12">12 Months (Power Banks)</option>
-                              <option value="24">24 Months (Extended)</option>
-                            </select>
-                          </div>
-                        )}
+                                  }`}
+                                title="Set product warranty duration"
+                              >
+                                <option value="0">No Warranty</option>
+                                <option value="1">1 Month</option>
+                                <option value="3">3 Months (Cables/Audio)</option>
+                                <option value="6">6 Months (Chargers)</option>
+                                <option value="12">12 Months (Power Banks)</option>
+                                <option value="24">24 Months (Extended)</option>
+                              </select>
+                            </div>
+                          )}
                       </div>
 
                       <button
@@ -2054,34 +2058,35 @@ export default function POSClient() {
                           )}
 
                           {/* Warranty Selector */}
-                          {item.type === "PRODUCT" && (
-                            <div className="mt-1.5 flex items-center gap-1.5">
-                              <ShieldCheck
-                                className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
+                          {item.type === "PRODUCT" &&
+                            item.warrantyEnabled && (
+                              <div className="mt-1.5 flex items-center gap-1.5">
+                                <ShieldCheck
+                                  className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
                                     ? "text-emerald-600"
                                     : "text-slate-400"
-                                  }`}
-                              />
-                              <select
-                                value={item.warrantyMonths ?? 0}
-                                onChange={(e) =>
-                                  updateItemWarranty(item, Number(e.target.value))
-                                }
-                                className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
+                                    }`}
+                                />
+                                <select
+                                  value={item.warrantyMonths ?? 0}
+                                  onChange={(e) =>
+                                    updateItemWarranty(item, Number(e.target.value))
+                                  }
+                                  className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
                                     ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
                                     : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
-                                  }`}
-                                title="Set product warranty duration"
-                              >
-                                <option value="0">No Warranty</option>
-                                <option value="1">1 Month</option>
-                                <option value="3">3 Months (Cables/Audio)</option>
-                                <option value="6">6 Months (Chargers)</option>
-                                <option value="12">12 Months (Power Banks)</option>
-                                <option value="24">24 Months (Extended)</option>
-                              </select>
-                            </div>
-                          )}
+                                    }`}
+                                  title="Set product warranty duration"
+                                >
+                                  <option value="0">No Warranty</option>
+                                  <option value="1">1 Month</option>
+                                  <option value="3">3 Months (Cables/Audio)</option>
+                                  <option value="6">6 Months (Chargers)</option>
+                                  <option value="12">12 Months (Power Banks)</option>
+                                  <option value="24">24 Months (Extended)</option>
+                                </select>
+                              </div>
+                            )}
                         </div>
 
                         <button
@@ -2273,8 +2278,8 @@ export default function POSClient() {
                         type="button"
                         onClick={() => setPaymentMethod(pm.id as PaymentMethodType)}
                         className={`flex items-center gap-2 rounded-xl border p-2 text-xs font-bold transition ${isSelected
-                            ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20"
-                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20"
+                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                           }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
@@ -2846,10 +2851,10 @@ export default function POSClient() {
                 const pctDiff = priceEditModalItem.originalPrice > 0 ? (diff / priceEditModalItem.originalPrice) * 100 : 0;
                 return (
                   <div className={`rounded-xl p-3 border text-xs ${diff === 0
-                      ? "bg-slate-50 border-slate-200 text-slate-600"
-                      : diff < 0
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                        : "bg-blue-50 border-blue-200 text-blue-800"
+                    ? "bg-slate-50 border-slate-200 text-slate-600"
+                    : diff < 0
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-blue-50 border-blue-200 text-blue-800"
                     }`}>
                     <div className="flex justify-between items-center font-bold">
                       <span>Rate Difference:</span>

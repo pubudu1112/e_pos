@@ -19,6 +19,7 @@ type Category = {
   name: string;
   description: string | null;
   isActive: boolean;
+  warrantyEnabled: boolean;
 };
 
 export default function CategoriesClient() {
@@ -62,6 +63,9 @@ export default function CategoriesClient() {
 
   const [isActive, setIsActive] =
     useState(true);
+
+  const [warrantyEnabled, setWarrantyEnabled] =
+    useState(false);
 
   const [error, setError] =
     useState("");
@@ -147,12 +151,12 @@ export default function CategoriesClient() {
       } else {
         setError(
           result.message ||
-            "Unable to load categories."
+          "Unable to load categories."
         );
 
         toast.error(
           result.message ||
-            "Unable to load categories."
+          "Unable to load categories."
         );
       }
     } catch (error) {
@@ -188,6 +192,7 @@ export default function CategoriesClient() {
     setName("");
     setDescription("");
     setIsActive(true);
+    setWarrantyEnabled(false);
     setError("");
     setShowModal(true);
   }
@@ -214,6 +219,9 @@ export default function CategoriesClient() {
       category.description || ""
     );
     setIsActive(category.isActive);
+    setWarrantyEnabled(
+      category.warrantyEnabled ?? false
+    );
     setError("");
     setShowModal(true);
   }
@@ -286,17 +294,17 @@ export default function CategoriesClient() {
 
       const body = editingId
         ? {
-            id: editingId,
-            name: name.trim(),
-            description:
-              description.trim(),
-            isActive,
-          }
+          id: editingId,
+          name: name.trim(),
+          description: description.trim(),
+          isActive,
+          warrantyEnabled,
+        }
         : {
-            name: name.trim(),
-            description:
-              description.trim(),
-          };
+          name: name.trim(),
+          description: description.trim(),
+          warrantyEnabled,
+        };
 
       const response = await fetch(
         "/api/products/categories",
@@ -319,12 +327,12 @@ export default function CategoriesClient() {
       ) {
         setError(
           result.message ||
-            "Unable to save category."
+          "Unable to save category."
         );
 
         toast.error(
           result.message ||
-            "Unable to save category."
+          "Unable to save category."
         );
 
         return;
@@ -340,7 +348,7 @@ export default function CategoriesClient() {
             current
               .map((category) =>
                 category.id ===
-                editingId
+                  editingId
                   ? result.data
                   : category
               )
@@ -464,9 +472,9 @@ export default function CategoriesClient() {
           body: JSON.stringify({
             id: category.id,
             name: category.name,
-            description:
-              category.description,
+            description: category.description,
             isActive: newStatus,
+            warrantyEnabled: category.warrantyEnabled ?? false,
           }),
         }
       );
@@ -480,7 +488,7 @@ export default function CategoriesClient() {
       ) {
         toast.error(
           result.message ||
-            "Unable to update category."
+          "Unable to update category."
         );
 
         return;
@@ -648,7 +656,7 @@ export default function CategoriesClient() {
 
                         {/* Status button */}
                         {!loadingPermissions &&
-                        canUpdate ? (
+                          canUpdate ? (
                           <button
                             type="button"
                             onClick={() =>
@@ -656,11 +664,10 @@ export default function CategoriesClient() {
                                 category
                               )
                             }
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                              category.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${category.isActive
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                              }`}
                           >
                             {category.isActive
                               ? "Active"
@@ -668,11 +675,10 @@ export default function CategoriesClient() {
                           </button>
                         ) : (
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                              category.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${category.isActive
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                              }`}
                           >
                             {category.isActive
                               ? "Active"
@@ -831,6 +837,51 @@ export default function CategoriesClient() {
 
               </div>
 
+
+
+              {/* Warranty Setting */}
+              <div
+                className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${warrantyEnabled
+                    ? "border-emerald-200 bg-emerald-50"
+                    : "border-gray-200 bg-gray-50"
+                  }`}
+              >
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">
+                    Enable Warranty
+                  </p>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    {warrantyEnabled
+                      ? "ON - Products in this category can have warranty."
+                      : "OFF - Warranty is disabled for this category."}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={warrantyEnabled}
+                  onClick={() =>
+                    setWarrantyEnabled((prev) => !prev)
+                  }
+                  disabled={saving}
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200 ${warrantyEnabled
+                      ? "bg-emerald-500"
+                      : "bg-gray-300"
+                    }`}
+                >
+                  <span
+                    className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${warrantyEnabled
+                        ? "translate-x-5"
+                        : "translate-x-0"
+                      }`}
+                  />
+                </button>
+              </div>
+
+
+
               {/* Status - Edit only */}
               {editingId && (
 
@@ -856,19 +907,17 @@ export default function CategoriesClient() {
                       )
                     }
                     disabled={saving}
-                    className={`relative h-6 w-11 rounded-full transition ${
-                      isActive
-                        ? "bg-green-500"
-                        : "bg-gray-300"
-                    }`}
+                    className={`relative h-6 w-11 rounded-full transition ${isActive
+                      ? "bg-green-500"
+                      : "bg-gray-300"
+                      }`}
                   >
 
                     <span
-                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
-                        isActive
-                          ? "left-6"
-                          : "left-1"
-                      }`}
+                      className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${isActive
+                        ? "left-6"
+                        : "left-1"
+                        }`}
                     />
 
                   </button>

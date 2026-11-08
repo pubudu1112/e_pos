@@ -418,9 +418,15 @@ export async function POST(
                       id: item.id,
                     },
                     include: {
-                      tax: true,
-                      stock: true,
-                    },
+  tax: true,
+  stock: true,
+  category: {
+    select: {
+      id: true,
+      warrantyEnabled: true,
+    },
+  },
+},
                   }
                 );
 
@@ -504,10 +510,14 @@ export async function POST(
               taxTotal +=
                 lineTax;
 
-              const chosenWarranty =
-                item.warrantyMonths !== undefined && item.warrantyMonths !== null
-                  ? Number(item.warrantyMonths)
-                  : (product.warrantyMonths ? Number(product.warrantyMonths) : 0);
+              const chosenWarranty = product.category.warrantyEnabled
+  ? (
+      item.warrantyMonths !== undefined &&
+      item.warrantyMonths !== null
+        ? Number(item.warrantyMonths)
+        : Number(product.warrantyMonths || 0)
+    )
+  : 0;
 
               saleItems.push({
                 productId:

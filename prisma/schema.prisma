@@ -37,13 +37,18 @@ model brand {
 }
 
 model category {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique(map: "Category_name_key") @db.VarChar(100)
-  description String?   @db.VarChar(255)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  product     product[]
+  id              Int       @id @default(autoincrement())
+  name            String    @unique(map: "Category_name_key") @db.VarChar(100)
+  description     String?   @db.VarChar(255)
+  isActive        Boolean   @default(true)
+
+  // Warranty setting for this product category
+  warrantyEnabled Boolean  @default(false)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  product         product[]
 
   @@index([isActive], map: "Category_isActive_idx")
   @@map("Category")

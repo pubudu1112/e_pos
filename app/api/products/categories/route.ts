@@ -146,9 +146,14 @@ export async function POST(
 
     const description =
       typeof body.description ===
-      "string"
+        "string"
         ? body.description.trim()
         : "";
+
+    const warrantyEnabled =
+      typeof body.warrantyEnabled === "boolean"
+        ? body.warrantyEnabled
+        : false;
 
     // --------------------------------------------------------
     // Validation
@@ -225,9 +230,9 @@ export async function POST(
       await prisma.category.create({
         data: {
           name,
-          description:
-            description || null,
+          description: description || null,
           isActive: true,
+          warrantyEnabled,
         },
       });
 
@@ -380,7 +385,7 @@ export async function PUT(
 
     const description =
       typeof body.description ===
-      "string"
+        "string"
         ? body.description.trim()
         : "";
 
@@ -403,7 +408,7 @@ export async function PUT(
 
     const isActive =
       typeof body.isActive ===
-      "boolean"
+        "boolean"
         ? body.isActive
         : true;
 
@@ -430,6 +435,11 @@ export async function PUT(
         }
       );
     }
+
+    const warrantyEnabled =
+      typeof body.warrantyEnabled === "boolean"
+        ? body.warrantyEnabled
+        : existingCategory.warrantyEnabled;
 
     // --------------------------------------------------------
     // Check duplicate name
@@ -469,9 +479,9 @@ export async function PUT(
         },
         data: {
           name,
-          description:
-            description || null,
+          description: description || null,
           isActive,
+          warrantyEnabled,
         },
       });
 
