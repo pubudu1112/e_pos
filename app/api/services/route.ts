@@ -374,8 +374,6 @@ export async function GET() {
       );
     }
 
-    await ensureDefaultServicesSeeded();
-
     const [services, inventoryProducts] = await Promise.all([
       prisma.service.findMany({
         include: {
