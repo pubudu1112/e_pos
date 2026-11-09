@@ -2,21 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
 
+
 async function generateExpenseNo(): Promise<string> {
   const now = new Date();
-  const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const yearMonth = `${now.getFullYear()}${String(
+    now.getMonth() + 1
+  ).padStart(2, "0")}`;
+
   const prefix = `EXP-${yearMonth}-`;
 
-  const latest = await prisma.expense.findFirst({
-    where: { expenseNo: { startsWith: prefix } },
-    orderBy: { id: "desc" },
-    select: { expenseNo: true },
-  });
+  // Use BINARY comparison to avoid MySQL collation mismatch.
+  const latest = await prisma.$queryRaw<
+    Array<{ expenseNo: string }>
+  >`
+    SELECT \`expenseNo\`
+    FROM \`Expense\`
+    WHERE BINARY \`expenseNo\` LIKE BINARY ${`${prefix}%`}
+    ORDER BY \`id\` DESC
+    LIMIT 1
+  `;
 
   let nextSeq = 1;
-  if (latest?.expenseNo) {
-    const parts = latest.expenseNo.split("-");
+
+  if (latest.length > 0 && latest[0].expenseNo) {
+    const parts = latest[0].expenseNo.split("-");
     const num = parseInt(parts[2], 10);
+
     if (!isNaN(num)) {
       nextSeq = num + 1;
     }
@@ -24,6 +36,7 @@ async function generateExpenseNo(): Promise<string> {
 
   return `${prefix}${String(nextSeq).padStart(4, "0")}`;
 }
+
 
 export async function GET(req: NextRequest) {
   try {
