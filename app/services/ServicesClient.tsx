@@ -211,6 +211,11 @@ export default function ServicesClient() {
   const [inventoryProducts, setInventoryProducts] = useState<
     InventoryProductItem[]
   >([]);
+  const [inventoryProductSearch, setInventoryProductSearch] = useState<
+    Record<string, string>
+  >({});
+  const [inventoryProductDropdownOpen, setInventoryProductDropdownOpen] =
+    useState<Record<string, boolean>>({});
   const [inventoryCostComponents, setInventoryCostComponents] = useState<
     CostComponentForm[]
   >([]);
@@ -647,6 +652,27 @@ export default function ServicesClient() {
     value: string
   ) {
     updateComponentList(setInventoryCostComponents, id, field, value, true);
+  }
+
+  function selectInventoryProduct(
+    componentId: string,
+    product: InventoryProductItem
+  ) {
+    updateInventoryCostComponent(
+      componentId,
+      "productId",
+      String(product.id)
+    );
+
+    setInventoryProductSearch((prev) => ({
+      ...prev,
+      [componentId]: `${product.code} - ${product.name}`,
+    }));
+
+    setInventoryProductDropdownOpen((prev) => ({
+      ...prev,
+      [componentId]: false,
+    }));
   }
 
   function updateManualCostComponent(
@@ -1207,8 +1233,8 @@ export default function ServicesClient() {
           >
             <RefreshCw
               className={`h-4 w-4 ${loading
-                  ? "animate-spin"
-                  : ""
+                ? "animate-spin"
+                : ""
                 }`}
             />
 
@@ -1335,15 +1361,15 @@ export default function ServicesClient() {
                 type="button"
                 onClick={() => setSelectedCategoryFilter(cat.id)}
                 className={`shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition ${isSelected
-                    ? "bg-slate-900 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                   }`}
               >
                 <span>{cat.label}</span>
                 <span
                   className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${isSelected
-                      ? "bg-white/20 text-white"
-                      : "bg-white text-slate-700 shadow-xs dark:bg-slate-700 dark:text-slate-200"
+                    ? "bg-white/20 text-white"
+                    : "bg-white text-slate-700 shadow-xs dark:bg-slate-700 dark:text-slate-200"
                     }`}
                 >
                   {cat.count}
@@ -1559,8 +1585,8 @@ export default function ServicesClient() {
                             <div>
                               <span
                                 className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold ${netProfit >= 0
-                                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                                    : "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+                                  : "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300"
                                   }`}
                               >
                                 {netProfit >= 0 ? "+" : ""}Rs. {netProfit.toFixed(2)}
@@ -1588,9 +1614,9 @@ export default function ServicesClient() {
                         <td className="px-4 py-3 text-center">
                           <span
                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${service.status ===
-                                "ACTIVE"
-                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                                : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                              "ACTIVE"
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                               }`}
                           >
                             {service.status ===
@@ -1626,9 +1652,9 @@ export default function ServicesClient() {
                                     )
                                   }
                                   className={`rounded-lg px-3 py-1.5 text-xs font-medium ${service.status ===
-                                      "ACTIVE"
-                                      ? "border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
-                                      : "border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:hover:bg-emerald-950/30"
+                                    "ACTIVE"
+                                    ? "border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/30"
+                                    : "border border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:hover:bg-emerald-950/30"
                                     }`}
                                 >
                                   {service.status ===
@@ -1834,20 +1860,115 @@ export default function ServicesClient() {
                                   </button>
                                 </div>
                                 <div className="grid gap-2 sm:grid-cols-12">
-                                  <div className="sm:col-span-6">
-                                    <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Inventory Product</label>
-                                    <select
-                                      value={component.productId}
-                                      onChange={(e) => updateInventoryCostComponent(component.id, "productId", e.target.value)}
-                                      className="w-full rounded-md border bg-background px-2.5 py-2 text-xs"
-                                    >
-                                      <option value="">Select inventory product</option>
-                                      {inventoryProducts.map((product) => (
-                                        <option key={product.id} value={product.id}>
-                                          {product.code} - {product.name} (Stock: {product.stockQty})
-                                        </option>
-                                      ))}
-                                    </select>
+                                  <div className="sm:col-span-6 relative">
+                                    <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">
+                                      Inventory Product
+                                    </label>
+
+                                    {(() => {
+                                      const searchText =
+                                        inventoryProductSearch[component.id] ??
+                                        (selectedProduct
+                                          ? `${selectedProduct.code} - ${selectedProduct.name}`
+                                          : "");
+
+                                      const filteredProducts = inventoryProducts.filter((product) => {
+                                        const keyword = searchText.trim().toLowerCase();
+
+                                        if (!keyword) return true;
+
+                                        return (
+                                          product.code.toLowerCase().includes(keyword) ||
+                                          product.name.toLowerCase().includes(keyword)
+                                        );
+                                      });
+
+                                      return (
+                                        <>
+                                          <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                                            <input
+                                              type="text"
+                                              value={searchText}
+                                              placeholder="Search product code or name..."
+                                              autoComplete="off"
+                                              onFocus={() =>
+                                                setInventoryProductDropdownOpen((prev) => ({
+                                                  ...prev,
+                                                  [component.id]: true,
+                                                }))
+                                              }
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+
+                                                setInventoryProductSearch((prev) => ({
+                                                  ...prev,
+                                                  [component.id]: value,
+                                                }));
+
+                                                setInventoryProductDropdownOpen((prev) => ({
+                                                  ...prev,
+                                                  [component.id]: true,
+                                                }));
+
+                                                // Clear previous selection when searching another product
+                                                if (
+                                                  component.productId &&
+                                                  !`${selectedProduct?.code} - ${selectedProduct?.name}`
+                                                    .toLowerCase()
+                                                    .includes(value.toLowerCase())
+                                                ) {
+                                                  updateInventoryCostComponent(
+                                                    component.id,
+                                                    "productId",
+                                                    ""
+                                                  );
+                                                }
+                                              }}
+                                              className="w-full rounded-md border bg-background py-2 pl-9 pr-3 text-xs outline-none focus:ring-2 focus:ring-primary"
+                                            />
+                                          </div>
+
+                                          {inventoryProductDropdownOpen[component.id] && (
+                                            <div className="absolute left-0 right-0 top-full z-[100] mt-1 max-h-56 overflow-y-auto rounded-lg border bg-popover shadow-xl">
+
+                                              {filteredProducts.length > 0 ? (
+                                                filteredProducts.map((product) => (
+                                                  <button
+                                                    key={product.id}
+                                                    type="button"
+                                                    onClick={() =>
+                                                      selectInventoryProduct(component.id, product)
+                                                    }
+                                                    className={`flex w-full flex-col gap-1 border-b px-3 py-2 text-left last:border-0 hover:bg-accent ${String(product.id) === component.productId
+                                                        ? "bg-accent"
+                                                        : ""
+                                                      }`}
+                                                  >
+                                                    <span className="text-xs font-semibold">
+                                                      {product.code} - {product.name}
+                                                    </span>
+
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                      Stock: {product.stockQty}
+                                                      {" | "}
+                                                      Purchase Price: Rs.{" "}
+                                                      {Number(product.purchasePrice).toFixed(2)}
+                                                    </span>
+                                                  </button>
+                                                ))
+                                              ) : (
+                                                <div className="px-3 py-4 text-center text-xs text-muted-foreground">
+                                                  No matching inventory products found.
+                                                </div>
+                                              )}
+
+                                            </div>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
                                   </div>
                                   <div className="sm:col-span-3">
                                     <label className="mb-1 block text-[10px] font-bold uppercase text-muted-foreground">Quantity / Service</label>
@@ -1972,8 +2093,8 @@ export default function ServicesClient() {
                         <div className="text-right">
                           <div
                             className={`text-xl font-black ${liveNetProfit >= 0
-                                ? "text-emerald-700 dark:text-emerald-300"
-                                : "text-rose-600 dark:text-rose-400"
+                              ? "text-emerald-700 dark:text-emerald-300"
+                              : "text-rose-600 dark:text-rose-400"
                               }`}
                           >
                             {liveNetProfit >= 0 ? "+" : ""}Rs. {liveNetProfit.toFixed(2)}
