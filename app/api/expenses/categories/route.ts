@@ -15,33 +15,32 @@ const DEFAULT_CATEGORIES = [
   { name: "Miscellaneous", description: "Other general day-to-day minor shop expenses" },
 ];
 
+
 export async function GET() {
   try {
     const session = await getSession();
+
     if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    // Auto-seed default categories if none exist
-    const count = await prisma.expensecategory.count();
-    if (count === 0) {
-      for (const cat of DEFAULT_CATEGORIES) {
-        await prisma.expensecategory.create({
-          data: {
-            name: cat.name,
-            description: cat.description,
-            isActive: true,
-            updatedAt: new Date(),
-          },
-        });
-      }
-    }
-
+    // Load categories directly from database.
+    // No default category seeding.
     const categories = await prisma.expensecategory.findMany({
-      orderBy: { name: "asc" },
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
       include: {
         _count: {
-          select: { expense: true },
+          select: {
+            expense: true,
+          },
         },
       },
     });
@@ -52,8 +51,12 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GET EXPENSE CATEGORIES ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to load expense categories" },
+      {
+        success: false,
+        message: "Failed to load expense categories",
+      },
       { status: 500 }
     );
   }
