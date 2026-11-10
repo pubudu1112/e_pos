@@ -30,6 +30,7 @@ import {
   Search,
   ShieldCheck,
   ShoppingCart,
+  Star,
   Smartphone,
   Trash2,
   UserPlus,
@@ -38,6 +39,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import React from "react";
 
 // =========================================================
 // TYPES
@@ -208,6 +210,60 @@ export default function POSClient() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Favourite Resources - Browser Local Storage
+  const [favouriteKeys, setFavouriteKeys] = useState<string[]>([]);
+  const [favouritesLoaded, setFavouritesLoaded] = useState(false);
+
+  const FAVOURITES_STORAGE_KEY = "pubudu-pos-favourite-resources";
+
+  // Load favourites from Local Storage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(FAVOURITES_STORAGE_KEY);
+
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+
+        if (
+          Array.isArray(parsed) &&
+          parsed.every((key) => typeof key === "string")
+        ) {
+          setFavouriteKeys(parsed);
+        }
+      }
+    } catch (error) {
+      console.error("LOAD FAVOURITES ERROR:", error);
+    } finally {
+      setFavouritesLoaded(true);
+    }
+  }, []);
+
+  // Save favourites to Local Storage
+  useEffect(() => {
+    if (!favouritesLoaded) return;
+
+    try {
+      localStorage.setItem(
+        FAVOURITES_STORAGE_KEY,
+        JSON.stringify(favouriteKeys)
+      );
+    } catch (error) {
+      console.error("SAVE FAVOURITES ERROR:", error);
+      toast.error("Unable to save favourite resources.");
+    }
+  }, [favouriteKeys, favouritesLoaded]);
+
+  // Toggle favourite status
+  const toggleFavourite = useCallback((item: POSItem) => {
+    const key = `${item.type}-${item.id}`;
+
+    setFavouriteKeys((current) =>
+      current.includes(key)
+        ? current.filter((value) => value !== key)
+        : [...current, key]
+    );
+  }, []);
 
   // Customer selection
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
@@ -395,8 +451,19 @@ export default function POSClient() {
       );
     }
 
-    return result;
-  }, [items, selectedCategory, search]);
+    return [...result].sort((a, b) => {
+      const aKey = `${a.type}-${a.id}`;
+      const bKey = `${b.type}-${b.id}`;
+
+      const aFavourite = favouriteKeys.includes(aKey);
+      const bFavourite = favouriteKeys.includes(bKey);
+
+      if (aFavourite && !bFavourite) return -1;
+      if (!aFavourite && bFavourite) return 1;
+
+      return 0;
+    });
+  }, [items, selectedCategory, search, favouriteKeys]);
 
   // =======================================================
   // CART TOTALS
@@ -487,6 +554,71 @@ export default function POSClient() {
       ];
     });
   }, []);
+
+  // Assign shortcuts 1-10 to the first 10 favourite items.
+  // The number 0 on the keyboard represents shortcut number 10.
+  const shortcutNumberMap = useMemo(() => {
+    const map = new Map<string, number>();
+    const favouriteItems = items
+      .filter((item) => favouriteKeys.includes(`${item.type}-${item.id}`))
+      .slice(0, 10);
+
+    favouriteItems.forEach((item, index) => {
+      map.set(`${item.type}-${item.id}`, index + 1);
+    });
+
+    return map;
+  }, [items, favouriteKeys]);
+
+  // Keyboard shortcuts: 1-9 add favourites 1-9; 0 adds favourite 10.
+  useEffect(() => {
+    const handleFavouriteShortcut = (event: KeyboardEvent) => {
+      if (
+        event.ctrlKey ||
+        event.altKey ||
+        event.metaKey ||
+        event.repeat ||
+        isPaymentModalOpen ||
+        isBillModalOpen ||
+        isNewCustomerModalOpen ||
+        priceEditModalItem
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.closest("input, textarea, select, [contenteditable='true']"))
+      ) {
+        return;
+      }
+
+      if (!/^[0-9]$/.test(event.key)) return;
+
+      const shortcutNumber = event.key === "0" ? 10 : Number(event.key);
+      const shortcutItem = items
+        .filter((item) => favouriteKeys.includes(`${item.type}-${item.id}`))
+        .slice(0, 10)[shortcutNumber - 1];
+
+      if (!shortcutItem) return;
+
+      event.preventDefault();
+      addToCart(shortcutItem);
+    };
+
+    window.addEventListener("keydown", handleFavouriteShortcut);
+    return () => window.removeEventListener("keydown", handleFavouriteShortcut);
+  }, [
+    items,
+    favouriteKeys,
+    addToCart,
+    isPaymentModalOpen,
+    isBillModalOpen,
+    isNewCustomerModalOpen,
+    priceEditModalItem,
+  ]);
 
   const updateItemWarranty = useCallback((item: CartItem, months: number) => {
     setCart((curr) =>
@@ -801,6 +933,88 @@ export default function POSClient() {
       setProcessingPayment(false);
     }
   };
+
+
+  // =======================================================
+  // KEYBOARD ENTER - FAST BILLING WORKFLOW
+  // =======================================================
+
+  const keyboardPaymentLockRef = useRef(false);
+
+  useEffect(() => {
+    const handleEnterKey = (event: KeyboardEvent) => {
+      if (event.key !== "Enter" || event.repeat) return;
+
+      // Do not interfere with other open modals
+      if (isNewCustomerModalOpen || priceEditModalItem) return;
+
+      // STEP 2: Payment modal -> Confirm payment and generate bill
+      if (isPaymentModalOpen) {
+        event.preventDefault();
+
+        if (processingPayment || keyboardPaymentLockRef.current) return;
+
+        keyboardPaymentLockRef.current = true;
+
+        void handleCompleteSale().finally(() => {
+          keyboardPaymentLockRef.current = false;
+        });
+
+        return;
+      }
+
+      // STEP 3: Bill modal -> Start a new sale
+      if (isBillModalOpen) {
+        event.preventDefault();
+
+        setIsBillModalOpen(false);
+        clearCart();
+        setSearch("");
+
+        // Remove focus from the search input or bill buttons
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        return;
+      }
+
+      // Do not trigger checkout while typing in an input
+      const target = event.target;
+
+      if (
+        target instanceof HTMLElement &&
+        (
+          target.isContentEditable ||
+          target.closest("input, textarea, select, [contenteditable='true']")
+        )
+      ) {
+        return;
+      }
+
+      // STEP 1: Cart has items -> Open payment modal
+      if (cart.length > 0) {
+        event.preventDefault();
+        openPaymentModal();
+      }
+    };
+
+    window.addEventListener("keydown", handleEnterKey);
+
+    return () => {
+      window.removeEventListener("keydown", handleEnterKey);
+    };
+  }, [
+    cart.length,
+    isPaymentModalOpen,
+    isBillModalOpen,
+    isNewCustomerModalOpen,
+    priceEditModalItem,
+    processingPayment,
+    handleCompleteSale,
+    clearCart,
+  ]);
+
 
   // =======================================================
   // PRINT BILL / RECEIPT FUNCTION
@@ -1399,7 +1613,16 @@ export default function POSClient() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
-                {filteredItems.map((item) => {
+                {filteredItems.map((item, index) => {
+                  const itemKey = `${item.type}-${item.id}`;
+                  const isFavourite = favouriteKeys.includes(itemKey);
+                  const shortcutNumber = shortcutNumberMap.get(itemKey);
+
+                  const previousWasFavourite =
+                    index > 0 &&
+                    favouriteKeys.includes(
+                      `${filteredItems[index - 1].type}-${filteredItems[index - 1].id}`
+                    );
                   const inCartQty = cartQuantityMap.get(item.id) || 0;
                   const isOutOfStock =
                     item.type === "PRODUCT" &&
@@ -1414,123 +1637,204 @@ export default function POSClient() {
 
                   const catStyle = DEFAULT_CATEGORY_STYLE;
 
+
                   return (
-                    <div
-                      key={`${item.type}-${item.id}`}
-                      onClick={() => !isOutOfStock && addToCart(item)}
-                      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
-                        ? "cursor-not-allowed opacity-60 border-slate-200"
-                        : "cursor-pointer border-slate-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
-                        } ${inCartQty > 0 ? "ring-2 ring-emerald-500/80 border-emerald-500" : ""}`}
-                    >
-                      {/* Top Badges */}
-                      <div className="flex w-full min-w-0 items-center justify-between gap-2">
-
-                        {/* Category Badge */}
-                        <span
-                          className={`inline-flex min-w-0 max-w-[70%] items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold ${catStyle.bg} ${catStyle.text}`}
-                        >
-                          <span className="shrink-0">
-                            {renderCategoryIcon(item.categoryType, "h-3 w-3")}
+                    <React.Fragment key={`${item.type}-${item.id}`}>
+                      {/* Favourite Section Heading */}
+                      {index === 0 && isFavourite && (
+                        <div className="col-span-full flex items-center gap-2 py-1">
+                          <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                          <h3 className="text-sm font-bold text-slate-700">
+                            Favourite Resources
+                          </h3>
+                          <span className="text-xs text-slate-400">
+                            ({favouriteKeys.filter((key) =>
+                              filteredItems.some(
+                                (i) => `${i.type}-${i.id}` === key
+                              )
+                            ).length})
                           </span>
-
-                          <span className="truncate">
-                            {item.category}
+                          <span className="ml-auto text-[10px] font-medium text-emerald-700">
+                            Shortcuts: 1–9, 0
                           </span>
-                        </span>
-
-                        {/* In Cart Badge */}
-                        {inCartQty > 0 && (
-                          <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-emerald-600 px-2.5 py-1 text-[9px] font-bold text-white shadow-sm">
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
-                            {inCartQty} in cart
-                          </span>
-                        )}
-
-                      </div>
-
-                      {/* Product Name & Code */}
-                      <div className="mt-3">
-                        <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 group-hover:text-emerald-700">
-                          {item.name}
-                        </h4>
-
-                        {item.brand?.trim() && (
-                          <p className="mt-1 text-[11px] font-bold text-blue-600">
-                            {item.brand}
-                          </p>
-                        )}
-
-                        <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400">
-                          <span>{item.code}</span>
-                          {item.unit && <span>• {item.unit}</span>}
-                        </div>
-                      </div>
-
-                      {/* Stock Info */}
-                      {item.type === "PRODUCT" && item.stock !== null && (
-                        <div className="mt-2 text-[10px]">
-                          {isOutOfStock ? (
-                            <span className="font-bold text-rose-600">
-                              Out of stock
-                            </span>
-                          ) : isLowStock ? (
-                            <span className="font-medium text-amber-600">
-                              Low stock: {item.stock} {item.unit}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400">
-                              Stock: {item.stock} {item.unit}
-                            </span>
-                          )}
                         </div>
                       )}
 
-                      {/* Price and Add Button */}
-                      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
-                        <div>
-                          <p className="text-xs font-black text-slate-900">
-                            {formatRs(item.price)}
-                          </p>
-                          <p className="text-[9px] text-slate-400">
-                            per {item.unit}
-                          </p>
+                      {/* All Products Section Heading */}
+                      {!isFavourite && previousWasFavourite && (
+                        <>
+                          <div className="col-span-full my-2 border-t border-slate-300" />
+
+                          <div className="col-span-full py-1">
+                            <h3 className="text-sm font-bold text-slate-600">
+                              All Products & Services
+                            </h3>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Product Card */}
+                      <div
+                        onClick={() => !isOutOfStock && addToCart(item)}
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
+                          ? "cursor-not-allowed opacity-60 border-slate-200"
+                          : "cursor-pointer border-slate-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
+                          } ${inCartQty > 0
+                            ? "ring-2 ring-emerald-500/80 border-emerald-500"
+                            : ""
+                          }`}
+                      >
+                        {/* Top Badges */}
+                        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+
+                          {/* Category Badge */}
+                          <span
+                            className={`inline-flex min-w-0 max-w-[70%] items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold ${catStyle.bg} ${catStyle.text}`}
+                          >
+                            <span className="shrink-0">
+                              {renderCategoryIcon(item.categoryType, "h-3 w-3")}
+                            </span>
+                            <span className="truncate">{item.category}</span>
+                          </span>
+
+                          {/* Favourite Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavourite(item);
+                            }}
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition ${isFavourite
+                              ? "border-amber-300 bg-amber-50 text-amber-500"
+                              : "border-slate-200 bg-white text-slate-400 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-500"
+                              }`}
+                            title={
+                              isFavourite
+                                ? "Remove from favourites"
+                                : "Add to favourites"
+                            }
+                            aria-label={
+                              isFavourite
+                                ? `Remove ${item.name} from favourites`
+                                : `Add ${item.name} to favourites`
+                            }
+                          >
+                            <Star
+                              className="h-3.5 w-3.5"
+                              fill={isFavourite ? "currentColor" : "none"}
+                            />
+                          </button>
+
+                          {/* Favourite Keyboard Shortcut */}
+                          {shortcutNumber !== undefined && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(item);
+                              }}
+                              disabled={isOutOfStock}
+                              className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-1.5 text-[10px] font-black text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              title={`Add ${item.name} to cart (keyboard shortcut ${shortcutNumber === 10 ? "0" : shortcutNumber})`}
+                              aria-label={`Add ${item.name} to cart using shortcut ${shortcutNumber}`}
+                            >
+                              {shortcutNumber}
+                            </button>
+                          )}
+
+                          {/* In Cart Badge */}
+                          {inCartQty > 0 && (
+                            <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-emerald-600 px-2.5 py-1 text-[9px] font-bold text-white shadow-sm">
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              {inCartQty} in cart
+                            </span>
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            disabled={isOutOfStock}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openPriceEditModal(item);
-                            }}
-                            className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-[10px] font-bold text-slate-700 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-40"
-                            title="Edit unit price for this product before selling"
-                          >
-                            <Pencil className="h-3 w-3 text-emerald-600" />
-                            <span className="hidden sm:inline">Price</span>
-                          </button>
+                        {/* Product Name & Code */}
+                        <div className="mt-3">
+                          <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 group-hover:text-emerald-700">
+                            {item.name}
+                          </h4>
 
-                          <button
-                            type="button"
-                            disabled={isOutOfStock}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              addToCart(item);
-                            }}
-                            className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
-                              ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                              : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
-                              }`}
-                            title="Add to order"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
+                          {item.brand?.trim() && (
+                            <p className="mt-1 text-[11px] font-bold text-blue-600">
+                              {item.brand}
+                            </p>
+                          )}
+
+                          <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400">
+                            <span>{item.code}</span>
+                            {item.unit && <span>• {item.unit}</span>}
+                          </div>
+                        </div>
+
+                        {/* Stock Info */}
+                        {item.type === "PRODUCT" && item.stock !== null && (
+                          <div className="mt-2 text-[10px]">
+                            {isOutOfStock ? (
+                              <span className="font-bold text-rose-600">
+                                Out of stock
+                              </span>
+                            ) : isLowStock ? (
+                              <span className="font-medium text-amber-600">
+                                Low stock: {item.stock} {item.unit}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">
+                                Stock: {item.stock} {item.unit}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Price and Add Button */}
+                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+                          <div>
+                            <p className="text-xs font-black text-slate-900">
+                              {formatRs(item.price)}
+                            </p>
+                            <p className="text-[9px] text-slate-400">
+                              per {item.unit}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              disabled={isOutOfStock}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openPriceEditModal(item);
+                              }}
+                              className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-[10px] font-bold text-slate-700 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-40"
+                              title="Edit unit price for this product before selling"
+                            >
+                              <Pencil className="h-3 w-3 text-emerald-600" />
+                              <span className="hidden sm:inline">Price</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={isOutOfStock}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart(item);
+                              }}
+                              className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
+                                }`}
+                              title="Add to order"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </React.Fragment>
                   );
+
                 })}
               </div>
             )}
