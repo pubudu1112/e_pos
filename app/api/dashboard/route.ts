@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
 
     const period: DashboardPeriod =
       requestedPeriod &&
-      allowedPeriods.includes(requestedPeriod)
+        allowedPeriods.includes(requestedPeriod)
         ? requestedPeriod
         : "7days";
 
@@ -350,7 +350,7 @@ export async function GET(request: NextRequest) {
         },
       }),
 
-      // 8. Sales by category
+      // 8. Sales by Product & Service Category
       prisma.saleitem.findMany({
         where: {
           sale: {
@@ -362,15 +362,35 @@ export async function GET(request: NextRequest) {
               not: "CANCELLED",
             },
           },
-          productId: {
-            not: null,
-          },
+          OR: [
+            {
+              productId: {
+                not: null,
+              },
+            },
+            {
+              serviceId: {
+                not: null,
+              },
+            },
+          ],
         },
         select: {
           total: true,
+
           product: {
             select: {
               category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+
+          service: {
+            select: {
+              servicecategory: {
                 select: {
                   name: true,
                 },
@@ -675,21 +695,28 @@ export async function GET(request: NextRequest) {
     }
 
     /* ========================================================
-       PROCESS SALES BY CATEGORY
-    ======================================================== */
+   PROCESS SALES BY PRODUCT & SERVICE CATEGORY
+======================================================== */
 
-    const categoryMap =
-      new Map<string, number>();
+    const categoryMap = new Map<string, number>();
 
     for (const row of categoryRows) {
-      const categoryName =
-        row.product?.category?.name ||
-        "Other";
+      let categoryName = "Other";
+
+      // Product Category
+      if (row.product) {
+        categoryName = `Product - ${row.product.category?.name || "Other"
+          }`;
+      }
+
+      // Service Category
+      else if (row.service) {
+        categoryName = `Service - ${row.service.servicecategory?.name || "Other"
+          }`;
+      }
 
       const current =
-        categoryMap.get(
-          categoryName
-        ) || 0;
+        categoryMap.get(categoryName) || 0;
 
       categoryMap.set(
         categoryName,
@@ -697,20 +724,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const salesByCategory =
-      Array.from(
-        categoryMap.entries()
-      )
-        .map(
-          ([name, value]) => ({
-            name,
-            value,
-          })
-        )
-        .sort(
-          (a, b) =>
-            b.value - a.value
-        );
+    const salesByCategory = Array.from(
+      categoryMap.entries()
+    )
+      .map(([name, value]) => ({
+        name,
+        value,
+      }))
+      .sort((a, b) => b.value - a.value);
 
     /* ========================================================
        PROCESS PAYMENT METHODS
@@ -815,16 +836,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const topSellingProducts =
-      Array.from(
-        topSellingMap.values()
-      )
-        .sort(
-          (a, b) =>
-            b.quantity -
-            a.quantity
-        )
-        .slice(0, 10);
+    /* ========================================================
+   TOP SELLING PRODUCTS - PRODUCTS ONLY
+======================================================== */
+
+    const topSellingProducts = Array.from(
+      topSellingMap.values()
+    )
+      .filter((item) => item.type === "PRODUCT")
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
+
+    /* ========================================================
+       TOP SELLING SERVICES - SERVICES ONLY
+    ======================================================== */
+
+    const topSellingServices = Array.from(
+      topSellingMap.values()
+    )
+      .filter((item) => item.type === "SERVICE")
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 10);
 
     const paymentStatusSummary =
       paymentStatusRows.map(
@@ -943,6 +975,12 @@ export async function GET(request: NextRequest) {
         ---------------------------------------------------- */
 
         topSellingProducts,
+
+        /* ----------------------------------------------------
+           TOP SELLING SERVICES
+        ---------------------------------------------------- */
+
+        topSellingServices,
 
         /* ----------------------------------------------------
            RECENT SALES

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 const ALL_SYSTEM_PERMISSIONS = [
   "DASHBOARD_VIEW",
   "POS_VIEW",
+  "SMART_FORECAST_VIEW",
   "JOB_VIEW",
   "JOB_CREATE",
   "JOB_UPDATE",

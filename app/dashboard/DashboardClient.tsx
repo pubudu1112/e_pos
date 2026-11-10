@@ -98,6 +98,12 @@ type DashboardData = {
     revenue: number;
   }[];
 
+  topSellingServices: {
+    name: string;
+    quantity: number;
+    revenue: number;
+  }[];
+
   recentSales: {
     id: number;
     invoiceNo: string;
@@ -263,7 +269,7 @@ export default function DashboardClient({
         if (!result.success) {
           throw new Error(
             result.message ||
-              "Failed to load dashboard data."
+            "Failed to load dashboard data."
           );
         }
 
@@ -756,10 +762,9 @@ export default function DashboardClient({
                 mt-4
                 text-xs
                 font-medium
-                ${
-                  data.summary.lowStockCount > 0
-                    ? "text-destructive"
-                    : "text-success"
+                ${data.summary.lowStockCount > 0
+                  ? "text-destructive"
+                  : "text-success"
                 }
               `}
             >
@@ -952,9 +957,9 @@ export default function DashboardClient({
 
             <div className="mt-6">
               <SalesOverviewChart
-  data={data.salesOverview}
-  period={period}
-/>
+                data={data.salesOverview}
+                period={period}
+              />
             </div>
 
             {/* REFRESHING OVERLAY */}
@@ -1216,34 +1221,69 @@ export default function DashboardClient({
         </div>
 
         {/* ====================================================
-            TOP SELLING PRODUCTS
-        ===================================================== */}
+    TOP SELLING PRODUCTS + SERVICES
+===================================================== */}
 
-        <div
-          className="
-            mt-6
-            rounded-2xl
-            border
-            border-border
-            bg-card
-            p-6
-            shadow-sm
-          "
-        >
-          <h2 className="text-base font-semibold text-foreground">
-            Top Selling Products
-          </h2>
+        <div className="mt-6 grid gap-6 xl:grid-cols-2">
 
-          <p className="mt-1 text-xs text-muted-foreground">
-            Best performing products and services by quantity sold
-          </p>
+          {/* TOP SELLING PRODUCTS */}
 
-          <div className="mt-4">
-            <TopSellingProductsChart
-              data={data.topSellingProducts}
-            />
+          <div
+            className="
+      rounded-2xl
+      border
+      border-border
+      bg-card
+      p-6
+      shadow-sm
+    "
+          >
+            <h2 className="text-base font-semibold text-foreground">
+              Top Selling Products
+            </h2>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              Best performing products by quantity sold
+            </p>
+
+            <div className="mt-4">
+              <TopSellingProductsChart
+                data={data.topSellingProducts}
+                barColor="#10b981"
+              />
+            </div>
           </div>
+
+          {/* TOP SELLING SERVICES */}
+
+          <div
+            className="
+      rounded-2xl
+      border
+      border-border
+      bg-card
+      p-6
+      shadow-sm
+    "
+          >
+            <h2 className="text-base font-semibold text-foreground">
+              Top Selling Services
+            </h2>
+
+            <p className="mt-1 text-xs text-muted-foreground">
+              Best performing services by quantity sold
+            </p>
+
+            <div className="mt-4">
+              <TopSellingProductsChart
+                data={data.topSellingServices}
+                barColor="#3b82f6"
+              />
+            </div>
+          </div>
+
         </div>
+
 
         {/* ====================================================
             RECENT SALES + LOW STOCK
@@ -1432,11 +1472,10 @@ export default function DashboardClient({
                                 py-1
                                 text-[11px]
                                 font-semibold
-                                ${
-                                  sale.paymentStatus ===
+                                ${sale.paymentStatus ===
                                   "PAID"
-                                    ? "bg-success/10 text-success"
-                                    : "bg-warning/15 text-warning-foreground"
+                                  ? "bg-success/10 text-success"
+                                  : "bg-warning/15 text-warning-foreground"
                                 }
                               `}
                             >
@@ -1454,11 +1493,10 @@ export default function DashboardClient({
                                 py-1
                                 text-[11px]
                                 font-semibold
-                                ${
-                                  sale.status ===
+                                ${sale.status ===
                                   "COMPLETED"
-                                    ? "bg-primary/10 text-primary"
-                                    : "bg-warning/15 text-warning-foreground"
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-warning/15 text-warning-foreground"
                                 }
                               `}
                             >
@@ -1564,12 +1602,12 @@ export default function DashboardClient({
                   const percentage =
                     minimum > 0
                       ? Math.min(
-                          100,
-                          Math.round(
-                            (current / minimum) *
-                              100
-                          )
+                        100,
+                        Math.round(
+                          (current / minimum) *
+                          100
                         )
+                      )
                       : 0;
 
                   const critical =
@@ -1598,10 +1636,9 @@ export default function DashboardClient({
                             py-1
                             text-[11px]
                             font-semibold
-                            ${
-                              critical
-                                ? "bg-destructive/10 text-destructive"
-                                : "bg-warning/15 text-warning-foreground"
+                            ${critical
+                              ? "bg-destructive/10 text-destructive"
+                              : "bg-warning/15 text-warning-foreground"
                             }
                           `}
                         >
@@ -1616,10 +1653,9 @@ export default function DashboardClient({
                           className={`
                             h-full
                             rounded-full
-                            ${
-                              critical
-                                ? "bg-destructive"
-                                : "bg-warning"
+                            ${critical
+                              ? "bg-destructive"
+                              : "bg-warning"
                             }
                           `}
                           style={{
@@ -1637,10 +1673,9 @@ export default function DashboardClient({
                           className={`
                             text-[10px]
                             font-medium
-                            ${
-                              critical
-                                ? "text-destructive"
-                                : "text-warning-foreground"
+                            ${critical
+                              ? "text-destructive"
+                              : "text-warning-foreground"
                             }
                           `}
                         >

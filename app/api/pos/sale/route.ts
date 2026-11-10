@@ -132,7 +132,7 @@ export async function POST(
 
     const paymentMethodType =
       typeof body.paymentMethod ===
-      "string"
+        "string"
         ? body.paymentMethod.trim()
         : "";
 
@@ -143,8 +143,8 @@ export async function POST(
 
     const customerId =
       body.customerId !== null &&
-      body.customerId !== undefined &&
-      body.customerId !== ""
+        body.customerId !== undefined &&
+        body.customerId !== ""
         ? Number(body.customerId)
         : null;
 
@@ -155,15 +155,15 @@ export async function POST(
       typeof body.paymentReference === "string"
         ? body.paymentReference.trim()
         : typeof body.reference === "string"
-        ? body.reference.trim()
-        : "";
+          ? body.reference.trim()
+          : "";
 
     const paymentNote =
       typeof body.paymentNote === "string"
         ? body.paymentNote.trim()
         : typeof body.note === "string"
-        ? body.note.trim()
-        : "";
+          ? body.note.trim()
+          : "";
 
     const cashTendered =
       Number(body.cashTendered) || 0;
@@ -231,12 +231,12 @@ export async function POST(
     if (
       !allowedPaymentMethods.includes(
         paymentMethodType as
-          | "CASH"
-          | "CARD"
-          | "BANK_TRANSFER"
-          | "ONLINE"
-          | "CREDIT"
-          | "OTHER"
+        | "CASH"
+        | "CARD"
+        | "BANK_TRANSFER"
+        | "ONLINE"
+        | "CREDIT"
+        | "OTHER"
       )
     ) {
       return NextResponse.json(
@@ -418,15 +418,15 @@ export async function POST(
                       id: item.id,
                     },
                     include: {
-  tax: true,
-  stock: true,
-  category: {
-    select: {
-      id: true,
-      warrantyEnabled: true,
-    },
-  },
-},
+                      tax: true,
+                      stock: true,
+                      category: {
+                        select: {
+                          id: true,
+                          warrantyEnabled: true,
+                        },
+                      },
+                    },
                   }
                 );
 
@@ -448,9 +448,9 @@ export async function POST(
               const currentStock =
                 product.stock
                   ? Number(
-                      product.stock
-                        .quantity
-                    )
+                    product.stock
+                      .quantity
+                  )
                   : 0;
 
               // ----------------------------------------------
@@ -471,8 +471,13 @@ export async function POST(
               // ----------------------------------------------
 
               const catalogPrice = Number(product.sellingPrice);
+              const hasCustomPrice =
+                typeof item.unitPrice === "number" &&
+                Number.isFinite(item.unitPrice) &&
+                item.unitPrice >= 0;
+
               const unitPrice =
-                typeof item.unitPrice === "number" && item.unitPrice >= 0
+                isPriceEditAllowed && hasCustomPrice
                   ? Number(item.unitPrice)
                   : catalogPrice;
 
@@ -492,8 +497,8 @@ export async function POST(
               const taxRate =
                 product.tax
                   ? Number(
-                      product.tax.rate
-                    )
+                    product.tax.rate
+                  )
                   : 0;
 
               const lineTax =
@@ -511,13 +516,13 @@ export async function POST(
                 lineTax;
 
               const chosenWarranty = product.category.warrantyEnabled
-  ? (
-      item.warrantyMonths !== undefined &&
-      item.warrantyMonths !== null
-        ? Number(item.warrantyMonths)
-        : Number(product.warrantyMonths || 0)
-    )
-  : 0;
+                ? (
+                  item.warrantyMonths !== undefined &&
+                    item.warrantyMonths !== null
+                    ? Number(item.warrantyMonths)
+                    : Number(product.warrantyMonths || 0)
+                )
+                : 0;
 
               saleItems.push({
                 productId:
@@ -558,24 +563,24 @@ export async function POST(
               "SERVICE"
             ) {
               const service = await tx.service.findUnique({
-  where: {
-    id: item.id,
-  },
-  include: {
-    tax: true,
-    costComponents: {
-      include: {
-        product: {
-          select: {
-            id: true,
-            name: true,
-            status: true,
-          },
-        },
-      },
-    },
-  },
-});
+                where: {
+                  id: item.id,
+                },
+                include: {
+                  tax: true,
+                  costComponents: {
+                    include: {
+                      product: {
+                        select: {
+                          id: true,
+                          name: true,
+                          status: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              });
 
               if (!service) {
                 throw new Error(
@@ -593,8 +598,13 @@ export async function POST(
               }
 
               const catalogPrice = Number(service.basePrice);
+              const hasCustomPrice =
+                typeof item.unitPrice === "number" &&
+                Number.isFinite(item.unitPrice) &&
+                item.unitPrice >= 0;
+
               const unitPrice =
-                typeof item.unitPrice === "number" && item.unitPrice >= 0
+                isPriceEditAllowed && hasCustomPrice
                   ? Number(item.unitPrice)
                   : catalogPrice;
 
@@ -629,7 +639,11 @@ export async function POST(
                     serviceName: service.name,
                   });
                 } else if (comp.costType === "MANUAL") {
-                  serviceCost += unitCost;
+                  if (!Number.isFinite(componentQty) || componentQty < 0) {
+                    throw new Error(`INVALID_SERVICE_COMPONENT:${comp.name}`);
+                  }
+
+                  serviceCost += unitCost * componentQty;
                 }
               }
 
@@ -644,8 +658,8 @@ export async function POST(
               const taxRate =
                 service.tax
                   ? Number(
-                      service.tax.rate
-                    )
+                    service.tax.rate
+                  )
                   : 0;
 
               const lineTax =
@@ -711,7 +725,7 @@ export async function POST(
           const total =
             Math.max(
               totalBeforeDiscount -
-                finalDiscount,
+              finalDiscount,
               0
             );
 
@@ -778,12 +792,12 @@ export async function POST(
                 where: {
                   type:
                     paymentMethodType as
-                      | "CASH"
-                      | "CARD"
-                      | "BANK_TRANSFER"
-                      | "ONLINE"
-                      | "CREDIT"
-                      | "OTHER",
+                    | "CASH"
+                    | "CARD"
+                    | "BANK_TRANSFER"
+                    | "ONLINE"
+                    | "CREDIT"
+                    | "OTHER",
 
                   isActive: true,
                 },
@@ -1009,8 +1023,8 @@ export async function POST(
                 const currentStock =
                   latestStock
                     ? Number(
-                        latestStock.quantity
-                      )
+                      latestStock.quantity
+                    )
                     : 0;
 
                 throw new Error(
@@ -1198,15 +1212,15 @@ export async function POST(
                 const currentStock =
                   product.stock
                     ? Number(
-                        product.stock
-                          .quantity
-                      )
+                      product.stock
+                        .quantity
+                    )
                     : 0;
 
                 const minimumStock =
                   Number(
                     product.minimumStock ??
-                      0
+                    0
                   );
 
                 // --------------------------------------------

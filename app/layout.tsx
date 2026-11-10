@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import {
   Inter,
@@ -23,8 +24,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Pubudu POS",
-  description:
-    "Pubudu Creative Hub POS System",
+  description: "Pubudu Creative Hub POS System",
 };
 
 export default function RootLayout({
@@ -36,10 +36,10 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -54,7 +54,6 @@ export default function RootLayout({
             closeButton
           />
         </ThemeProvider>
-
       </body>
     </html>
   );

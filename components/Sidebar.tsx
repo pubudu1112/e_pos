@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   Boxes,
+  BrainCircuit,
   BriefcaseBusiness,
   ChevronDown,
   ChevronRight,
@@ -82,6 +83,12 @@ const mainMenu: MenuItem[] = [
     icon: ShieldCheck,
     permission: "POS_VIEW",
   },
+  {
+  label: "Smart Forecast",
+  href: "/smart-forecast",
+  icon: BrainCircuit,
+  permission: "SMART_FORECAST_VIEW",
+},
 ];
 
 /* ============================================================
