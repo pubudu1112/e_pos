@@ -13,24 +13,24 @@ export async function GET(request: Request) {
       where: {
         ...(search
           ? {
-              OR: [
-                {
-                  name: {
-                    contains: search,
-                  },
+            OR: [
+              {
+                name: {
+                  contains: search,
                 },
-                {
-                  code: {
-                    contains: search,
-                  },
+              },
+              {
+                code: {
+                  contains: search,
                 },
-                {
-                  phone: {
-                    contains: search,
-                  },
+              },
+              {
+                phone: {
+                  contains: search,
                 },
-              ],
-            }
+              },
+            ],
+          }
           : {}),
       },
 
@@ -83,8 +83,28 @@ export async function POST(request: Request) {
     }
 
     // Generate unique customer code
-    const count = await prisma.customer.count();
-    const code = `CUST-${String(count + 1).padStart(4, "0")}`;
+    // Generate next customer code safely
+    const lastCustomer = await prisma.customer.findFirst({
+      where: {
+        code: {
+          startsWith: "CUST-",
+        },
+      },
+      orderBy: {
+        id: "desc",
+      },
+      select: {
+        code: true,
+      },
+    });
+
+    const lastNumber = lastCustomer
+      ? Number(lastCustomer.code.replace("CUST-", ""))
+      : 0;
+
+    const nextNumber = lastNumber + 1;
+
+    const code = `CUST-${String(nextNumber).padStart(4, "0")}`;
 
     const newCustomer = await prisma.customer.create({
       data: {

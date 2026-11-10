@@ -56,6 +56,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        if (!(await hasPermission("SMART_FORECAST_VIEW"))) {
+            return NextResponse.json(
+                { success: false, message: "Forbidden" },
+                { status: 403 }
+            );
+        }
+
         const body = await request.json();
 
         const title = String(body.title ?? "").trim();
