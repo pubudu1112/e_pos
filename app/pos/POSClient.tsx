@@ -40,6 +40,9 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import React from "react";
+import PDFCounterModal, {
+  type PDFCounterCartEntry,
+} from "@/components/pos/PDFCounterModal";
 
 // =========================================================
 // TYPES
@@ -239,6 +242,31 @@ export default function POSClient() {
     }
   }, []);
 
+  useEffect(() => {
+  let mounted = true;
+
+  fetch("/api/pos/pdf-counter/access", {
+    cache: "no-store",
+  })
+    .then((response) =>
+      response.ok ? response.json() : { allowed: false }
+    )
+    .then((data) => {
+      if (mounted) {
+        setCanAccessPDFCounter(data.allowed === true);
+      }
+    })
+    .catch(() => {
+      if (mounted) {
+        setCanAccessPDFCounter(false);
+      }
+    });
+
+  return () => {
+    mounted = false;
+  };
+}, []);
+
   // Save favourites to Local Storage
   useEffect(() => {
     if (!favouritesLoaded) return;
@@ -277,6 +305,8 @@ export default function POSClient() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isBillModalOpen, setIsBillModalOpen] = useState(false);
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [canAccessPDFCounter, setCanAccessPDFCounter] = useState(false);
+const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
 
   // Payment form state
   const [paymentMethod, setPaymentMethod] =
@@ -554,6 +584,66 @@ export default function POSClient() {
       ];
     });
   }, []);
+
+  const addPDFCounterServicesToCart = useCallback(
+  (entries: PDFCounterCartEntry[]) => {
+    if (!canAccessPDFCounter) return;
+
+    const additions = entries.map((entry) => ({
+      item: items.find(
+        (item) =>
+          item.type === "SERVICE" &&
+          item.id === entry.serviceId
+      ),
+      quantity: entry.quantity,
+    }));
+
+    if (
+      additions.some(
+        (addition) =>
+          !addition.item ||
+          !Number.isSafeInteger(addition.quantity) ||
+          addition.quantity <= 0
+      )
+    ) {
+      toast.error("PDF Counter service selection is invalid.");
+      return;
+    }
+
+    setCart((current) => {
+      const next = [...current];
+
+      for (const { item, quantity } of additions) {
+        if (!item) continue;
+
+        const existingIndex = next.findIndex(
+          (cartItem) =>
+            cartItem.type === "SERVICE" &&
+            cartItem.id === item.id
+        );
+
+        if (existingIndex >= 0) {
+          next[existingIndex] = {
+            ...next[existingIndex],
+            quantity: next[existingIndex].quantity + quantity,
+          };
+        } else {
+          next.push({
+            ...item,
+            quantity,
+            originalPrice: item.price,
+            warrantyMonths: 0,
+          });
+        }
+      }
+
+      return next;
+    });
+
+    toast.success("PDF quantities added to POS cart.");
+  },
+  [canAccessPDFCounter, items]
+);
 
   // Assign shortcuts 1-10 to the first 10 favourite items.
   // The number 0 on the keyboard represents shortcut number 10.
@@ -1392,6 +1482,17 @@ export default function POSClient() {
               <span className="hidden md:inline">Last Bill ({lastCompletedBill.invoiceNo})</span>
             </button>
           )}
+
+          {canAccessPDFCounter && (
+  <button
+    type="button"
+    onClick={() => setIsPDFCounterOpen(true)}
+    className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-2.5 sm:px-3.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
+  >
+    <FileText className="h-4 w-4" />
+    <span>PDF Counter</span>
+  </button>
+)}
 
           <button
             type="button"
@@ -3212,6 +3313,14 @@ export default function POSClient() {
             </div>
           </div>
         </div>
+      )}
+            {/* PDF Counter Modal */}
+      {canAccessPDFCounter && isPDFCounterOpen && (
+        <PDFCounterModal
+          services={items.filter((item) => item.type === "SERVICE")}
+          onClose={() => setIsPDFCounterOpen(false)}
+          onAddToCart={addPDFCounterServicesToCart}
+        />
       )}
     </div>
   );

@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PDF Counter</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- PDF JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+    <style>
+        body {
+
+            background:
+                linear-gradient(135deg,
+                    #0f172a,
+                    #111827,
+                    #1e293b);
+
+            min-height: 100vh;
+
+            font-family: Segoe UI;
+
+            overflow-x: hidden;
+
+        }
+
+        /* MAIN */
+
+        .mainCard {
+
+            width: 100%;
+
+            padding: 22px;
+
+            min-height: 100vh;
+
+        }
+
+        /* TITLE */
+
+        .title {
+
+            font-size: 42px;
+
+            font-weight: 800;
+
+            text-align: center;
+
+            color: #00ffcc;
+
+            margin-bottom: 28px;
+
+            letter-spacing: 0.5px;
+
+        }
+
+        /* DROP ZONE */
+
+        .dropZone {
+
+            border: 2px dashed #00ffcc;
+
+            border-radius: 22px;
+
+            padding: 32px 18px;
+
+            min-height: 180px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            text-align: center;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+
+            background:
+                rgba(255, 255, 255, 0.03);
+
+            overflow: hidden;
+
+            margin-bottom: 28px;
+
+        }
+
+        .dropZone:hover {
+
+            transform: scale(1.003);
+
+            box-shadow:
+                0 0 24px rgba(0, 255, 200, 0.18);
+
+        }
+
+        .dropZone.dragover {
+
+            background: #062c30;
+
+            border-color: #00ff99;
+
+        }
+
+        .uploadIcon {
+
+            font-size: 58px;
+
+            color: #00ffcc;
+
+            margin-bottom: 10px;
+
+        }
+
+        .dropTitle {
+
+            font-size: 32px;
+
+            font-weight: 800;
+
+            color: white;
+
+        }
+
+        .dropSub {
+
+            margin-top: 8px;
+
+            font-size: 16px;
+
+            color: #cbd5e1;
+
+        }
+
+        /* TABLE */
+
+        .table-responsive {
+
+            width: 100%;
+
+            overflow-x: auto;
+
+        }
+
+        .table {
+
+            width: 100%;
+
+            border-collapse: separate;
+
+            border-spacing: 0 14px;
+
+        }
+
+        /* HEADER */
+
+        .table thead th {
+
+            background: #020d24;
+
+            color: white;
+
+            border: none;
+
+            padding: 18px 12px;
+
+            font-size: 16px;
+
+            text-align: center;
+
+            white-space: nowrap;
+
+        }
+
+        /* ROW */
+
+        .table tbody tr {
+
+            filter:
+                drop-shadow(0 0 10px rgba(0, 0, 0, 0.10));
+
+        }
+
+        /* NORMAL ROW */
+
+        .table tbody td {
+
+            background: white;
+
+            color: #111827;
+
+            border: none;
+
+            padding: 16px 12px;
+
+            vertical-align: middle;
+
+            text-align: center;
+
+            transition: 0.3s;
+
+            font-size: 16px;
+
+        }
+
+        /* HOVER */
+
+        .table tbody tr:hover td {
+
+            background: #f8fafc;
+
+        }
+
+        /* ROUND */
+
+        .table tbody td:first-child {
+
+            border-top-left-radius: 18px;
+
+            border-bottom-left-radius: 18px;
+
+        }
+
+        .table tbody td:last-child {
+
+            border-top-right-radius: 18px;
+
+            border-bottom-right-radius: 18px;
+
+        }
+
+        /* PREVIEW */
+
+        .pdfPreview {
+
+            border-radius: 12px;
+
+            border: 2px solid #e2e8f0;
+
+            cursor: pointer;
+
+            transition: 0.3s;
+
+            box-shadow:
+                0 0 8px rgba(0, 0, 0, 0.10);
+
+        }
+
+        .pdfPreview:hover {
+
+            transform: scale(1.04);
+
+        }
+
+        /* FILE NAME */
+
+        .pdfFileName {
+
+            font-weight: 700;
+
+            color: #111827;
+
+            font-size: 16px;
+
+        }
+
+        /* SUMMARY */
+
+        .summaryCard {
+
+            margin-top: 28px;
+
+            border-radius: 22px;
+
+            padding: 28px;
+
+            background:
+                linear-gradient(135deg,
+                    #064e3b,
+                    #065f46);
+
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.22);
+
+            color: white;
+
+        }
+
+        .summaryItem {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 14px 0;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, 0.18);
+
+            font-size: 20px;
+
+        }
+
+        .grandTotal {
+
+            font-size: 30px;
+
+            font-weight: bold;
+
+            color: #00ffcc;
+
+        }
+
+        /* BADGES */
+
+        .badgePending {
+
+            background: #ffc107;
+
+            color: black;
+
+            padding: 8px 16px;
+
+            border-radius: 50px;
+
+            font-weight: bold;
+
+            font-size: 14px;
+
+        }
+
+        .badgeDone {
+
+            background:
+                linear-gradient(135deg,
+                    #00ff99,
+                    #00cc66);
+
+            color: black;
+
+            padding: 8px 16px;
+
+            border-radius: 50px;
+
+            font-weight: bold;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-width: 110px;
+
+            font-size: 14px;
+
+            box-shadow:
+                0 0 12px rgba(0, 255, 150, 0.25);
+
+        }
+
+        /* PRINTED ROW */
+
+        .printedRow td {
+
+            background: #0f5132 !important;
+
+            color: white !important;
+
+            border: none !important;
+
+        }
+
+        .printedRow:hover td {
+
+            background: #0f5132 !important;
+
+        }
+
+        /* LEFT LINE */
+
+        .printedRow td:first-child {
+
+            border-left: 4px solid #00ff99 !important;
+
+        }
+
+        /* ROUND */
+
+        .printedRow td:first-child {
+
+            border-top-left-radius: 18px;
+
+            border-bottom-left-radius: 18px;
+
+        }
+
+        .printedRow td:last-child {
+
+            border-top-right-radius: 18px;
+
+            border-bottom-right-radius: 18px;
+
+        }
+
+        /* TEXT COLORS */
+
+        .doubleCount {
+
+            color: #0ea5e9 !important;
+
+            font-weight: bold;
+
+        }
+
+        .singleCount {
+
+            color: #f59e0b !important;
+
+            font-weight: bold;
+
+        }
+
+        .totalPrice {
+
+            color: #059669 !important;
+
+            font-weight: bold;
+
+        }
+
+        .printedRow .doubleCount {
+
+            color: #38bdf8 !important;
+
+        }
+
+        .printedRow .singleCount {
+
+            color: #fde047 !important;
+
+        }
+
+        .printedRow .totalPrice {
+
+            color: #86efac !important;
+
+        }
+
+        /* MODAL */
+
+        .previewModal {
+
+            display: none;
+
+            position: fixed;
+
+            z-index: 9999;
+
+            left: 0;
+            top: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background:
+                rgba(0, 0, 0, 0.92);
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+        .previewModal img {
+
+            max-width: 90%;
+
+            max-height: 90%;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 0 30px black;
+
+        }
+
+        #closePreview {
+
+            position: absolute;
+
+            top: 20px;
+            right: 35px;
+
+            color: white;
+
+            font-size: 48px;
+
+            cursor: pointer;
+
+        }
+
+        /* FORM */
+
+        .form-select,
+        .form-control {
+
+            width: 90px;
+
+            min-width: 90px;
+
+            max-width: 90px;
+
+            height: 42px;
+
+            border-radius: 10px;
+
+            padding: 6px 10px;
+
+            border: 1px solid #d1d5db;
+
+            font-size: 16px;
+
+            margin: auto;
+
+        }
+
+        /* BUTTON */
+
+        .btn {
+
+            border-radius: 10px;
+
+            padding: 8px 14px;
+
+            font-size: 15px;
+
+        }
+
+        /* PAYMENT INPUT */
+
+        .paymentInput {
+
+            width: 170px !important;
+
+            max-width: 170px !important;
+
+            height: 46px !important;
+
+            text-align: center;
+
+            font-weight: bold;
+
+            background: white;
+
+            color: black;
+
+            transition: 0.3s ease;
+
+            font-size: 18px !important;
+
+        }
+
+        /* CLICK EFFECT */
+
+        .paymentInput:focus {
+
+            width: 185px !important;
+
+            max-width: 185px !important;
+
+            transform: scale(1.03);
+
+            box-shadow:
+                0 0 10px rgba(0, 255, 200, 0.3);
+
+        }
+
+        /* HIDE PLACEHOLDER */
+
+        .paymentInput:focus::placeholder {
+
+            color: transparent;
+
+        }
+
+        /* BALANCE */
+
+        #balanceAmount {
+
+            font-size: 28px !important;
+
+            font-weight: bold;
+
+            color: #fde047;
+
+        }
+
+        /* MOBILE */
+
+        @media(max-width:768px) {
+
+            .mainCard {
+
+                padding: 14px;
+
+            }
+
+            .title {
+
+                font-size: 28px;
+
+            }
+
+            .uploadIcon {
+
+                font-size: 42px;
+
+            }
+
+            .dropTitle {
+
+                font-size: 22px;
+
+            }
+
+            .dropSub {
+
+                font-size: 13px;
+
+            }
+
+            .table thead th {
+
+                font-size: 12px;
+
+                padding: 12px 8px;
+
+            }
+
+            .table tbody td {
+
+                font-size: 12px;
+
+                padding: 12px 8px;
+
+            }
+
+            .form-select,
+            .form-control {
+
+                width: 72px;
+
+                min-width: 72px;
+
+                max-width: 72px;
+
+                height: 36px;
+
+                font-size: 12px;
+
+            }
+
+            .btn {
+
+                font-size: 12px;
+
+                padding: 6px 10px;
+
+            }
+
+            .summaryItem {
+
+                font-size: 15px;
+
+                gap: 8px;
+
+            }
+
+            .grandTotal {
+
+                font-size: 22px;
+
+            }
+
+            .paymentInput {
+
+                width: 120px !important;
+
+                max-width: 120px !important;
+
+                height: 40px !important;
+
+                font-size: 14px !important;
+
+            }
+
+            #balanceAmount {
+
+                font-size: 18px !important;
+
+            }
+
+        }
+
+        /* POS integration: standalone payment and price display hidden. */
+        .grandTotal,
+        .summaryItem:has(#customerPaid),
+        .summaryItem:has(#balanceAmount),
+        .table thead th:nth-child(9),
+        .table tbody td:nth-child(9) {
+            display: none !important;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container-fluid p-0">
+
+        <div class="mainCard">
+
+            <h1 class="title">
+
+                <i class="bi bi-printer-fill"></i>
+
+                Pubudu Creative Hub
+
+            </h1>
+
+            <!-- DROP ZONE -->
+
+            <div class="dropZone" id="dropZone">
+
+                <input type="file" id="fileInput" multiple accept="application/pdf" hidden>
+
+                <div class="uploadIcon">
+
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+
+                </div>
+
+                <div class="dropTitle">
+
+                    Drag & Drop PDFs Here
+
+                </div>
+
+                <div class="dropSub">
+
+                    or Click Anywhere To Choose Files
+
+                </div>
+
+            </div>
+
+            <!-- TABLE -->
+
+            <div class="table-responsive">
+
+                <table class="table align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Preview</th>
+                            <th>PDF Name</th>
+                            <th>Pages</th>
+                            <th>Slides</th>
+                            <th>Type</th>
+                            <th>Copies</th>
+                            <th>Double</th>
+                            <th>Single</th>
+                            <th>Total</th>
+                            <th>Print</th>
+                            <th>Status</th>
+                            <th>Delete</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="tableBody"></tbody>
+
+                </table>
+
+            </div>
+
+            <!-- SUMMARY -->
+
+            <div class="summaryCard">
+
+                <div class="summaryItem">
+
+                    <span>
+                        <i class="bi bi-files"></i>
+                        Total Double Side
+                    </span>
+
+                    <span id="finalDouble">0</span>
+
+                </div>
+
+                <div class="summaryItem">
+
+                    <span>
+                        <i class="bi bi-file-earmark"></i>
+                        Total One Side
+                    </span>
+
+                    <span id="finalSingle">0</span>
+
+                </div>
+
+                <div class="summaryItem grandTotal">
+
+                    <span>
+                        <i class="bi bi-cash-stack"></i>
+                        Grand Total
+                    </span>
+
+                    <span>
+                        Rs.
+                        <span id="grandTotal">0</span>
+                    </span>
+
+                </div>
+
+                <!-- CUSTOMER GIVES MONEY -->
+
+                <div class="summaryItem">
+
+                    <span>
+                        <i class="bi bi-wallet2"></i>
+                        Customer Paid
+                    </span>
+
+                    <input type="number" id="customerPaid" class="form-control paymentInput" placeholder="Enter Amount">
+
+                </div>
+
+                <!-- BALANCE -->
+
+                <div class="summaryItem border-0">
+
+                    <span>
+                        <i class="bi bi-currency-exchange"></i>
+                        Balance Return
+                    </span>
+
+                    <span id="balanceAmount" style="
+font-size:34px;
+font-weight:bold;
+color:#fde047;
+">
+
+                        Rs. 0
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+    <!-- MODAL -->
+
+    <div id="previewModal" class="previewModal">
+
+        <span id="closePreview">&times;</span>
+
+        <img id="previewImage">
+
+    </div>
+
+    <script>
+
+        const dropZone =
+            document.getElementById('dropZone');
+
+        const fileInput =
+            document.getElementById('fileInput');
+
+        const tableBody =
+            document.getElementById('tableBody');
+
+        const previewModal =
+            document.getElementById('previewModal');
+
+        const previewImage =
+            document.getElementById('previewImage');
+
+        const closePreview =
+            document.getElementById('closePreview');
+
+        const grandTotalElement =
+            document.getElementById('grandTotal');
+
+        const finalDoubleElement =
+            document.getElementById('finalDouble');
+
+        const finalSingleElement =
+            document.getElementById('finalSingle');
+
+        const customerPaid =
+            document.getElementById('customerPaid');
+
+        const balanceAmount =
+            document.getElementById('balanceAmount');
+
+        const ONE_SIDE_PRICE = 0;
+        const DOUBLE_SIDE_PRICE = 0;
+
+        /* CLICK */
+
+        dropZone.addEventListener(
+            'click',
+            function () {
+
+                fileInput.click();
+
+            });
+
+        /* CHOOSE */
+
+        fileInput.addEventListener(
+            'change',
+            function () {
+
+                processFiles(this.files);
+
+                this.value = '';
+
+            });
+
+        /* DRAG */
+
+        dropZone.addEventListener(
+            'dragover',
+            function (e) {
+
+                e.preventDefault();
+
+                dropZone.classList.add(
+                    'dragover'
+                );
+
+            });
+
+        dropZone.addEventListener(
+            'dragleave',
+            function () {
+
+                dropZone.classList.remove(
+                    'dragover'
+                );
+
+            });
+
+        dropZone.addEventListener(
+            'drop',
+            function (e) {
+
+                e.preventDefault();
+
+                dropZone.classList.remove(
+                    'dragover'
+                );
+
+                processFiles(
+                    e.dataTransfer.files
+                );
+
+            });
+
+        /* CUSTOMER PAID */
+
+        customerPaid.addEventListener(
+            'input',
+            function () {
+
+                calculateBalance();
+
+            });
+
+        /* MODAL */
+
+        closePreview.onclick = function () {
+
+            previewModal.style.display =
+                'none';
+
+        };
+
+        previewModal.onclick = function (e) {
+
+            if (e.target === previewModal) {
+
+                previewModal.style.display =
+                    'none';
+
+            }
+
+        };
+
+        /* PROCESS */
+
+        async function processFiles(files) {
+
+            for (const file of files) {
+
+                if (file.type !== 'application/pdf') {
+
+                    continue;
+
+                }
+
+                const existingFiles =
+                    document.querySelectorAll(
+                        '.pdfFileName'
+                    );
+
+                let alreadyExists = false;
+
+                existingFiles.forEach(item => {
+
+                    if (
+                        item.innerText.trim()
+                        ===
+                        file.name.trim()
+                    ) {
+
+                        alreadyExists = true;
+
+                    }
+
+                });
+
+                if (alreadyExists) {
+
+                    alert(
+                        file.name +
+                        ' already added!'
+                    );
+
+                    continue;
+
+                }
+
+                const reader =
+                    new FileReader();
+
+                reader.onload =
+                    async function () {
+
+                        const typedarray =
+                            new Uint8Array(
+                                this.result
+                            );
+
+                        const pdf =
+                            await pdfjsLib
+                                .getDocument(
+                                    typedarray
+                                ).promise;
+
+                        createRow(
+                            file,
+                            pdf.numPages
+                        );
+
+                    };
+
+                reader.readAsArrayBuffer(file);
+
+            }
+
+        }
+
+        /* CREATE ROW */
+
+        function createRow(file, pages) {
+
+            const tr =
+                document.createElement('tr');
+
+            tr.innerHTML = `
+
+    <td>
+        <canvas class="pdfPreview"></canvas>
+    </td>
+
+    <td class="pdfFileName">
+        ${file.name}
+    </td>
+
+    <td class="pages">
+        ${pages}
+    </td>
+
+    <td>
+
+        <select class="slidesSelect form-select">
+
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+            <option value="4">4</option>
+            <option value="6">6</option>
+
+        </select>
+
+    </td>
+
+    <td>
+
+        <select class="printType form-select">
+
+            <option value="double">
+                D/S
+            </option>
+
+            <option value="single">
+                O/S
+            </option>
+
+        </select>
+
+    </td>
+
+    <td>
+
+        <input
+        type="number"
+        class="copiesInput form-control"
+        min="1"
+        value="1">
+
+    </td>
+
+    <td class="doubleCount">
+        0
+    </td>
+
+    <td class="singleCount">
+        0
+    </td>
+
+    <td class="totalPrice">
+        Rs. 0
+    </td>
+
+    <td>
+
+        <button class="btn btn-success printBtn">
+
+            <i class="bi bi-printer-fill"></i>
+
+        </button>
+
+    </td>
+
+    <td class="printStatus">
+
+        <span class="badgePending">
+            Pending
+        </span>
+
+    </td>
+
+    <td>
+
+        <button class="btn btn-danger deleteBtn">
+
+            <i class="bi bi-trash-fill"></i>
+
+        </button>
+
+    </td>
+
+    `;
+
+            tableBody.appendChild(tr);
+
+            calculateRow(tr);
+
+            renderPreview(
+                file,
+                tr.querySelector('.pdfPreview')
+            );
+
+            /* EVENTS */
+
+            tr.querySelector('.slidesSelect')
+                .addEventListener(
+                    'change',
+                    function () {
+
+                        calculateRow(tr);
+
+                    });
+
+            tr.querySelector('.copiesInput')
+                .addEventListener(
+                    'input',
+                    function () {
+
+                        if (this.value < 1) {
+
+                            this.value = 1;
+
+                        }
+
+                        calculateRow(tr);
+
+                    });
+
+            tr.querySelector('.printType')
+                .addEventListener(
+                    'change',
+                    function () {
+
+                        calculateRow(tr);
+
+                    });
+
+            /* DELETE */
+
+            tr.querySelector('.deleteBtn')
+                .addEventListener(
+                    'click',
+                    function () {
+
+                        tr.remove();
+
+                        calculateGrandTotal();
+
+                    });
+
+            /* PRINT */
+
+            tr.querySelector('.printBtn')
+                .addEventListener(
+                    'click',
+                    function () {
+
+                        const url =
+                            URL.createObjectURL(file);
+
+                        const printWindow =
+                            window.open(url);
+
+                        tr.querySelector('.printStatus')
+                            .innerHTML = `
+
+        <span class="badgeDone">
+            Printed
+        </span>
+
+        `;
+
+                        tr.classList.add(
+                            'printedRow'
+                        );
+
+                        this.innerHTML =
+                            '<i class="bi bi-check-lg"></i>';
+
+                        this.classList.remove(
+                            'btn-success'
+                        );
+
+                        this.classList.add(
+                            'btn-secondary'
+                        );
+
+                        this.disabled = true;
+
+                        setTimeout(function () {
+
+                            printWindow.print();
+
+                        }, 1000);
+
+                    });
+
+        }
+
+        /* CALCULATE ROW */
+
+        function calculateRow(tr) {
+
+            const pages =
+                parseInt(
+                    tr.querySelector('.pages').innerText
+                );
+
+            const slides =
+                parseInt(
+                    tr.querySelector('.slidesSelect').value
+                );
+
+            const copies =
+                Math.max(
+                    1,
+                    parseInt(tr.querySelector('.copiesInput').value) || 1
+                );
+
+            const printType =
+                tr.querySelector('.printType').value;
+
+            // Calculate sheets separately for each copy
+            const sheetsPerCopy =
+                Math.ceil(pages / slides);
+
+            let doubleSheets = 0;
+            let singleSheets = 0;
+            let total = 0;
+
+            if (printType === 'double') {
+
+                // Calculate each copy independently
+                doubleSheets =
+                    Math.floor(sheetsPerCopy / 2) * copies;
+
+                singleSheets =
+                    (sheetsPerCopy % 2) * copies;
+
+                total =
+                    (doubleSheets * DOUBLE_SIDE_PRICE)
+                    +
+                    (singleSheets * ONE_SIDE_PRICE);
+
+            }
+            else {
+
+                // All sheets are one-sided
+                singleSheets =
+                    sheetsPerCopy * copies;
+
+                total =
+                    singleSheets * ONE_SIDE_PRICE;
+
+            }
+
+            tr.querySelector('.doubleCount')
+                .innerText = doubleSheets;
+
+            tr.querySelector('.singleCount')
+                .innerText = singleSheets;
+
+            tr.querySelector('.totalPrice')
+                .innerText = 'Rs. ' + total;
+
+            calculateGrandTotal();
+
+        }
+
+        /* GRAND TOTAL */
+
+        function calculateGrandTotal() {
+
+            let grandTotal = 0;
+
+            let totalDouble = 0;
+
+            let totalSingle = 0;
+
+            document.querySelectorAll(
+                '#tableBody tr'
+            )
+                .forEach(row => {
+
+                    grandTotal += parseFloat(
+
+                        row.querySelector('.totalPrice')
+                            .innerText
+                            .replace('Rs. ', '')
+                    );
+
+                    totalDouble += parseInt(
+
+                        row.querySelector('.doubleCount')
+                            .innerText
+                    );
+
+                    totalSingle += parseInt(
+
+                        row.querySelector('.singleCount')
+                            .innerText
+                    );
+
+                });
+
+            grandTotalElement.innerText =
+                grandTotal;
+
+            finalDoubleElement.innerText =
+                totalDouble;
+
+            finalSingleElement.innerText =
+                totalSingle;
+
+            /* UPDATE BALANCE */
+            calculateBalance();
+
+        }
+
+        /* BALANCE CALCULATION */
+
+        function calculateBalance() {
+
+            const grandTotal =
+                parseFloat(
+                    grandTotalElement.innerText
+                ) || 0;
+
+            const paid =
+                parseFloat(
+                    customerPaid.value
+                ) || 0;
+
+            let balance =
+                paid - grandTotal;
+
+            if (balance < 0) {
+
+                balance = 0;
+
+            }
+
+            balanceAmount.innerText =
+                'Rs. ' + balance;
+
+        }
+
+        /* PREVIEW */
+
+        async function renderPreview(file, canvas) {
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                async function () {
+
+                    const typedarray =
+                        new Uint8Array(
+                            this.result
+                        );
+
+                    const pdf =
+                        await pdfjsLib
+                            .getDocument(
+                                typedarray
+                            ).promise;
+
+                    const page =
+                        await pdf.getPage(1);
+
+                    const viewport =
+                        page.getViewport({
+                            scale: 0.3
+                        });
+
+                    const context =
+                        canvas.getContext('2d');
+
+                    canvas.height =
+                        viewport.height;
+
+                    canvas.width =
+                        viewport.width;
+
+                    await page.render({
+
+                        canvasContext:
+                            context,
+
+                        viewport:
+                            viewport
+
+                    }).promise;
+
+                    canvas.addEventListener(
+                        'click',
+                        async function () {
+
+                            const largeCanvas =
+                                document.createElement('canvas');
+
+                            const largeViewport =
+                                page.getViewport({
+                                    scale: 2
+                                });
+
+                            largeCanvas.width =
+                                largeViewport.width;
+
+                            largeCanvas.height =
+                                largeViewport.height;
+
+                            const largeContext =
+                                largeCanvas.getContext('2d');
+
+                            await page.render({
+
+                                canvasContext:
+                                    largeContext,
+
+                                viewport:
+                                    largeViewport
+
+                            }).promise;
+
+                            previewImage.src =
+                                largeCanvas.toDataURL();
+
+                            previewModal.style.display =
+                                'flex';
+
+                        });
+
+                };
+
+            reader.readAsArrayBuffer(file);
+
+        }
+
+    </script>
+
+
+    <script>
+        (function () {
+            function sendCounts() {
+                const rows = Array.from(document.querySelectorAll('#tableBody tr'));
+                const sum = (selector) => rows.reduce((total, row) => {
+                    const value = Number(row.querySelector(selector)?.textContent?.trim() || 0);
+                    return total + (Number.isFinite(value) ? value : 0);
+                }, 0);
+                window.parent.postMessage({
+                    source: 'pubudu-pdf-counter',
+                    type: 'COUNTS_CHANGED',
+                    doubleSideCount: sum('.doubleCount'),
+                    singleSideCount: sum('.singleCount'),
+                    fileCount: rows.length
+                }, window.location.origin);
+            }
+            let scheduled = false;
+            const observer = new MutationObserver(() => {
+                if (scheduled) return;
+                scheduled = true;
+                requestAnimationFrame(() => { scheduled = false; sendCounts(); });
+            });
+            const tbody = document.getElementById('tableBody');
+            if (tbody) observer.observe(tbody, { childList: true, subtree: true, characterData: true });
+            window.addEventListener('message', event => {
+                if (event.origin !== window.location.origin || event.source !== window.parent) return;
+                if (event.data?.source === 'pubudu-pos' && event.data?.type === 'REQUEST_COUNTS') sendCounts();
+            });
+            sendCounts();
+        })();
+    </script>
+</body>
+
+</html>
