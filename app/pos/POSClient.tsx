@@ -12,6 +12,7 @@ import {
   Banknote,
   BookOpen,
   CheckCircle2,
+  Calculator,
   Copy,
   CreditCard,
   FileText,
@@ -243,29 +244,29 @@ export default function POSClient() {
   }, []);
 
   useEffect(() => {
-  let mounted = true;
+    let mounted = true;
 
-  fetch("/api/pos/pdf-counter/access", {
-    cache: "no-store",
-  })
-    .then((response) =>
-      response.ok ? response.json() : { allowed: false }
-    )
-    .then((data) => {
-      if (mounted) {
-        setCanAccessPDFCounter(data.allowed === true);
-      }
+    fetch("/api/pos/pdf-counter/access", {
+      cache: "no-store",
     })
-    .catch(() => {
-      if (mounted) {
-        setCanAccessPDFCounter(false);
-      }
-    });
+      .then((response) =>
+        response.ok ? response.json() : { allowed: false }
+      )
+      .then((data) => {
+        if (mounted) {
+          setCanAccessPDFCounter(data.allowed === true);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setCanAccessPDFCounter(false);
+        }
+      });
 
-  return () => {
-    mounted = false;
-  };
-}, []);
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Save favourites to Local Storage
   useEffect(() => {
@@ -306,7 +307,15 @@ export default function POSClient() {
   const [isBillModalOpen, setIsBillModalOpen] = useState(false);
   const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
   const [canAccessPDFCounter, setCanAccessPDFCounter] = useState(false);
-const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
+  const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
+  const [calculatorDisplay, setCalculatorDisplay] = useState("0");
+  const [calculatorStoredValue, setCalculatorStoredValue] =
+    useState<number | null>(null);
+  const [calculatorOperator, setCalculatorOperator] = useState<
+    "+" | "-" | "×" | "÷" | null
+  >(null);
+  const [calculatorNewNumber, setCalculatorNewNumber] = useState(false);
 
   // Payment form state
   const [paymentMethod, setPaymentMethod] =
@@ -586,64 +595,64 @@ const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
   }, []);
 
   const addPDFCounterServicesToCart = useCallback(
-  (entries: PDFCounterCartEntry[]) => {
-    if (!canAccessPDFCounter) return;
+    (entries: PDFCounterCartEntry[]) => {
+      if (!canAccessPDFCounter) return;
 
-    const additions = entries.map((entry) => ({
-      item: items.find(
-        (item) =>
-          item.type === "SERVICE" &&
-          item.id === entry.serviceId
-      ),
-      quantity: entry.quantity,
-    }));
+      const additions = entries.map((entry) => ({
+        item: items.find(
+          (item) =>
+            item.type === "SERVICE" &&
+            item.id === entry.serviceId
+        ),
+        quantity: entry.quantity,
+      }));
 
-    if (
-      additions.some(
-        (addition) =>
-          !addition.item ||
-          !Number.isSafeInteger(addition.quantity) ||
-          addition.quantity <= 0
-      )
-    ) {
-      toast.error("PDF Counter service selection is invalid.");
-      return;
-    }
-
-    setCart((current) => {
-      const next = [...current];
-
-      for (const { item, quantity } of additions) {
-        if (!item) continue;
-
-        const existingIndex = next.findIndex(
-          (cartItem) =>
-            cartItem.type === "SERVICE" &&
-            cartItem.id === item.id
-        );
-
-        if (existingIndex >= 0) {
-          next[existingIndex] = {
-            ...next[existingIndex],
-            quantity: next[existingIndex].quantity + quantity,
-          };
-        } else {
-          next.push({
-            ...item,
-            quantity,
-            originalPrice: item.price,
-            warrantyMonths: 0,
-          });
-        }
+      if (
+        additions.some(
+          (addition) =>
+            !addition.item ||
+            !Number.isSafeInteger(addition.quantity) ||
+            addition.quantity <= 0
+        )
+      ) {
+        toast.error("PDF Counter service selection is invalid.");
+        return;
       }
 
-      return next;
-    });
+      setCart((current) => {
+        const next = [...current];
 
-    toast.success("PDF quantities added to POS cart.");
-  },
-  [canAccessPDFCounter, items]
-);
+        for (const { item, quantity } of additions) {
+          if (!item) continue;
+
+          const existingIndex = next.findIndex(
+            (cartItem) =>
+              cartItem.type === "SERVICE" &&
+              cartItem.id === item.id
+          );
+
+          if (existingIndex >= 0) {
+            next[existingIndex] = {
+              ...next[existingIndex],
+              quantity: next[existingIndex].quantity + quantity,
+            };
+          } else {
+            next.push({
+              ...item,
+              quantity,
+              originalPrice: item.price,
+              warrantyMonths: 0,
+            });
+          }
+        }
+
+        return next;
+      });
+
+      toast.success("PDF quantities added to POS cart.");
+    },
+    [canAccessPDFCounter, items]
+  );
 
   // Assign shortcuts 1-10 to the first 10 favourite items.
   // The number 0 on the keyboard represents shortcut number 10.
@@ -1414,6 +1423,199 @@ const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
     }
   };
 
+  // =========================================================
+  // INDEPENDENT POS CALCULATOR
+  // =========================================================
+
+  const handleCalculatorDigit = (digit: string) => {
+    setCalculatorDisplay((current) => {
+      if (calculatorNewNumber || current === "0") {
+        return digit;
+      }
+      return current.length < 15 ? current + digit : current;
+    });
+
+    setCalculatorNewNumber(false);
+  };
+
+  const handleCalculatorDecimal = () => {
+    if (calculatorNewNumber) {
+      setCalculatorDisplay("0.");
+      setCalculatorNewNumber(false);
+      return;
+    }
+
+    setCalculatorDisplay((current) =>
+      current.includes(".") ? current : current + "."
+    );
+  };
+
+  const handleCalculatorOperator = (operator: "+" | "-" | "×" | "÷") => {
+    const currentValue = Number(calculatorDisplay);
+
+    if (calculatorStoredValue !== null && calculatorOperator && !calculatorNewNumber) {
+      let result = calculatorStoredValue;
+
+      switch (calculatorOperator) {
+        case "+":
+          result += currentValue;
+          break;
+        case "-":
+          result -= currentValue;
+          break;
+        case "×":
+          result *= currentValue;
+          break;
+        case "÷":
+          if (currentValue === 0) {
+            toast.error("Cannot divide by zero.");
+            return;
+          }
+          result /= currentValue;
+          break;
+      }
+
+      setCalculatorStoredValue(result);
+      setCalculatorDisplay(String(Number(result.toFixed(10))));
+    } else {
+      setCalculatorStoredValue(currentValue);
+    }
+
+    setCalculatorOperator(operator);
+    setCalculatorNewNumber(true);
+  };
+
+  const handleCalculatorEquals = () => {
+    if (calculatorStoredValue === null || !calculatorOperator) return;
+
+    const currentValue = Number(calculatorDisplay);
+    let result = calculatorStoredValue;
+
+    switch (calculatorOperator) {
+      case "+":
+        result += currentValue;
+        break;
+      case "-":
+        result -= currentValue;
+        break;
+      case "×":
+        result *= currentValue;
+        break;
+      case "÷":
+        if (currentValue === 0) {
+          toast.error("Cannot divide by zero.");
+          return;
+        }
+        result /= currentValue;
+        break;
+    }
+
+    setCalculatorDisplay(String(Number(result.toFixed(10))));
+    setCalculatorStoredValue(null);
+    setCalculatorOperator(null);
+    setCalculatorNewNumber(true);
+  };
+
+  const handleCalculatorClear = () => {
+    setCalculatorDisplay("0");
+    setCalculatorStoredValue(null);
+    setCalculatorOperator(null);
+    setCalculatorNewNumber(false);
+  };
+
+  const handleCalculatorBackspace = () => {
+    if (calculatorNewNumber) return;
+
+    setCalculatorDisplay((current) =>
+      current.length > 1 ? current.slice(0, -1) : "0"
+    );
+  };
+
+  // =========================================================
+  // CALCULATOR KEYBOARD INPUT
+  // =========================================================
+
+  useEffect(() => {
+    if (!isCalculatorOpen) return;
+
+    const handleCalculatorKeyboard = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+      const key = event.key;
+
+      if (/^[0-9]$/.test(key)) {
+        event.preventDefault();
+        handleCalculatorDigit(key);
+        return;
+      }
+
+      if (key === "." || key === ",") {
+        event.preventDefault();
+        handleCalculatorDecimal();
+        return;
+      }
+
+      if (key === "+") {
+        event.preventDefault();
+        handleCalculatorOperator("+");
+        return;
+      }
+
+      if (key === "-") {
+        event.preventDefault();
+        handleCalculatorOperator("-");
+        return;
+      }
+
+      if (key === "*" || key.toLowerCase() === "x") {
+        event.preventDefault();
+        handleCalculatorOperator("×");
+        return;
+      }
+
+      if (key === "/") {
+        event.preventDefault();
+        handleCalculatorOperator("÷");
+        return;
+      }
+
+      if (key === "Enter" || key === "=") {
+        event.preventDefault();
+        handleCalculatorEquals();
+        return;
+      }
+
+      if (key === "Backspace") {
+        event.preventDefault();
+        handleCalculatorBackspace();
+        return;
+      }
+
+      if (key === "Delete") {
+        event.preventDefault();
+        handleCalculatorClear();
+        return;
+      }
+
+      if (key === "Escape") {
+        event.preventDefault();
+        setIsCalculatorOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleCalculatorKeyboard);
+
+    return () => {
+      window.removeEventListener("keydown", handleCalculatorKeyboard);
+    };
+  }, [
+    isCalculatorOpen,
+    calculatorNewNumber,
+    calculatorStoredValue,
+    calculatorOperator,
+    calculatorDisplay,
+  ]);
+
   // =======================================================
   // UI RENDER
   // =======================================================
@@ -1468,7 +1670,6 @@ const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
             )}
           </div>
         </div>
-
         {/* Right: Quick Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {lastCompletedBill && (
@@ -1483,16 +1684,27 @@ const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
             </button>
           )}
 
+          {/* Calculator Button */}
+          <button
+            type="button"
+            onClick={() => setIsCalculatorOpen(true)}
+            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+            title="Open Calculator"
+          >
+            <Calculator className="h-4 w-4" />
+            <span>Calculator</span>
+          </button>
+
           {canAccessPDFCounter && (
-  <button
-    type="button"
-    onClick={() => setIsPDFCounterOpen(true)}
-    className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-2.5 sm:px-3.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
-  >
-    <FileText className="h-4 w-4" />
-    <span>PDF Counter</span>
-  </button>
-)}
+            <button
+              type="button"
+              onClick={() => setIsPDFCounterOpen(true)}
+              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-2.5 sm:px-3.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
+            >
+              <FileText className="h-4 w-4" />
+              <span>PDF Counter</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -3314,7 +3526,164 @@ const [isPDFCounterOpen, setIsPDFCounterOpen] = useState(false);
           </div>
         </div>
       )}
-            {/* PDF Counter Modal */}
+
+      {/* ================================================= */}
+      {/* INDEPENDENT CALCULATOR MODAL */}
+      {/* ================================================= */}
+
+      {isCalculatorOpen && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xs overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Calculator className="h-5 w-5 text-emerald-600" />
+                <h3 className="text-sm font-black text-slate-900">
+                  Calculator
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCalculatorOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Display */}
+            <div className="m-3 rounded-xl bg-slate-900 p-4 text-right">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Result
+              </p>
+              <p className="overflow-hidden text-3xl font-black text-white">
+                {Number(calculatorDisplay).toLocaleString("en-LK", {
+                  maximumFractionDigits: 8,
+                })}
+              </p>
+            </div>
+
+            {/* Keypad */}
+            <div className="grid grid-cols-4 gap-2 p-3 pt-0">
+
+              <button
+                type="button"
+                onClick={handleCalculatorClear}
+                className="rounded-xl bg-red-50 py-4 text-sm font-black text-red-600 hover:bg-red-100"
+              >
+                AC
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCalculatorBackspace}
+                className="rounded-xl bg-slate-100 py-4 text-sm font-bold text-slate-700 hover:bg-slate-200"
+              >
+                DEL
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCalculatorOperator("÷")}
+                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+              >
+                ÷
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCalculatorOperator("×")}
+                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+              >
+                ×
+              </button>
+
+              {["7", "8", "9"].map((digit) => (
+                <button
+                  key={digit}
+                  type="button"
+                  onClick={() => handleCalculatorDigit(digit)}
+                  className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                >
+                  {digit}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => handleCalculatorOperator("-")}
+                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+              >
+                −
+              </button>
+
+              {["4", "5", "6"].map((digit) => (
+                <button
+                  key={digit}
+                  type="button"
+                  onClick={() => handleCalculatorDigit(digit)}
+                  className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                >
+                  {digit}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => handleCalculatorOperator("+")}
+                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+              >
+                +
+              </button>
+
+              {["1", "2", "3"].map((digit) => (
+                <button
+                  key={digit}
+                  type="button"
+                  onClick={() => handleCalculatorDigit(digit)}
+                  className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                >
+                  {digit}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={handleCalculatorEquals}
+                className="row-span-2 rounded-xl bg-emerald-600 text-xl font-black text-white hover:bg-emerald-700"
+              >
+                =
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCalculatorDigit("0")}
+                className="col-span-2 rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+              >
+                0
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCalculatorDecimal}
+                className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+              >
+                .
+              </button>
+            </div>
+
+            <div className="border-t border-slate-100 px-4 py-3 text-center">
+              <p className="text-[10px] font-medium text-slate-400">
+                Independent Calculator • POS
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF Counter Modal */}
       {canAccessPDFCounter && isPDFCounterOpen && (
         <PDFCounterModal
           services={items.filter((item) => item.type === "SERVICE")}
