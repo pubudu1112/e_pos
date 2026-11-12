@@ -602,17 +602,17 @@ export default function TaxesClient() {
 
         {/* Permission Loading / Access */}
         {loadingPermissions ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-10 text-center text-slate-500 dark:text-muted-foreground">
             Checking permissions...
           </div>
         ) : !canView ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-12 text-center">
 
             <div className="mb-3 text-4xl">
               🔒
             </div>
 
-            <p className="font-medium text-slate-700">
+            <p className="font-medium text-slate-700 dark:text-slate-200">
               You do not have permission to view taxes.
             </p>
 
@@ -620,7 +620,7 @@ export default function TaxesClient() {
         ) : (
           <>
             {/* Search */}
-            <div className="mb-5 rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4">
 
               <div className="relative max-w-md">
 
@@ -635,7 +635,7 @@ export default function TaxesClient() {
                     )
                   }
                   placeholder="Search taxes..."
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 focus:bg-white dark:focus:bg-card"
                 />
 
               </div>
@@ -643,7 +643,7 @@ export default function TaxesClient() {
             </div>
 
             {/* Tax Table */}
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card">
 
               <div className="overflow-x-auto">
 
@@ -651,25 +651,25 @@ export default function TaxesClient() {
 
                   <thead>
 
-                    <tr className="border-b border-slate-200 bg-slate-50">
+                    <tr className="border-b border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40">
 
-                      <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                         #
                       </th>
 
-                      <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                         Tax Name
                       </th>
 
-                      <th className="px-5 py-3 text-right font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-right font-semibold text-slate-600 dark:text-muted-foreground">
                         Rate
                       </th>
 
-                      <th className="px-5 py-3 text-center font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-center font-semibold text-slate-600 dark:text-muted-foreground">
                         Status
                       </th>
 
-                      <th className="px-5 py-3 text-right font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-right font-semibold text-slate-600 dark:text-muted-foreground">
                         Actions
                       </th>
 
@@ -683,7 +683,7 @@ export default function TaxesClient() {
                       <tr>
                         <td
                           colSpan={5}
-                          className="px-5 py-10 text-center text-slate-500"
+                          className="px-5 py-10 text-center text-slate-500 dark:text-muted-foreground"
                         >
                           Loading taxes...
                         </td>
@@ -693,7 +693,7 @@ export default function TaxesClient() {
                       <tr>
                         <td
                           colSpan={5}
-                          className="px-5 py-10 text-center text-slate-500"
+                          className="px-5 py-10 text-center text-slate-500 dark:text-muted-foreground"
                         >
                           No taxes found.
                         </td>
@@ -703,18 +703,18 @@ export default function TaxesClient() {
                         (tax, index) => (
                           <tr
                             key={tax.id}
-                            className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                            className="border-b border-slate-100 dark:border-border last:border-b-0 hover:bg-slate-50 dark:hover:bg-muted/30"
                           >
 
-                            <td className="px-5 py-4 text-slate-500">
+                            <td className="px-5 py-4 text-slate-500 dark:text-muted-foreground">
                               {index + 1}
                             </td>
 
-                            <td className="px-5 py-4 font-medium text-slate-900">
+                            <td className="px-5 py-4 font-medium text-slate-900 dark:text-foreground">
                               {tax.name}
                             </td>
 
-                            <td className="px-5 py-4 text-right font-medium text-slate-900">
+                            <td className="px-5 py-4 text-right font-medium text-slate-900 dark:text-foreground">
                               {Number(
                                 tax.rate
                               ).toFixed(2)}
@@ -726,8 +726,8 @@ export default function TaxesClient() {
                               <span
                                 className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                                   tax.isActive
-                                    ? "bg-emerald-50 text-emerald-700"
-                                    : "bg-slate-100 text-slate-500"
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                                    : "bg-slate-100 dark:bg-muted text-slate-500 dark:text-muted-foreground"
                                 }`}
                               >
                                 {tax.isActive
@@ -751,7 +751,7 @@ export default function TaxesClient() {
                                           tax
                                         )
                                       }
-                                      className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-900 dark:hover:text-foreground transition"
                                       title="Edit"
                                     >
                                       <Pencil className="h-4 w-4" />
@@ -770,8 +770,8 @@ export default function TaxesClient() {
                                       }
                                       className={`rounded-lg p-2 transition ${
                                         tax.isActive
-                                          ? "text-red-500 hover:bg-red-50"
-                                          : "text-emerald-600 hover:bg-emerald-50"
+                                          ? "text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                          : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                                       }`}
                                       title={
                                         tax.isActive
@@ -801,14 +801,14 @@ export default function TaxesClient() {
             </div>
 
             {/* Summary */}
-            <div className="mt-4 text-sm text-slate-500">
+            <div className="mt-4 text-sm text-slate-500 dark:text-muted-foreground">
 
               Showing{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
                 {filteredTaxes.length}
               </span>{" "}
               of{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
                 {taxes.length}
               </span>{" "}
               taxes
@@ -822,20 +822,20 @@ export default function TaxesClient() {
       {/* Add / Edit Modal */}
       {showModal && (
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
 
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
+          <div className="w-full max-w-lg rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-xl">
 
             {/* Modal Header */}
-            <div className="border-b border-slate-200 px-6 py-4">
+            <div className="border-b border-slate-200 dark:border-border px-6 py-4">
 
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
                 {editingId
                   ? "Edit Tax"
                   : "Add Tax"}
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                 {editingId
                   ? "Update the tax details."
                   : "Create a new tax rate."}
@@ -849,7 +849,7 @@ export default function TaxesClient() {
               {/* Tax Name */}
               <div>
 
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Tax Name
                   <span className="ml-1 text-red-500">
                     *
@@ -867,7 +867,7 @@ export default function TaxesClient() {
                   maxLength={100}
                   placeholder="e.g. VAT"
                   disabled={saving}
-                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400 disabled:bg-slate-50"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 disabled:opacity-50"
                 />
 
               </div>
@@ -875,7 +875,7 @@ export default function TaxesClient() {
               {/* Tax Rate */}
               <div>
 
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Tax Rate (%)
                   <span className="ml-1 text-red-500">
                     *
@@ -897,7 +897,7 @@ export default function TaxesClient() {
                     }
                     placeholder="0.00"
                     disabled={saving}
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 pr-10 text-sm outline-none transition focus:border-slate-400 disabled:bg-slate-50"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 pr-10 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 disabled:opacity-50"
                   />
 
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">
@@ -922,10 +922,10 @@ export default function TaxesClient() {
                       )
                     }
                     disabled={saving}
-                    className="h-4 w-4 rounded border-slate-300"
+                    className="h-4 w-4 rounded border-slate-300 dark:border-border"
                   />
 
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     Active
                   </span>
 
@@ -936,13 +936,13 @@ export default function TaxesClient() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-slate-200 dark:border-border px-6 py-4">
 
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                className="h-10 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-card px-4 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-muted disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -956,7 +956,7 @@ export default function TaxesClient() {
                     ? !canUpdate
                     : !canCreate)
                 }
-                className="h-10 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 rounded-lg bg-slate-900 dark:bg-primary px-5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving
                   ? "Saving..."

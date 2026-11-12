@@ -602,18 +602,18 @@ export default function PurchaseClient() {
             </div>
 
             {/* Purchase Details */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
                 <div className="mb-5 flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5 text-emerald-600" />
 
-                    <h2 className="text-base font-bold text-slate-900">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-foreground">
                         Purchase Details
                     </h2>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Supplier
                         </label>
 
@@ -626,7 +626,7 @@ export default function PurchaseClient() {
                                         : ""
                                 )
                             }
-                            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                         >
                             <option value="">Select supplier</option>
 
@@ -642,7 +642,7 @@ export default function PurchaseClient() {
                     </div>
 
                     <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Purchase Date
                         </label>
 
@@ -655,7 +655,7 @@ export default function PurchaseClient() {
                                 onChange={(event) =>
                                     setPurchaseDate(event.target.value)
                                 }
-                                className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 pl-10 pr-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                             />
                         </div>
                     </div>
@@ -663,18 +663,18 @@ export default function PurchaseClient() {
             </div>
 
             {/* Add Product */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
                 <div className="mb-5 flex items-center gap-2">
                     <Plus className="h-5 w-5 text-emerald-600" />
 
-                    <h2 className="text-base font-bold text-slate-900">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-foreground">
                         Add Products
                     </h2>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                     <div className="lg:col-span-4">
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Search Product
                         </label>
 
@@ -693,7 +693,7 @@ export default function PurchaseClient() {
                                 }}
                                 placeholder="Search product name or code..."
                                 autoComplete="off"
-                                className="h-11 w-full rounded-xl border border-slate-300 pl-10 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                                className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 pl-10 pr-10 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                             />
 
                             {search && (
@@ -705,14 +705,14 @@ export default function PurchaseClient() {
                                         setUnitPrice(0);
                                         setIsProductDropdownOpen(true);
                                     }}
-                                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-700"
+                                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
                             )}
 
                             {isProductDropdownOpen && (
-                                <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+                                <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-64 overflow-y-auto rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-xl">
 
                                     {filteredProducts.length === 0 ? (
                                         <div className="px-4 py-6 text-center text-sm text-slate-400">
@@ -726,13 +726,13 @@ export default function PurchaseClient() {
                                                 onClick={() => {
                                                     handleProductChange(product.id);
                                                 }}
-                                                className={`flex w-full items-center justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-0 hover:bg-emerald-50 ${selectedProductId === product.id
-                                                    ? "bg-emerald-50"
+                                                className={`flex w-full items-center justify-between border-b border-slate-100 dark:border-border px-4 py-3 text-left transition last:border-0 hover:bg-emerald-50 dark:hover:bg-muted/60 ${selectedProductId === product.id
+                                                    ? "bg-emerald-50 dark:bg-emerald-950/40"
                                                     : ""
                                                     }`}
                                             >
                                                 <div className="min-w-0">
-                                                    <p className="truncate text-sm font-bold text-slate-800">
+                                                    <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">
                                                         {product.name}
                                                     </p>
 
@@ -742,7 +742,7 @@ export default function PurchaseClient() {
                                                 </div>
 
                                                 <div className="ml-3 shrink-0 text-right">
-                                                    <p className="text-xs font-bold text-emerald-700">
+                                                    <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
                                                         Rs. {formatMoney(product.purchasePrice)}
                                                     </p>
 
@@ -759,7 +759,7 @@ export default function PurchaseClient() {
                     </div>
 
                     <div className="lg:col-span-4">
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Product
                         </label>
 
@@ -772,7 +772,7 @@ export default function PurchaseClient() {
 
                                 handleProductChange(productId);
                             }}
-                            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                         >
                             <option value="">Select product</option>
 
@@ -788,7 +788,7 @@ export default function PurchaseClient() {
                     </div>
 
                     <div className="lg:col-span-1">
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Qty
                         </label>
 
@@ -800,12 +800,12 @@ export default function PurchaseClient() {
                             onChange={(event) =>
                                 setQuantity(Number(event.target.value))
                             }
-                            className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                         />
                     </div>
 
                     <div className="lg:col-span-2">
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Unit Price
                         </label>
 
@@ -817,12 +817,12 @@ export default function PurchaseClient() {
                             onChange={(event) =>
                                 setUnitPrice(Number(event.target.value))
                             }
-                            className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                         />
                     </div>
 
                     <div className="lg:col-span-1">
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                        <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                             Disc.
                         </label>
 
@@ -834,7 +834,7 @@ export default function PurchaseClient() {
                             onChange={(event) =>
                                 setItemDiscount(Number(event.target.value))
                             }
-                            className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                         />
                     </div>
                 </div>
@@ -852,17 +852,17 @@ export default function PurchaseClient() {
             </div>
 
             {/* Items */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-200 px-5 py-4">
-                    <h2 className="font-bold text-slate-900">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+                <div className="border-b border-slate-200 dark:border-border px-5 py-4">
+                    <h2 className="font-bold text-slate-900 dark:text-foreground">
                         Purchase Items
                     </h2>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[800px]">
-                        <thead className="bg-slate-50">
-                            <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                        <thead className="bg-slate-50 dark:bg-muted/40">
+                            <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                                 <th className="px-5 py-3">Product</th>
                                 <th className="px-5 py-3 text-right">Qty</th>
                                 <th className="px-5 py-3 text-right">Unit Price</th>
@@ -872,12 +872,12 @@ export default function PurchaseClient() {
                             </tr>
                         </thead>
 
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 dark:divide-border">
                             {items.length === 0 ? (
                                 <tr>
                                     <td
                                         colSpan={6}
-                                        className="px-5 py-12 text-center text-sm text-slate-400"
+                                        className="px-5 py-12 text-center text-sm text-slate-400 dark:text-muted-foreground"
                                     >
                                         No products added yet.
                                     </td>
@@ -891,30 +891,30 @@ export default function PurchaseClient() {
                                     );
 
                                     return (
-                                        <tr key={item.productId}>
+                                        <tr key={item.productId} className="hover:bg-slate-50/50 dark:hover:bg-muted/30">
                                             <td className="px-5 py-4">
-                                                <div className="font-semibold text-slate-900">
+                                                <div className="font-semibold text-slate-900 dark:text-foreground">
                                                     {item.name}
                                                 </div>
 
-                                                <div className="text-xs text-slate-500">
+                                                <div className="text-xs text-slate-500 dark:text-muted-foreground">
                                                     {item.code}
                                                 </div>
                                             </td>
 
-                                            <td className="px-5 py-4 text-right">
+                                            <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-200">
                                                 {item.quantity}
                                             </td>
 
-                                            <td className="px-5 py-4 text-right">
+                                            <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-200">
                                                 Rs. {formatMoney(item.unitPrice)}
                                             </td>
 
-                                            <td className="px-5 py-4 text-right">
+                                            <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-200">
                                                 Rs. {formatMoney(item.discount)}
                                             </td>
 
-                                            <td className="px-5 py-4 text-right font-bold">
+                                            <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-foreground">
                                                 Rs. {formatMoney(lineTotal)}
                                             </td>
 
@@ -924,7 +924,7 @@ export default function PurchaseClient() {
                                                     onClick={() =>
                                                         removeItem(item.productId)
                                                     }
-                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50"
+                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 dark:hover:bg-red-950/40"
                                                     title="Remove"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -941,14 +941,14 @@ export default function PurchaseClient() {
 
             {/* Totals + Payment */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 className="mb-5 font-bold text-slate-900">
+                <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+                    <h2 className="mb-5 font-bold text-slate-900 dark:text-foreground">
                         Payment
                     </h2>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                 Payment Method
                             </label>
 
@@ -957,7 +957,7 @@ export default function PurchaseClient() {
                                 onChange={(event) =>
                                     setPaymentMethod(event.target.value)
                                 }
-                                className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+                                className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                             >
                                 <option value="CASH">Cash</option>
                                 <option value="CARD">Card</option>
@@ -970,7 +970,7 @@ export default function PurchaseClient() {
                         </div>
 
                         <div>
-                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                 Paid Amount
                             </label>
 
@@ -982,12 +982,12 @@ export default function PurchaseClient() {
                                 onChange={(event) =>
                                     setPaidAmount(Number(event.target.value))
                                 }
-                                className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                                className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                             />
                         </div>
 
                         <div>
-                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                 Reference
                             </label>
 
@@ -997,12 +997,12 @@ export default function PurchaseClient() {
                                     setPaymentReference(event.target.value)
                                 }
                                 placeholder="Optional"
-                                className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                                className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                             />
                         </div>
 
                         <div>
-                            <label className="mb-1.5 block text-sm font-semibold text-slate-700">
+                            <label className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                 Note
                             </label>
 
@@ -1013,30 +1013,30 @@ export default function PurchaseClient() {
                                 }
                                 rows={3}
                                 placeholder="Optional"
-                                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                className="w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <h2 className="mb-5 font-bold text-slate-900">
+                <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+                    <h2 className="mb-5 font-bold text-slate-900 dark:text-foreground">
                         Purchase Summary
                     </h2>
 
                     <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
-                            <span className="text-slate-500">
+                            <span className="text-slate-500 dark:text-muted-foreground">
                                 Subtotal
                             </span>
 
-                            <span className="font-semibold">
+                            <span className="font-semibold text-slate-900 dark:text-foreground">
                                 Rs. {formatMoney(subtotal)}
                             </span>
                         </div>
 
                         <div>
-                            <label className="mb-1.5 block font-semibold text-slate-700">
+                            <label className="mb-1.5 block font-semibold text-slate-700 dark:text-slate-200">
                                 Discount
                             </label>
 
@@ -1048,12 +1048,12 @@ export default function PurchaseClient() {
                                 onChange={(event) =>
                                     setDiscount(Number(event.target.value))
                                 }
-                                className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                                className="h-10 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                             />
                         </div>
 
                         <div>
-                            <label className="mb-1.5 block font-semibold text-slate-700">
+                            <label className="mb-1.5 block font-semibold text-slate-700 dark:text-slate-200">
                                 Tax
                             </label>
 
@@ -1065,36 +1065,36 @@ export default function PurchaseClient() {
                                 onChange={(event) =>
                                     setTax(Number(event.target.value))
                                 }
-                                className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                                className="h-10 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                             />
                         </div>
 
-                        <div className="flex justify-between border-t border-slate-200 pt-4">
-                            <span className="font-bold text-slate-900">
+                        <div className="flex justify-between border-t border-slate-200 dark:border-border pt-4">
+                            <span className="font-bold text-slate-900 dark:text-foreground">
                                 Total
                             </span>
 
-                            <span className="text-xl font-black text-emerald-700">
+                            <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">
                                 Rs. {formatMoney(total)}
                             </span>
                         </div>
 
                         <div className="flex justify-between">
-                            <span className="text-slate-500">
+                            <span className="text-slate-500 dark:text-muted-foreground">
                                 Paid
                             </span>
 
-                            <span className="font-semibold">
+                            <span className="font-semibold text-slate-900 dark:text-foreground">
                                 Rs. {formatMoney(paidAmount)}
                             </span>
                         </div>
 
                         <div className="flex justify-between">
-                            <span className="text-slate-500">
+                            <span className="text-slate-500 dark:text-muted-foreground">
                                 Balance
                             </span>
 
-                            <span className="font-bold text-orange-600">
+                            <span className="font-bold text-orange-600 dark:text-orange-400">
                                 Rs. {formatMoney(balance)}
                             </span>
                         </div>
@@ -1111,14 +1111,14 @@ export default function PurchaseClient() {
                 </div>
             </div>
             {/* Purchase History */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 md:flex-row md:items-center md:justify-between">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+                <div className="flex flex-col gap-4 border-b border-slate-200 dark:border-border px-5 py-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 className="text-base font-bold text-slate-900">
+                        <h2 className="text-base font-bold text-slate-900 dark:text-foreground">
                             Purchase History
                         </h2>
 
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                             View previously created purchases.
                         </p>
                     </div>
@@ -1132,24 +1132,24 @@ export default function PurchaseClient() {
                                 setPurchaseSearch(event.target.value)
                             }
                             placeholder="Search purchase or supplier..."
-                            className="h-10 w-full rounded-xl border border-slate-300 pl-9 pr-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                            className="h-10 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 pl-9 pr-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
                         />
                     </div>
                 </div>
 
                 {purchaseLoading ? (
-                    <div className="px-5 py-12 text-center text-sm text-slate-500">
+                    <div className="px-5 py-12 text-center text-sm text-slate-500 dark:text-muted-foreground">
                         Loading purchase history...
                     </div>
                 ) : filteredPurchases.length === 0 ? (
-                    <div className="px-5 py-12 text-center text-sm text-slate-400">
+                    <div className="px-5 py-12 text-center text-sm text-slate-400 dark:text-muted-foreground">
                         No purchases found.
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[1000px]">
-                            <thead className="bg-slate-50">
-                                <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                            <thead className="bg-slate-50 dark:bg-muted/40">
+                                <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                                     <th className="px-5 py-3">
                                         Purchase No
                                     </th>
@@ -1188,14 +1188,14 @@ export default function PurchaseClient() {
                                 </tr>
                             </thead>
 
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100 dark:divide-border">
                                 {filteredPurchases.map((purchase) => (
                                     <tr
                                         key={purchase.id}
-                                        className="transition hover:bg-slate-50"
+                                        className="transition hover:bg-slate-50 dark:hover:bg-muted/30"
                                     >
                                         <td className="px-5 py-4">
-                                            <div className="font-bold text-slate-900">
+                                            <div className="font-bold text-slate-900 dark:text-foreground">
                                                 {purchase.purchaseNo}
                                             </div>
 
@@ -1204,45 +1204,45 @@ export default function PurchaseClient() {
                                             </div>
                                         </td>
 
-                                        <td className="px-5 py-4 text-sm text-slate-600">
+                                        <td className="px-5 py-4 text-sm text-slate-600 dark:text-muted-foreground">
                                             {new Date(
                                                 purchase.purchaseDate
                                             ).toLocaleDateString("en-LK")}
                                         </td>
 
                                         <td className="px-5 py-4">
-                                            <div className="font-semibold text-slate-900">
+                                            <div className="font-semibold text-slate-900 dark:text-foreground">
                                                 {purchase.supplier.name}
                                             </div>
 
-                                            <div className="text-xs text-slate-500">
+                                            <div className="text-xs text-slate-500 dark:text-muted-foreground">
                                                 {purchase.supplier.code}
                                             </div>
                                         </td>
 
-                                        <td className="px-5 py-4 text-center text-sm font-semibold">
+                                        <td className="px-5 py-4 text-center text-sm font-semibold text-slate-900 dark:text-foreground">
                                             {purchase.purchaseitem.length}
                                         </td>
 
-                                        <td className="px-5 py-4 text-right font-bold">
+                                        <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-foreground">
                                             Rs. {formatMoney(purchase.total)}
                                         </td>
 
-                                        <td className="px-5 py-4 text-right text-sm">
+                                        <td className="px-5 py-4 text-right text-sm text-slate-700 dark:text-slate-300">
                                             Rs. {formatMoney(purchase.paidAmount)}
                                         </td>
 
-                                        <td className="px-5 py-4 text-right text-sm font-semibold">
+                                        <td className="px-5 py-4 text-right text-sm font-semibold text-orange-600 dark:text-orange-400">
                                             Rs. {formatMoney(purchase.balanceAmount)}
                                         </td>
 
                                         <td className="px-5 py-4 text-center">
                                             <span
                                                 className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${purchase.status === "PAID"
-                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
                                                     : purchase.status === "PARTIAL"
-                                                        ? "bg-amber-100 text-amber-700"
-                                                        : "bg-slate-100 text-slate-700"
+                                                        ? "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                                                        : "bg-slate-100 dark:bg-muted text-slate-700 dark:text-foreground"
                                                     }`}
                                             >
                                                 {purchase.status}
@@ -1253,7 +1253,7 @@ export default function PurchaseClient() {
                                             <button
                                                 type="button"
                                                 onClick={() => setSelectedPurchase(purchase)}
-                                                className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                                                className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 transition hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400"
                                             >
                                                 <Eye className="h-4 w-4" />
                                                 View
@@ -1270,21 +1270,21 @@ export default function PurchaseClient() {
             {/* Purchase Details Modal */}
             {selectedPurchase && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4"
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4"
                     onClick={() => setSelectedPurchase(null)}
                 >
                     <div
-                        className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+                        className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl"
                         onClick={(event) => event.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
+                        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 dark:border-border bg-white dark:bg-card px-6 py-4">
                             <div>
-                                <h2 className="text-lg font-black text-slate-900">
+                                <h2 className="text-lg font-black text-slate-900 dark:text-foreground">
                                     Purchase Details
                                 </h2>
 
-                                <p className="mt-1 text-sm text-slate-500">
+                                <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                                     {selectedPurchase.purchaseNo}
                                 </p>
                             </div>
@@ -1292,7 +1292,7 @@ export default function PurchaseClient() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedPurchase(null)}
-                                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-foreground transition hover:bg-slate-100 dark:hover:bg-muted"
                             >
                                 <X className="h-5 w-5" />
                             </button>
@@ -1301,36 +1301,36 @@ export default function PurchaseClient() {
                         <div className="space-y-6 p-6">
                             {/* Purchase Information */}
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <div className="rounded-xl bg-slate-50 p-4">
-                                    <p className="text-xs font-semibold text-slate-500">
+                                <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground">
                                         Purchase No
                                     </p>
 
-                                    <p className="mt-1 font-black text-slate-900">
+                                    <p className="mt-1 font-black text-slate-900 dark:text-foreground">
                                         {selectedPurchase.purchaseNo}
                                     </p>
                                 </div>
 
-                                <div className="rounded-xl bg-slate-50 p-4">
-                                    <p className="text-xs font-semibold text-slate-500">
+                                <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground">
                                         Supplier
                                     </p>
 
-                                    <p className="mt-1 font-bold text-slate-900">
+                                    <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                                         {selectedPurchase.supplier.name}
                                     </p>
 
-                                    <p className="text-xs text-slate-500">
+                                    <p className="text-xs text-slate-500 dark:text-muted-foreground">
                                         {selectedPurchase.supplier.code}
                                     </p>
                                 </div>
 
-                                <div className="rounded-xl bg-slate-50 p-4">
-                                    <p className="text-xs font-semibold text-slate-500">
+                                <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-muted-foreground">
                                         Purchase Date
                                     </p>
 
-                                    <p className="mt-1 font-bold text-slate-900">
+                                    <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                                         {new Date(
                                             selectedPurchase.purchaseDate
                                         ).toLocaleDateString("en-LK")}
@@ -1339,9 +1339,9 @@ export default function PurchaseClient() {
                             </div>
 
                             {/* Items */}
-                            <div className="overflow-hidden rounded-xl border border-slate-200">
-                                <div className="border-b border-slate-200 bg-slate-50 px-4 py-3">
-                                    <h3 className="font-bold text-slate-900">
+                            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border">
+                                <div className="border-b border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 px-4 py-3">
+                                    <h3 className="font-bold text-slate-900 dark:text-foreground">
                                         Purchase Items
                                     </h3>
                                 </div>
@@ -1349,7 +1349,7 @@ export default function PurchaseClient() {
                                 <div className="overflow-x-auto">
                                     <table className="w-full min-w-[700px]">
                                         <thead>
-                                            <tr className="border-b border-slate-200 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                                            <tr className="border-b border-slate-200 dark:border-border text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                                                 <th className="px-4 py-3">
                                                     Product
                                                 </th>
@@ -1372,39 +1372,39 @@ export default function PurchaseClient() {
                                             </tr>
                                         </thead>
 
-                                        <tbody className="divide-y divide-slate-100">
+                                        <tbody className="divide-y divide-slate-100 dark:divide-border">
                                             {selectedPurchase.purchaseitem.map(
                                                 (item) => (
-                                                    <tr key={item.id}>
+                                                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-muted/30">
                                                         <td className="px-4 py-3">
-                                                            <div className="font-semibold text-slate-900">
+                                                            <div className="font-semibold text-slate-900 dark:text-foreground">
                                                                 {item.product.name}
                                                             </div>
 
-                                                            <div className="text-xs text-slate-500">
+                                                            <div className="text-xs text-slate-500 dark:text-muted-foreground">
                                                                 {item.product.code}
                                                             </div>
                                                         </td>
 
-                                                        <td className="px-4 py-3 text-right">
+                                                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">
                                                             {item.quantity}
                                                         </td>
 
-                                                        <td className="px-4 py-3 text-right">
+                                                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">
                                                             Rs.{" "}
                                                             {formatMoney(
                                                                 Number(item.unitPrice)
                                                             )}
                                                         </td>
 
-                                                        <td className="px-4 py-3 text-right">
+                                                        <td className="px-4 py-3 text-right text-slate-700 dark:text-slate-300">
                                                             Rs.{" "}
                                                             {formatMoney(
                                                                 Number(item.discount)
                                                             )}
                                                         </td>
 
-                                                        <td className="px-4 py-3 text-right font-bold">
+                                                        <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-foreground">
                                                             Rs.{" "}
                                                             {formatMoney(
                                                                 Number(item.total)
@@ -1421,9 +1421,8 @@ export default function PurchaseClient() {
                             {/* Summary */}
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div>
-
                                     <div className="mb-3 flex items-center justify-between gap-2">
-                                        <h3 className="font-bold text-slate-900">
+                                        <h3 className="font-bold text-slate-900 dark:text-foreground">
                                             Payment Details
                                         </h3>
 
@@ -1440,21 +1439,21 @@ export default function PurchaseClient() {
 
                                     {showPaymentForm && (
                                         <form
-                                            className="mb-4 space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-4"
+                                            className="mb-4 space-y-3 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20 p-4"
                                             onSubmit={(event) => {
                                                 event.preventDefault();
                                                 void recordPurchasePayment();
                                             }}
                                         >
-                                            <div className="text-sm text-slate-600">
+                                            <div className="text-sm text-slate-600 dark:text-slate-300">
                                                 Outstanding balance:{" "}
-                                                <span className="font-bold text-orange-600">
+                                                <span className="font-bold text-orange-600 dark:text-orange-400">
                                                     Rs. {formatMoney(Number(selectedPurchase.balanceAmount))}
                                                 </span>
                                             </div>
 
                                             <div>
-                                                <label className="mb-1 block text-sm font-semibold text-slate-700">
+                                                <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                                     Payment Amount (Rs.)
                                                 </label>
                                                 <input
@@ -1465,19 +1464,19 @@ export default function PurchaseClient() {
                                                     required
                                                     value={paymentAmountInput}
                                                     onChange={(event) => setPaymentAmountInput(event.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                                    className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                                                     placeholder="Enter payment amount"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="mb-1 block text-sm font-semibold text-slate-700">
+                                                <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                                     Payment Method
                                                 </label>
                                                 <select
                                                     value={additionalPaymentMethod}
                                                     onChange={(event) => setAdditionalPaymentMethod(event.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                                    className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                                                 >
                                                     <option value="CASH">Cash</option>
                                                     <option value="CARD">Card</option>
@@ -1489,27 +1488,27 @@ export default function PurchaseClient() {
                                             </div>
 
                                             <div>
-                                                <label className="mb-1 block text-sm font-semibold text-slate-700">
+                                                <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                                     Reference (Optional)
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={additionalPaymentReference}
                                                     onChange={(event) => setAdditionalPaymentReference(event.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                                    className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                                                     placeholder="Receipt or transaction reference"
                                                 />
                                             </div>
 
                                             <div>
-                                                <label className="mb-1 block text-sm font-semibold text-slate-700">
+                                                <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                                     Note (Optional)
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={additionalPaymentNote}
                                                     onChange={(event) => setAdditionalPaymentNote(event.target.value)}
-                                                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                                                    className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                                                     placeholder="Payment note"
                                                 />
                                             </div>
@@ -1524,10 +1523,9 @@ export default function PurchaseClient() {
                                         </form>
                                     )}
 
-
                                     {selectedPurchase.purchasepayment.length ===
                                         0 ? (
-                                        <div className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
+                                        <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4 text-sm text-slate-500 dark:text-muted-foreground">
                                             No payment recorded.
                                         </div>
                                     ) : (
@@ -1536,24 +1534,24 @@ export default function PurchaseClient() {
                                                 (payment) => (
                                                     <div
                                                         key={payment.id}
-                                                        className="rounded-xl border border-slate-200 p-4"
+                                                        className="rounded-xl border border-slate-200 dark:border-border p-4 bg-white dark:bg-card"
                                                     >
                                                         <div className="flex justify-between">
-                                                            <span className="text-sm text-slate-500">
+                                                            <span className="text-sm text-slate-500 dark:text-muted-foreground">
                                                                 Method
                                                             </span>
 
-                                                            <span className="font-bold text-slate-900">
+                                                            <span className="font-bold text-slate-900 dark:text-foreground">
                                                                 {payment.paymentmethod.name}
                                                             </span>
                                                         </div>
 
                                                         <div className="mt-2 flex justify-between">
-                                                            <span className="text-sm text-slate-500">
+                                                            <span className="text-sm text-slate-500 dark:text-muted-foreground">
                                                                 Amount
                                                             </span>
 
-                                                            <span className="font-black text-emerald-700">
+                                                            <span className="font-black text-emerald-700 dark:text-emerald-400">
                                                                 Rs.{" "}
                                                                 {formatMoney(
                                                                     Number(payment.amount)
@@ -1562,16 +1560,16 @@ export default function PurchaseClient() {
                                                         </div>
 
                                                         {payment.reference && (
-                                                            <div className="mt-2 text-xs text-slate-500">
+                                                            <div className="mt-2 text-xs text-slate-500 dark:text-muted-foreground">
                                                                 Reference:{" "}
-                                                                <span className="font-semibold text-slate-700">
+                                                                <span className="font-semibold text-slate-700 dark:text-slate-300">
                                                                     {payment.reference}
                                                                 </span>
                                                             </div>
                                                         )}
 
                                                         {payment.note && (
-                                                            <div className="mt-1 text-xs text-slate-500">
+                                                            <div className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
                                                                 Note: {payment.note}
                                                             </div>
                                                         )}
@@ -1582,18 +1580,18 @@ export default function PurchaseClient() {
                                     )}
                                 </div>
 
-                                <div className="rounded-xl bg-slate-50 p-5">
-                                    <h3 className="mb-4 font-bold text-slate-900">
+                                <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-5">
+                                    <h3 className="mb-4 font-bold text-slate-900 dark:text-foreground">
                                         Purchase Summary
                                     </h3>
 
                                     <div className="space-y-3 text-sm">
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">
+                                            <span className="text-slate-500 dark:text-muted-foreground">
                                                 Subtotal
                                             </span>
 
-                                            <span className="font-semibold">
+                                            <span className="font-semibold text-slate-900 dark:text-foreground">
                                                 Rs.{" "}
                                                 {formatMoney(
                                                     Number(selectedPurchase.subtotal)
@@ -1602,11 +1600,11 @@ export default function PurchaseClient() {
                                         </div>
 
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">
+                                            <span className="text-slate-500 dark:text-muted-foreground">
                                                 Discount
                                             </span>
 
-                                            <span className="font-semibold">
+                                            <span className="font-semibold text-slate-900 dark:text-foreground">
                                                 Rs.{" "}
                                                 {formatMoney(
                                                     Number(selectedPurchase.discount)
@@ -1615,11 +1613,11 @@ export default function PurchaseClient() {
                                         </div>
 
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">
+                                            <span className="text-slate-500 dark:text-muted-foreground">
                                                 Tax
                                             </span>
 
-                                            <span className="font-semibold">
+                                            <span className="font-semibold text-slate-900 dark:text-foreground">
                                                 Rs.{" "}
                                                 {formatMoney(
                                                     Number(selectedPurchase.tax)
@@ -1627,13 +1625,13 @@ export default function PurchaseClient() {
                                             </span>
                                         </div>
 
-                                        <div className="border-t border-slate-200 pt-3">
+                                        <div className="border-t border-slate-200 dark:border-border pt-3">
                                             <div className="flex justify-between">
-                                                <span className="font-bold text-slate-900">
+                                                <span className="font-bold text-slate-900 dark:text-foreground">
                                                     Total
                                                 </span>
 
-                                                <span className="text-xl font-black text-emerald-700">
+                                                <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">
                                                     Rs.{" "}
                                                     {formatMoney(
                                                         Number(selectedPurchase.total)
@@ -1643,11 +1641,11 @@ export default function PurchaseClient() {
                                         </div>
 
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">
+                                            <span className="text-slate-500 dark:text-muted-foreground">
                                                 Paid
                                             </span>
 
-                                            <span className="font-semibold">
+                                            <span className="font-semibold text-slate-900 dark:text-foreground">
                                                 Rs.{" "}
                                                 {formatMoney(
                                                     Number(selectedPurchase.paidAmount)
@@ -1656,11 +1654,11 @@ export default function PurchaseClient() {
                                         </div>
 
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">
+                                            <span className="text-slate-500 dark:text-muted-foreground">
                                                 Balance
                                             </span>
 
-                                            <span className="font-bold text-orange-600">
+                                            <span className="font-bold text-orange-600 dark:text-orange-400">
                                                 Rs.{" "}
                                                 {formatMoney(
                                                     Number(selectedPurchase.balanceAmount)
@@ -1669,11 +1667,11 @@ export default function PurchaseClient() {
                                         </div>
 
                                         <div className="flex justify-between pt-2">
-                                            <span className="text-slate-500">
+                                            <span className="text-slate-500 dark:text-muted-foreground">
                                                 Status
                                             </span>
 
-                                            <span className="font-bold text-emerald-700">
+                                            <span className="font-bold text-emerald-700 dark:text-emerald-400">
                                                 {selectedPurchase.status}
                                             </span>
                                         </div>

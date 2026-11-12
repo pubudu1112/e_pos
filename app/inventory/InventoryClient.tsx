@@ -571,7 +571,7 @@ export default function InventoryClient() {
           <button
             type="button"
             onClick={handleOpenAdjustment}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:hover:bg-primary/90"
           >
             <Plus className="h-4 w-4" />
             Stock Adjustment
@@ -581,7 +581,7 @@ export default function InventoryClient() {
             type="button"
             onClick={loadInventory}
             disabled={loading}
-            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-card px-4 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm transition hover:bg-slate-50 dark:hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Refresh Stock
           </button>
@@ -596,84 +596,84 @@ export default function InventoryClient() {
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
         {/* Total */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
                 Total Products
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-slate-900">
+              <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">
                 {summary.total}
               </p>
             </div>
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100">
-              <Package className="h-5 w-5 text-slate-700" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 dark:bg-muted">
+              <Package className="h-5 w-5 text-slate-700 dark:text-slate-300" />
             </div>
 
           </div>
         </div>
 
         {/* In Stock */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
                 In Stock
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-emerald-600">
+              <p className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                 {summary.inStock}
               </p>
             </div>
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
-              <Boxes className="h-5 w-5 text-emerald-600" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40">
+              <Boxes className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
 
           </div>
         </div>
 
         {/* Low Stock */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
                 Low Stock
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-amber-600">
+              <p className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
                 {summary.lowStock}
               </p>
             </div>
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50">
-              <TrendingDown className="h-5 w-5 text-amber-600" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40">
+              <TrendingDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             </div>
 
           </div>
         </div>
 
         {/* Out of Stock */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
 
             <div>
-              <p className="text-sm font-medium text-slate-500">
+              <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
                 Out of Stock
               </p>
 
-              <p className="mt-2 text-2xl font-bold text-red-600">
+              <p className="mt-2 text-2xl font-bold text-red-600 dark:text-red-400">
                 {summary.outOfStock}
               </p>
             </div>
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50">
-              <XCircle className="h-5 w-5 text-red-600" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/40">
+              <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
             </div>
 
           </div>
@@ -685,14 +685,14 @@ export default function InventoryClient() {
       {/* MAIN INVENTORY CARD */}
       {/* ====================================================== */}
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
 
         {/* Search */}
-        <div className="border-b border-slate-200 p-4">
+        <div className="border-b border-slate-200 dark:border-border p-4">
 
           <div className="relative max-w-xl">
 
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
 
             <input
               type="text"
@@ -701,16 +701,16 @@ export default function InventoryClient() {
                 handleSearch(event.target.value)
               }
               placeholder="Search product, code, barcode, category..."
-              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:bg-white"
+              className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground outline-none transition placeholder:text-slate-400 dark:placeholder:text-muted-foreground focus:border-slate-400 focus:bg-white dark:focus:bg-card"
             />
 
           </div>
 
           {/* Search Result Information */}
           {search.trim() && (
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-slate-500 dark:text-muted-foreground">
               Found{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-slate-700 dark:text-foreground">
                 {totalRecords}
               </span>{" "}
               matching inventory records
@@ -721,7 +721,7 @@ export default function InventoryClient() {
 
         {/* Error */}
         {error && (
-          <div className="m-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="m-4 flex items-start gap-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-700 dark:text-red-400">
 
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
 
@@ -743,9 +743,9 @@ export default function InventoryClient() {
 
             <div className="text-center">
 
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-200 dark:border-border border-t-slate-900 dark:border-t-primary" />
 
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 text-sm text-slate-500 dark:text-muted-foreground">
                 Loading inventory...
               </p>
 
@@ -765,9 +765,9 @@ export default function InventoryClient() {
 
               <table className="w-full min-w-[1100px] text-left">
 
-                <thead className="bg-slate-50">
+                <thead className="bg-slate-50 dark:bg-muted/40">
 
-                  <tr className="border-b border-slate-200">
+                  <tr className="border-b border-slate-200 dark:border-border">
 
                     <SortHeader column="name">
                       Product
@@ -827,7 +827,7 @@ export default function InventoryClient() {
 
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-border/60">
 
                   {paginatedItems.length === 0 ? (
 
@@ -838,13 +838,13 @@ export default function InventoryClient() {
                         className="px-4 py-16 text-center"
                       >
 
-                        <Boxes className="mx-auto h-10 w-10 text-slate-300" />
+                        <Boxes className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
 
-                        <p className="mt-3 text-sm font-medium text-slate-600">
+                        <p className="mt-3 text-sm font-medium text-slate-600 dark:text-muted-foreground">
                           No inventory records found
                         </p>
 
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">
                           {search
                             ? "Try a different search term."
                             : "There are no stock records available yet."}
@@ -860,7 +860,7 @@ export default function InventoryClient() {
 
                       <tr
                         key={item.id}
-                        className="transition hover:bg-slate-50"
+                        className="transition hover:bg-slate-50 dark:hover:bg-muted/30"
                       >
 
                         {/* Product */}
@@ -868,16 +868,16 @@ export default function InventoryClient() {
 
                           <div>
 
-                            <p className="font-medium text-slate-900">
+                            <p className="font-medium text-slate-900 dark:text-foreground">
                               {item.product.name}
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
                               Code: {item.product.code}
                             </p>
 
                             {item.product.barcode && (
-                              <p className="text-xs text-slate-400">
+                              <p className="text-xs text-slate-400 dark:text-muted-foreground">
                                 Barcode: {item.product.barcode}
                               </p>
                             )}
@@ -887,32 +887,32 @@ export default function InventoryClient() {
                         </td>
 
                         {/* Category */}
-                        <td className="px-4 py-4 text-sm text-slate-600">
+                        <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-300">
                           {item.product.category || "-"}
                         </td>
 
                         {/* Unit */}
-                        <td className="px-4 py-4 text-sm text-slate-600">
+                        <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-300">
                           {item.product.unit || "-"}
                         </td>
 
                         {/* Stock */}
-                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-900">
+                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-900 dark:text-foreground">
                           {formatQuantity(item.quantity)}
                         </td>
 
                         {/* Reserved */}
-                        <td className="px-4 py-4 text-right text-sm text-slate-600">
+                        <td className="px-4 py-4 text-right text-sm text-slate-600 dark:text-slate-300">
                           {formatQuantity(item.reservedQuantity)}
                         </td>
 
                         {/* Available */}
-                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-900">
+                        <td className="px-4 py-4 text-right text-sm font-semibold text-slate-900 dark:text-foreground">
                           {formatQuantity(item.availableQuantity)}
                         </td>
 
                         {/* Minimum */}
-                        <td className="px-4 py-4 text-right text-sm text-slate-600">
+                        <td className="px-4 py-4 text-right text-sm text-slate-600 dark:text-slate-300">
                           {formatQuantity(item.minimumStock)}
                         </td>
 
@@ -930,7 +930,7 @@ export default function InventoryClient() {
                         </td>
 
                         {/* Updated */}
-                        <td className="px-4 py-4 text-right text-sm text-slate-500">
+                        <td className="px-4 py-4 text-right text-sm text-slate-500 dark:text-muted-foreground">
                           {formatDate(item.updatedAt)}
                         </td>
 
@@ -950,28 +950,28 @@ export default function InventoryClient() {
             {/* PAGINATION FOOTER */}
             {/* ================================================== */}
 
-            <div className="flex flex-col gap-4 border-t border-slate-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-border bg-white dark:bg-card px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
 
               {/* Record Information */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
 
                   Showing{" "}
 
-                  <span className="font-semibold text-slate-800">
+                  <span className="font-semibold text-slate-800 dark:text-foreground">
                     {totalRecords === 0 ? 0 : startIndex + 1}
                   </span>
 
                   {" - "}
 
-                  <span className="font-semibold text-slate-800">
+                  <span className="font-semibold text-slate-800 dark:text-foreground">
                     {endIndex}
                   </span>
 
                   {" of "}
 
-                  <span className="font-semibold text-slate-800">
+                  <span className="font-semibold text-slate-800 dark:text-foreground">
                     {totalRecords}
                   </span>
 
@@ -984,7 +984,7 @@ export default function InventoryClient() {
 
                   <label
                     htmlFor="inventory-page-size"
-                    className="whitespace-nowrap text-xs text-slate-500"
+                    className="whitespace-nowrap text-xs text-slate-500 dark:text-muted-foreground"
                   >
                     Rows per page:
                   </label>
@@ -997,7 +997,7 @@ export default function InventoryClient() {
                         Number(event.target.value)
                       )
                     }
-                    className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 outline-none focus:border-slate-400"
+                    className="h-8 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-2 text-xs font-medium text-slate-700 dark:text-foreground outline-none focus:border-slate-400"
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -1021,7 +1021,7 @@ export default function InventoryClient() {
                     totalRecords === 0
                   }
                   title="First page"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 text-slate-600 dark:text-slate-200 transition hover:bg-slate-100 dark:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronsLeft className="h-4 w-4" />
                 </button>
@@ -1037,7 +1037,7 @@ export default function InventoryClient() {
                     totalRecords === 0
                   }
                   title="Previous page"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 text-slate-600 dark:text-slate-200 transition hover:bg-slate-100 dark:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -1049,13 +1049,13 @@ export default function InventoryClient() {
                       <button
                         type="button"
                         onClick={() => handlePageChange(1)}
-                        className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+                        className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-muted"
                       >
                         1
                       </button>
 
                       {pageNumbers[0] > 2 && (
-                        <span className="px-1 text-xs text-slate-400">
+                        <span className="px-1 text-xs text-slate-400 dark:text-muted-foreground">
                           ...
                         </span>
                       )}
@@ -1075,8 +1075,8 @@ export default function InventoryClient() {
                         : undefined
                     }
                     className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold transition ${safeCurrentPage === page
-                        ? "bg-slate-900 text-white shadow-sm"
-                        : "text-slate-600 hover:bg-slate-100"
+                        ? "bg-slate-900 dark:bg-primary text-white dark:text-primary-foreground shadow-sm"
+                        : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-muted"
                       }`}
                   >
                     {page}
@@ -1092,7 +1092,7 @@ export default function InventoryClient() {
                       {pageNumbers[
                         pageNumbers.length - 1
                       ] < totalPages - 1 && (
-                          <span className="px-1 text-xs text-slate-400">
+                          <span className="px-1 text-xs text-slate-400 dark:text-muted-foreground">
                             ...
                           </span>
                         )}
@@ -1102,7 +1102,7 @@ export default function InventoryClient() {
                         onClick={() =>
                           handlePageChange(totalPages)
                         }
-                        className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-slate-600 transition hover:bg-slate-100"
+                        className="flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-medium text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-muted"
                       >
                         {totalPages}
                       </button>
@@ -1120,7 +1120,7 @@ export default function InventoryClient() {
                     totalRecords === 0
                   }
                   title="Next page"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 text-slate-600 dark:text-slate-200 transition hover:bg-slate-100 dark:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -1136,7 +1136,7 @@ export default function InventoryClient() {
                     totalRecords === 0
                   }
                   title="Last page"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 text-slate-600 dark:text-slate-200 transition hover:bg-slate-100 dark:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ChevronsRight className="h-4 w-4" />
                 </button>

@@ -925,11 +925,11 @@ export default function ProductsClient() {
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">
               Products
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Manage products, prices, stock levels,
               images, and product information.
             </p>
@@ -940,7 +940,7 @@ export default function ProductsClient() {
             <button
               type="button"
               onClick={openAddModal}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-4 text-sm font-semibold text-white transition hover:bg-slate-800 dark:hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
               Add Product
@@ -949,9 +949,9 @@ export default function ProductsClient() {
         </div>
 
         {/* Search */}
-        <div className="mb-5 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="mb-5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
 
             <input
               type="text"
@@ -960,38 +960,38 @@ export default function ProductsClient() {
                 setSearch(event.target.value)
               }
               placeholder="Search products..."
-              className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 focus:bg-white dark:focus:bg-card"
             />
           </div>
         </div>
 
         {/* Product Table */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1200px] text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                <tr className="border-b border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40">
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                     #
                   </th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Code", "code")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Code", "code")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Product", "name")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Product", "name")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Category", "category")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Category", "category")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Brand", "brand")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Brand", "brand")}</th>
 
-                  <th className="px-5 py-3 text-left font-semibold text-slate-600">{renderSortHeader("Unit", "unit")}</th>
+                  <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Unit", "unit")}</th>
 
-                  <th className="px-5 py-3 text-right font-semibold text-slate-600">{renderSortHeader("Selling Price", "sellingPrice", "right")}</th>
+                  <th className="px-5 py-3 text-right font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Selling Price", "sellingPrice", "right")}</th>
 
-                  <th className="px-5 py-3 text-right font-semibold text-slate-600">{renderSortHeader("Min. Stock", "minimumStock", "right")}</th>
+                  <th className="px-5 py-3 text-right font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Min. Stock", "minimumStock", "right")}</th>
 
-                  <th className="px-5 py-3 text-center font-semibold text-slate-600">{renderSortHeader("Status", "status", "center")}</th>
+                  <th className="px-5 py-3 text-center font-semibold text-slate-600 dark:text-muted-foreground">{renderSortHeader("Status", "status", "center")}</th>
 
-                  <th className="px-5 py-3 text-right font-semibold text-slate-600">
+                  <th className="px-5 py-3 text-right font-semibold text-slate-600 dark:text-muted-foreground">
                     Actions
                   </th>
                 </tr>
@@ -1002,7 +1002,7 @@ export default function ProductsClient() {
                   <tr>
                     <td
                       colSpan={10}
-                      className="px-5 py-10 text-center text-slate-500"
+                      className="px-5 py-10 text-center text-slate-500 dark:text-muted-foreground"
                     >
                       Loading products...
                     </td>
@@ -1011,7 +1011,7 @@ export default function ProductsClient() {
                   <tr>
                     <td
                       colSpan={10}
-                      className="px-5 py-10 text-center text-slate-500"
+                      className="px-5 py-10 text-center text-slate-500 dark:text-muted-foreground"
                     >
                       No products found.
                     </td>
@@ -1021,14 +1021,14 @@ export default function ProductsClient() {
                     (product, index) => (
                       <tr
                         key={product.id}
-                        className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                        className="border-b border-slate-100 dark:border-border/60 last:border-b-0 hover:bg-slate-50 dark:hover:bg-muted/30"
                       >
-                        <td className="px-5 py-4 text-slate-500">
+                        <td className="px-5 py-4 text-slate-500 dark:text-muted-foreground">
                           {index + 1}
                         </td>
 
                         <td className="px-5 py-4">
-                          <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                          <span className="rounded-md bg-slate-100 dark:bg-muted px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
                             {product.code}
                           </span>
                         </td>
@@ -1036,7 +1036,7 @@ export default function ProductsClient() {
                         {/* Product + Image */}
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40">
                               {product.imageUrl ? (
                                 <img
                                   src={product.imageUrl}
@@ -1044,17 +1044,17 @@ export default function ProductsClient() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <Package className="h-5 w-5 text-slate-300" />
+                                <Package className="h-5 w-5 text-slate-300 dark:text-slate-600" />
                               )}
                             </div>
 
                             <div className="min-w-0">
-                              <p className="font-medium text-slate-900">
+                              <p className="font-medium text-slate-900 dark:text-foreground">
                                 {product.name}
                               </p>
 
                               {product.barcode && (
-                                <p className="mt-0.5 text-xs text-slate-400">
+                                <p className="mt-0.5 text-xs text-slate-400 dark:text-muted-foreground">
                                   {product.barcode}
                                 </p>
                               )}
@@ -1062,29 +1062,29 @@ export default function ProductsClient() {
                           </div>
                         </td>
 
-                        <td className="px-5 py-4 text-slate-600">
+                        <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
                           {product.category?.name ||
                             "-"}
                         </td>
 
-                        <td className="px-5 py-4 text-slate-600">
+                        <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
                           {product.brand?.name || "-"}
                         </td>
 
-                        <td className="px-5 py-4 text-slate-600">
+                        <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
                           {product.unit?.shortName ||
                             product.unit?.name ||
                             "-"}
                         </td>
 
-                        <td className="px-5 py-4 text-right font-medium text-slate-900">
+                        <td className="px-5 py-4 text-right font-medium text-slate-900 dark:text-foreground">
                           Rs.{" "}
                           {formatPrice(
                             product.sellingPrice
                           )}
                         </td>
 
-                        <td className="px-5 py-4 text-right text-slate-600">
+                        <td className="px-5 py-4 text-right text-slate-600 dark:text-slate-300">
                           {product.minimumStock}
                         </td>
 
@@ -1093,8 +1093,8 @@ export default function ProductsClient() {
                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                               product.status ===
                               "ACTIVE"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-slate-100 text-slate-500"
+                                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+                                : "bg-slate-100 dark:bg-muted text-slate-500 dark:text-muted-foreground"
                             }`}
                           >
                             {product.status ===
@@ -1117,7 +1117,7 @@ export default function ProductsClient() {
                                         product
                                       )
                                     }
-                                    className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                                    className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground transition hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-900 dark:hover:text-foreground"
                                     title="Edit"
                                   >
                                     <Pencil className="h-4 w-4" />
@@ -1133,8 +1133,8 @@ export default function ProductsClient() {
                                     className={`rounded-lg p-2 transition ${
                                       product.status ===
                                       "ACTIVE"
-                                        ? "text-red-500 hover:bg-red-50"
-                                        : "text-emerald-600 hover:bg-emerald-50"
+                                        ? "text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                        : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                                     }`}
                                     title={
                                       product.status ===
@@ -1159,13 +1159,13 @@ export default function ProductsClient() {
         </div>
 
         {/* Summary */}
-        <div className="mt-4 text-sm text-slate-500">
+        <div className="mt-4 text-sm text-slate-500 dark:text-muted-foreground">
           Showing{" "}
-          <span className="font-semibold text-slate-700">
+          <span className="font-semibold text-slate-700 dark:text-foreground">
             {filteredProducts.length}
           </span>{" "}
           of{" "}
-          <span className="font-semibold text-slate-700">
+          <span className="font-semibold text-slate-700 dark:text-foreground">
             {products.length}
           </span>{" "}
           products
@@ -1174,18 +1174,18 @@ export default function ProductsClient() {
 
       {/* Add / Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-xl">
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+            <div className="flex items-start justify-between border-b border-slate-200 dark:border-border px-6 py-4">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
                   {editingId
                     ? "Edit Product"
                     : "Add Product"}
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                   {editingId
                     ? "Update the product details."
                     : "Create a new product."}
@@ -1196,7 +1196,7 @@ export default function ProductsClient() {
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-700 dark:hover:text-foreground disabled:opacity-50 transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1206,14 +1206,14 @@ export default function ProductsClient() {
             <div className="space-y-5 px-6 py-5">
               {/* Product Image */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Product Image
                 </label>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/30 p-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                     {/* Preview */}
-                    <div className="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <div className="relative flex h-32 w-32 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40">
                       {imagePreview ? (
                         <img
                           src={imagePreview}
@@ -1221,7 +1221,7 @@ export default function ProductsClient() {
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-slate-300">
+                        <div className="flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
                           <ImageIcon className="h-8 w-8" />
                           <span className="mt-2 text-xs">
                             No Image
@@ -1234,7 +1234,7 @@ export default function ProductsClient() {
                     <div className="flex-1">
                       <label
                         htmlFor="product-image"
-                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:hover:bg-primary/90"
                       >
                         <Upload className="h-4 w-4" />
 
@@ -1261,14 +1261,14 @@ export default function ProductsClient() {
                         }}
                       />
 
-                      <p className="mt-2 text-xs text-slate-500">
+                      <p className="mt-2 text-xs text-slate-500 dark:text-muted-foreground">
                         JPG, JPEG, PNG or WebP.
                         Maximum file size 5 MB.
                       </p>
 
                       {form.image && (
                         <div className="mt-2 flex items-center gap-2">
-                          <p className="max-w-xs truncate text-xs font-medium text-slate-700">
+                          <p className="max-w-xs truncate text-xs font-medium text-slate-700 dark:text-slate-200">
                             {form.image.name}
                           </p>
 
@@ -1291,7 +1291,7 @@ export default function ProductsClient() {
               {/* Code + Barcode */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Product Code
                     <span className="ml-1 text-red-500">
                       *
@@ -1309,12 +1309,12 @@ export default function ProductsClient() {
                     }
                     maxLength={50}
                     placeholder="e.g. PEN-001"
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Barcode
                   </label>
 
@@ -1329,14 +1329,14 @@ export default function ProductsClient() {
                     }
                     maxLength={100}
                     placeholder="Optional barcode"
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                   />
                 </div>
               </div>
 
               {/* Product Name */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Product Name
                   <span className="ml-1 text-red-500">
                     *
@@ -1354,14 +1354,14 @@ export default function ProductsClient() {
                   }
                   maxLength={200}
                   placeholder="Enter product name"
-                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                 />
               </div>
 
               {/* Category + Brand */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Category
                     <span className="ml-1 text-red-500">
                       *
@@ -1377,7 +1377,7 @@ export default function ProductsClient() {
                       )
                     }
                     disabled={loadingOptions}
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-400 disabled:bg-slate-50"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 disabled:bg-slate-50 dark:disabled:bg-muted"
                   >
                     <option value="">
                       Select Category
@@ -1395,7 +1395,7 @@ export default function ProductsClient() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Brand
                   </label>
 
@@ -1408,7 +1408,7 @@ export default function ProductsClient() {
                       )
                     }
                     disabled={loadingOptions}
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-400 disabled:bg-slate-50"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 disabled:bg-slate-50 dark:disabled:bg-muted"
                   >
                     <option value="">
                       Select Brand
@@ -1429,7 +1429,7 @@ export default function ProductsClient() {
               {/* Unit + Tax */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Unit
                     <span className="ml-1 text-red-500">
                       *
@@ -1445,7 +1445,7 @@ export default function ProductsClient() {
                       )
                     }
                     disabled={loadingOptions}
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-400 disabled:bg-slate-50"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 disabled:bg-slate-50 dark:disabled:bg-muted"
                   >
                     <option value="">
                       Select Unit
@@ -1463,7 +1463,7 @@ export default function ProductsClient() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Tax
                   </label>
 
@@ -1476,7 +1476,7 @@ export default function ProductsClient() {
                       )
                     }
                     disabled={loadingOptions}
-                    className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-400 disabled:bg-slate-50"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 disabled:bg-slate-50 dark:disabled:bg-muted"
                   >
                     <option value="">No Tax</option>
 
@@ -1495,7 +1495,7 @@ export default function ProductsClient() {
               {/* Prices */}
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Purchase Price
                     <span className="ml-1 text-red-500">
                       *
@@ -1514,12 +1514,12 @@ export default function ProductsClient() {
                       )
                     }
                     placeholder="0.00"
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Selling Price
                     <span className="ml-1 text-red-500">
                       *
@@ -1538,12 +1538,12 @@ export default function ProductsClient() {
                       )
                     }
                     placeholder="0.00"
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Wholesale Price
                   </label>
 
@@ -1559,7 +1559,7 @@ export default function ProductsClient() {
                       )
                     }
                     placeholder="Optional"
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                   />
                 </div>
               </div>
@@ -1567,7 +1567,7 @@ export default function ProductsClient() {
               {/* Minimum Stock + Status */}
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                     Minimum Stock
                   </label>
 
@@ -1583,13 +1583,13 @@ export default function ProductsClient() {
                       )
                     }
                     placeholder="0"
-                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400"
+                    className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                   />
                 </div>
 
                 {editingId && (
                   <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                       Status
                     </label>
 
@@ -1601,7 +1601,7 @@ export default function ProductsClient() {
                           event.target.value
                         )
                       }
-                      className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-400"
+                      className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                     >
                       <option value="ACTIVE">
                         Active
@@ -1617,7 +1617,7 @@ export default function ProductsClient() {
 
               {/* Description */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Description
                 </label>
 
@@ -1631,18 +1631,18 @@ export default function ProductsClient() {
                   }
                   rows={3}
                   placeholder="Optional product description"
-                  className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-slate-400"
+                  className="w-full resize-none rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
                 />
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4">
+            <div className="sticky bottom-0 flex justify-end gap-3 border-t border-slate-200 dark:border-border bg-white dark:bg-card px-6 py-4">
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                className="h-10 rounded-lg border border-slate-200 dark:border-border px-4 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-muted/50 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -1658,7 +1658,7 @@ export default function ProductsClient() {
                     ? !canUpdate
                     : !canCreate)
                 }
-                className="h-10 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving
                   ? "Saving..."

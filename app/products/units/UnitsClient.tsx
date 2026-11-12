@@ -555,11 +555,11 @@ export default function UnitsClient() {
 
           <div>
 
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">
               Units
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Manage product measurement units.
             </p>
 
@@ -571,7 +571,7 @@ export default function UnitsClient() {
               <button
                 type="button"
                 onClick={openAddModal}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-4 text-sm font-semibold text-white transition hover:bg-slate-800 dark:hover:bg-primary/90"
               >
                 <Plus className="h-4 w-4" />
                 Add Unit
@@ -582,17 +582,17 @@ export default function UnitsClient() {
 
         {/* Permission Loading */}
         {loadingPermissions ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-10 text-center text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-10 text-center text-slate-500 dark:text-muted-foreground">
             Checking permissions...
           </div>
         ) : !canView ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-12 text-center">
 
             <div className="mb-3 text-4xl">
               🔒
             </div>
 
-            <p className="font-medium text-slate-700">
+            <p className="font-medium text-slate-700 dark:text-foreground">
               You do not have permission to view units.
             </p>
 
@@ -600,11 +600,11 @@ export default function UnitsClient() {
         ) : (
           <>
             {/* Search */}
-            <div className="mb-5 rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4">
 
               <div className="relative max-w-md">
 
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
 
                 <input
                   type="text"
@@ -615,7 +615,7 @@ export default function UnitsClient() {
                     )
                   }
                   placeholder="Search units..."
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 focus:bg-white dark:focus:bg-card"
                 />
 
               </div>
@@ -623,7 +623,7 @@ export default function UnitsClient() {
             </div>
 
             {/* Table */}
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card">
 
               <div className="overflow-x-auto">
 
@@ -631,29 +631,29 @@ export default function UnitsClient() {
 
                   <thead>
 
-                    <tr className="border-b border-slate-200 bg-slate-50">
+                    <tr className="border-b border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40">
 
-                      <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                         #
                       </th>
 
-                      <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                         Unit Name
                       </th>
 
-                      <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                         Short Name
                       </th>
 
-                      <th className="px-5 py-3 text-left font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-left font-semibold text-slate-600 dark:text-muted-foreground">
                         Description
                       </th>
 
-                      <th className="px-5 py-3 text-center font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-center font-semibold text-slate-600 dark:text-muted-foreground">
                         Status
                       </th>
 
-                      <th className="px-5 py-3 text-right font-semibold text-slate-600">
+                      <th className="px-5 py-3 text-right font-semibold text-slate-600 dark:text-muted-foreground">
                         Actions
                       </th>
 
@@ -667,7 +667,7 @@ export default function UnitsClient() {
                       <tr>
                         <td
                           colSpan={6}
-                          className="px-5 py-10 text-center text-slate-500"
+                          className="px-5 py-10 text-center text-slate-500 dark:text-muted-foreground"
                         >
                           Loading units...
                         </td>
@@ -677,7 +677,7 @@ export default function UnitsClient() {
                       <tr>
                         <td
                           colSpan={6}
-                          className="px-5 py-10 text-center text-slate-500"
+                          className="px-5 py-10 text-center text-slate-500 dark:text-muted-foreground"
                         >
                           No units found.
                         </td>
@@ -687,26 +687,26 @@ export default function UnitsClient() {
                         (unit, index) => (
                           <tr
                             key={unit.id}
-                            className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                            className="border-b border-slate-100 dark:border-border/60 last:border-b-0 hover:bg-slate-50 dark:hover:bg-muted/30"
                           >
 
-                            <td className="px-5 py-4 text-slate-500">
+                            <td className="px-5 py-4 text-slate-500 dark:text-muted-foreground">
                               {index + 1}
                             </td>
 
-                            <td className="px-5 py-4 font-medium text-slate-900">
+                            <td className="px-5 py-4 font-medium text-slate-900 dark:text-foreground">
                               {unit.name}
                             </td>
 
                             <td className="px-5 py-4">
 
-                              <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                              <span className="rounded-md bg-slate-100 dark:bg-muted px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
                                 {unit.shortName}
                               </span>
 
                             </td>
 
-                            <td className="max-w-xs px-5 py-4 text-slate-500">
+                            <td className="max-w-xs px-5 py-4 text-slate-500 dark:text-muted-foreground">
                               {unit.description ||
                                 "-"}
                             </td>
@@ -716,8 +716,8 @@ export default function UnitsClient() {
                               <span
                                 className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                                   unit.isActive
-                                    ? "bg-emerald-50 text-emerald-700"
-                                    : "bg-slate-100 text-slate-500"
+                                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+                                    : "bg-slate-100 dark:bg-muted text-slate-500 dark:text-muted-foreground"
                                 }`}
                               >
                                 {unit.isActive
@@ -741,7 +741,7 @@ export default function UnitsClient() {
                                           unit
                                         )
                                       }
-                                      className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                                      className="rounded-lg p-2 text-slate-500 dark:text-muted-foreground transition hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-900 dark:hover:text-foreground"
                                       title="Edit"
                                     >
                                       <Pencil className="h-4 w-4" />
@@ -760,8 +760,8 @@ export default function UnitsClient() {
                                       }
                                       className={`rounded-lg p-2 transition ${
                                         unit.isActive
-                                          ? "text-red-500 hover:bg-red-50"
-                                          : "text-emerald-600 hover:bg-emerald-50"
+                                          ? "text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                          : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                                       }`}
                                       title={
                                         unit.isActive
@@ -791,14 +791,14 @@ export default function UnitsClient() {
             </div>
 
             {/* Summary */}
-            <div className="mt-4 text-sm text-slate-500">
+            <div className="mt-4 text-sm text-slate-500 dark:text-muted-foreground">
 
               Showing{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-slate-700 dark:text-foreground">
                 {filteredUnits.length}
               </span>{" "}
               of{" "}
-              <span className="font-semibold text-slate-700">
+              <span className="font-semibold text-slate-700 dark:text-foreground">
                 {units.length}
               </span>{" "}
               units
@@ -812,20 +812,20 @@ export default function UnitsClient() {
       {/* Add / Edit Modal */}
       {showModal && (
 
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
 
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
+          <div className="w-full max-w-lg rounded-xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-xl">
 
             {/* Modal Header */}
-            <div className="border-b border-slate-200 px-6 py-4">
+            <div className="border-b border-slate-200 dark:border-border px-6 py-4">
 
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-foreground">
                 {editingId
                   ? "Edit Unit"
                   : "Add Unit"}
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                 {editingId
                   ? "Update the unit details."
                   : "Create a new product measurement unit."}
@@ -838,7 +838,7 @@ export default function UnitsClient() {
 
               <div>
 
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Unit Name
                 </label>
 
@@ -853,14 +853,14 @@ export default function UnitsClient() {
                   maxLength={50}
                   placeholder="e.g. Kilogram"
                   disabled={saving}
-                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-slate-400"
                 />
 
               </div>
 
               <div>
 
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Short Name
                 </label>
 
@@ -875,14 +875,14 @@ export default function UnitsClient() {
                   maxLength={20}
                   placeholder="e.g. kg"
                   disabled={saving}
-                  className="h-10 w-full rounded-lg border border-slate-200 px-3 text-sm outline-none focus:border-slate-400"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-slate-400"
                 />
 
               </div>
 
               <div>
 
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-200">
                   Description
                 </label>
 
@@ -897,7 +897,7 @@ export default function UnitsClient() {
                   rows={3}
                   placeholder="Optional description"
                   disabled={saving}
-                  className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  className="w-full resize-none rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-slate-400"
                 />
 
               </div>
@@ -916,10 +916,10 @@ export default function UnitsClient() {
                       )
                     }
                     disabled={saving}
-                    className="h-4 w-4 rounded border-slate-300"
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
                   />
 
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     Active
                   </span>
 
@@ -930,13 +930,13 @@ export default function UnitsClient() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-slate-200 dark:border-border px-6 py-4">
 
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={saving}
-                className="h-10 rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="h-10 rounded-lg border border-slate-200 dark:border-border px-4 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-muted/50 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -950,7 +950,7 @@ export default function UnitsClient() {
                     ? !canUpdate
                     : !canCreate)
                 }
-                className="h-10 rounded-lg bg-slate-900 px-5 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-10 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-5 text-sm font-semibold text-white hover:bg-slate-800 dark:hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving
                   ? "Saving..."

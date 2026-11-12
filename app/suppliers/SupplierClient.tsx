@@ -638,58 +638,58 @@ export default function SupplierClient() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-500 dark:text-muted-foreground">
               Active Suppliers
             </span>
 
             <Truck className="h-5 w-5 text-emerald-600" />
           </div>
 
-          <div className="mt-3 text-2xl font-black">
+          <div className="mt-3 text-2xl font-black text-slate-900 dark:text-foreground">
             {suppliers.filter((item) => item.isActive).length}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-500 dark:text-muted-foreground">
               Total Purchases
             </span>
 
             <FileText className="h-5 w-5 text-blue-600" />
           </div>
 
-          <div className="mt-3 text-2xl font-black">
+          <div className="mt-3 text-2xl font-black text-slate-900 dark:text-foreground">
             Rs. {formatMoney(totalPurchases)}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-500 dark:text-muted-foreground">
               Total Payments
             </span>
 
             <Wallet className="h-5 w-5 text-purple-600" />
           </div>
 
-          <div className="mt-3 text-2xl font-black">
+          <div className="mt-3 text-2xl font-black text-slate-900 dark:text-foreground">
             Rs. {formatMoney(totalPayments)}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
+        <div className="rounded-2xl border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/20 p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-orange-700">
+            <span className="text-sm text-orange-700 dark:text-orange-400">
               Outstanding
             </span>
 
-            <Landmark className="h-5 w-5 text-orange-600" />
+            <Landmark className="h-5 w-5 text-orange-600 dark:text-orange-400" />
           </div>
 
-          <div className="mt-3 text-2xl font-black text-orange-700">
+          <div className="mt-3 text-2xl font-black text-orange-700 dark:text-orange-400">
             Rs. {formatMoney(totalOutstanding)}
           </div>
         </div>
@@ -697,7 +697,7 @@ export default function SupplierClient() {
 
       {/* Tabs */}
       <div className="overflow-x-auto">
-        <div className="flex min-w-max gap-2 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm">
+        <div className="flex min-w-max gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-1.5 shadow-sm">
           {[
             ["SUPPLIERS", "Suppliers", Truck],
             ["OUTSTANDING", "Outstanding", Landmark],
@@ -722,7 +722,7 @@ export default function SupplierClient() {
               }}
               className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-bold transition ${activeTab === key
                 ? "bg-emerald-600 text-white"
-                : "text-slate-600 hover:bg-slate-100"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-muted"
                 }`}
             >
               <Icon className="h-4 w-4" />
@@ -743,29 +743,29 @@ export default function SupplierClient() {
               setSearch(event.target.value)
             }
             placeholder="Search supplier..."
-            className="h-11 w-full rounded-xl border border-slate-300 bg-white pl-10 pr-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 pl-10 pr-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/40"
           />
         </div>
       )}
 
       {/* Suppliers */}
       {activeTab === "SUPPLIERS" && (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="font-bold text-slate-900">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+          <div className="border-b border-slate-200 dark:border-border px-5 py-4">
+            <h2 className="font-bold text-slate-900 dark:text-foreground">
               Supplier List
             </h2>
           </div>
 
           {loading ? (
-            <div className="p-10 text-center text-sm text-slate-500">
+            <div className="p-10 text-center text-sm text-slate-500 dark:text-muted-foreground">
               Loading suppliers...
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px]">
-                <thead className="bg-slate-50">
-                  <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50 dark:bg-muted/40">
+                  <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     <th className="px-5 py-3">Supplier</th>
                     <th className="px-5 py-3">Phone</th>
                     <th className="px-5 py-3">Email</th>
@@ -781,31 +781,31 @@ export default function SupplierClient() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-border">
                   {filteredSuppliers.map((supplier) => (
                     <tr
                       key={supplier.id}
-                      className="hover:bg-slate-50"
+                      className="hover:bg-slate-50 dark:hover:bg-muted/30"
                     >
                       <td className="px-5 py-4">
-                        <div className="font-bold text-slate-900">
+                        <div className="font-bold text-slate-900 dark:text-foreground">
                           {supplier.name}
                         </div>
 
-                        <div className="text-xs text-slate-500">
+                        <div className="text-xs text-slate-500 dark:text-muted-foreground">
                           {supplier.code}
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 text-sm">
+                      <td className="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
                         {supplier.phone || "-"}
                       </td>
 
-                      <td className="px-5 py-4 text-sm">
+                      <td className="px-5 py-4 text-sm text-slate-700 dark:text-slate-300">
                         {supplier.email || "-"}
                       </td>
 
-                      <td className="px-5 py-4 text-right font-bold text-orange-600">
+                      <td className="px-5 py-4 text-right font-bold text-orange-600 dark:text-orange-400">
                         Rs.{" "}
                         {formatMoney(
                           Math.max(
@@ -820,8 +820,8 @@ export default function SupplierClient() {
                       <td className="px-5 py-4 text-center">
                         <span
                           className={`rounded-full px-3 py-1 text-xs font-bold ${supplier.isActive
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-100 text-slate-500"
+                            ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                            : "bg-slate-100 dark:bg-muted text-slate-500 dark:text-muted-foreground"
                             }`}
                         >
                           {supplier.isActive
@@ -837,7 +837,7 @@ export default function SupplierClient() {
                             onClick={() =>
                               setSelectedSupplier(supplier)
                             }
-                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                            className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-muted"
                             title="View"
                           >
                             <Eye className="h-4 w-4" />
@@ -848,7 +848,7 @@ export default function SupplierClient() {
                             onClick={() =>
                               openEdit(supplier)
                             }
-                            className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                            className="rounded-lg p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"
                             title="Edit"
                           >
                             <Edit className="h-4 w-4" />
@@ -862,7 +862,7 @@ export default function SupplierClient() {
                                   supplier
                                 )
                               }
-                              className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                              className="rounded-lg p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40"
                               title="Deactivate"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -877,7 +877,7 @@ export default function SupplierClient() {
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-5 py-12 text-center text-sm text-slate-400"
+                        className="px-5 py-12 text-center text-sm text-slate-400 dark:text-muted-foreground"
                       >
                         No suppliers found.
                       </td>
@@ -892,21 +892,21 @@ export default function SupplierClient() {
 
       {/* Outstanding */}
       {activeTab === "OUTSTANDING" && (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4">
-            <h2 className="font-bold text-slate-900">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+          <div className="border-b border-slate-200 dark:border-border px-5 py-4">
+            <h2 className="font-bold text-slate-900 dark:text-foreground">
               Supplier Outstanding
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Current amount payable to each supplier.
             </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px]">
-              <thead className="bg-slate-50">
-                <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+              <thead className="bg-slate-50 dark:bg-muted/40">
+                <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                   <th className="px-5 py-3">Supplier</th>
                   <th className="px-5 py-3 text-right">
                     Opening
@@ -926,40 +926,40 @@ export default function SupplierClient() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-border">
                 {filteredOutstanding.map((item) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-slate-50"
+                    className="hover:bg-slate-50 dark:hover:bg-muted/30"
                   >
                     <td className="px-5 py-4">
-                      <div className="font-bold">
+                      <div className="font-bold text-slate-900 dark:text-foreground">
                         {item.name}
                       </div>
 
-                      <div className="text-xs text-slate-500">
+                      <div className="text-xs text-slate-500 dark:text-muted-foreground">
                         {item.code}
                       </div>
                     </td>
 
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                       Rs.{" "}
                       {formatMoney(
                         item.openingBalance
                       )}
                     </td>
 
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                       Rs.{" "}
                       {formatMoney(item.totalDebit)}
                     </td>
 
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                       Rs.{" "}
                       {formatMoney(item.totalCredit)}
                     </td>
 
-                    <td className="px-5 py-4 text-right font-black text-orange-600">
+                    <td className="px-5 py-4 text-right font-black text-orange-600 dark:text-orange-400">
                       Rs.{" "}
                       {formatMoney(
                         Math.max(item.outstanding, 0)
@@ -976,7 +976,7 @@ export default function SupplierClient() {
                           void loadStatement(item.id);
                         }}
 
-                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50"
+                        className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                       >
                         <Eye className="h-4 w-4" />
                         View
@@ -993,14 +993,14 @@ export default function SupplierClient() {
 
       {/* Purchase History */}
       {activeTab === "PURCHASES" && (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-slate-200 dark:border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-bold text-slate-900">
+              <h2 className="font-bold text-slate-900 dark:text-foreground">
                 Purchase History
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                 {selectedPurchaseSupplierId !== null
                   ? `Purchases for ${suppliers.find(
                     (s) => s.id === selectedPurchaseSupplierId
@@ -1017,7 +1017,7 @@ export default function SupplierClient() {
                   setSelectedPurchaseSupplierId(null);
                   setStatement(null);
                 }}
-                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 dark:border-border px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-muted"
               >
                 ← Back to Suppliers
               </button>
@@ -1029,14 +1029,14 @@ export default function SupplierClient() {
               {suppliers.map((supplier) => (
                 <div
                   key={supplier.id}
-                  className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 md:flex-row md:items-center md:justify-between"
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4 md:flex-row md:items-center md:justify-between"
                 >
                   <div>
-                    <div className="font-bold text-slate-900">
+                    <div className="font-bold text-slate-900 dark:text-foreground">
                       {supplier.name}
                     </div>
 
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 dark:text-muted-foreground">
                       {supplier.code}
                     </div>
                   </div>
@@ -1054,7 +1054,7 @@ export default function SupplierClient() {
                       setSelectedPurchaseId(null);
                       void loadStatement(supplier.id);
                     }}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-muted"
                   >
                     <FileText className="h-4 w-4" />
                     View Purchases
@@ -1063,23 +1063,23 @@ export default function SupplierClient() {
               ))}
 
               {suppliers.length === 0 && (
-                <p className="py-8 text-center text-sm text-slate-500">
+                <p className="py-8 text-center text-sm text-slate-500 dark:text-muted-foreground">
                   No suppliers found.
                 </p>
               )}
             </div>
           ) : statement?.supplier.id !== selectedPurchaseSupplierId ? (
-            <div className="p-10 text-center text-sm text-slate-500">
+            <div className="p-10 text-center text-sm text-slate-500 dark:text-muted-foreground">
               Loading purchase history...
             </div>
           ) : (
             <div className="p-5">
               <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="rounded-xl border border-slate-200 p-4">
-                  <p className="text-sm text-slate-500">
+                <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                  <p className="text-sm text-slate-500 dark:text-muted-foreground">
                     Total Purchases
                   </p>
-                  <p className="mt-1 text-lg font-bold">
+                  <p className="mt-1 text-lg font-bold text-slate-900 dark:text-foreground">
                     Rs.{" "}
                     {formatMoney(
                       statement.purchases.reduce(
@@ -1090,11 +1090,11 @@ export default function SupplierClient() {
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 p-4">
-                  <p className="text-sm text-slate-500">
+                <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                  <p className="text-sm text-slate-500 dark:text-muted-foreground">
                     Total Paid
                   </p>
-                  <p className="mt-1 text-lg font-bold text-emerald-700">
+                  <p className="mt-1 text-lg font-bold text-emerald-700 dark:text-emerald-400">
                     Rs.{" "}
                     {formatMoney(
                       statement.purchases.reduce(
@@ -1105,11 +1105,11 @@ export default function SupplierClient() {
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
-                  <p className="text-sm text-orange-700">
+                <div className="rounded-xl border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/20 p-4">
+                  <p className="text-sm text-orange-700 dark:text-orange-400">
                     Total Balance
                   </p>
-                  <p className="mt-1 text-lg font-bold text-orange-700">
+                  <p className="mt-1 text-lg font-bold text-orange-700 dark:text-orange-400">
                     Rs.{" "}
                     {formatMoney(
                       statement.purchases.reduce(
@@ -1121,10 +1121,10 @@ export default function SupplierClient() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-border">
                 <table className="w-full min-w-[850px]">
-                  <thead className="bg-slate-50">
-                    <tr className="text-left text-xs font-bold uppercase text-slate-500">
+                  <thead className="bg-slate-50 dark:bg-muted/40">
+                    <tr className="text-left text-xs font-bold uppercase text-slate-500 dark:text-muted-foreground">
                       <th className="px-4 py-3">Purchase No.</th>
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3 text-right">Total</th>
@@ -1135,36 +1135,36 @@ export default function SupplierClient() {
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-border">
                     {statement.purchases.map((purchase) => (
-                      <tr key={purchase.id}>
-                        <td className="px-4 py-4 font-semibold">
+                      <tr key={purchase.id} className="hover:bg-slate-50 dark:hover:bg-muted/30">
+                        <td className="px-4 py-4 font-semibold text-slate-900 dark:text-foreground">
                           {purchase.purchaseNo}
                         </td>
 
-                        <td className="px-4 py-4">
+                        <td className="px-4 py-4 text-slate-600 dark:text-muted-foreground">
                           {formatDate(purchase.purchaseDate)}
                         </td>
 
-                        <td className="px-4 py-4 text-right">
+                        <td className="px-4 py-4 text-right text-slate-700 dark:text-slate-300">
                           Rs. {formatMoney(purchase.total)}
                         </td>
 
-                        <td className="px-4 py-4 text-right text-emerald-700">
+                        <td className="px-4 py-4 text-right text-emerald-700 dark:text-emerald-400">
                           Rs. {formatMoney(purchase.paidAmount)}
                         </td>
 
-                        <td className="px-4 py-4 text-right font-bold text-orange-700">
+                        <td className="px-4 py-4 text-right font-bold text-orange-700 dark:text-orange-400">
                           Rs. {formatMoney(purchase.balanceAmount)}
                         </td>
 
                         <td className="px-4 py-4 text-center">
                           <span
                             className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${purchase.status === "PAID"
-                              ? "bg-emerald-100 text-emerald-700"
+                              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
                               : purchase.status === "PARTIAL"
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-slate-100 text-slate-700"
+                                ? "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300"
+                                : "bg-slate-100 dark:bg-muted text-slate-700 dark:text-foreground"
                               }`}
                           >
                             {purchase.status}
@@ -1187,7 +1187,7 @@ export default function SupplierClient() {
                               Record Payment
                             </button>
                           ) : (
-                            <span className="font-semibold text-emerald-700">
+                            <span className="font-semibold text-emerald-700 dark:text-emerald-400">
                               Paid
                             </span>
                           )}
@@ -1199,7 +1199,7 @@ export default function SupplierClient() {
                       <tr>
                         <td
                           colSpan={7}
-                          className="px-4 py-10 text-center text-sm text-slate-500"
+                          className="px-4 py-10 text-center text-sm text-slate-500 dark:text-muted-foreground"
                         >
                           No purchases found for this supplier.
                         </td>
@@ -1208,12 +1208,12 @@ export default function SupplierClient() {
                   </tbody>
                 </table>
                 {showPaymentForm && selectedPurchase && (
-                  <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-                    <h3 className="mb-4 text-lg font-bold text-slate-900">
+                  <div className="mt-5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/20 p-5">
+                    <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-foreground">
                       Record Purchase Payment
                     </h3>
 
-                    <p className="mb-4 text-sm text-slate-600">
+                    <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
                       Purchase: {selectedPurchase.purchaseNo}
                       {" · "}
                       Outstanding: Rs.{" "}
@@ -1222,7 +1222,7 @@ export default function SupplierClient() {
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
-                        <label className="mb-1 block text-sm font-semibold">
+                        <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                           Payment Amount (Rs.)
                         </label>
                         <input
@@ -1234,13 +1234,13 @@ export default function SupplierClient() {
                           onChange={(event) =>
                             setPaymentAmountInput(event.target.value)
                           }
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
+                          className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                           placeholder="Enter amount"
                         />
                       </div>
 
                       <div>
-                        <label className="mb-1 block text-sm font-semibold">
+                        <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                           Payment Method
                         </label>
                         <select
@@ -1248,7 +1248,7 @@ export default function SupplierClient() {
                           onChange={(event) =>
                             setAdditionalPaymentMethod(event.target.value)
                           }
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
+                          className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                         >
                           <option value="CASH">Cash</option>
                           <option value="CARD">Card</option>
@@ -1259,7 +1259,7 @@ export default function SupplierClient() {
                       </div>
 
                       <div>
-                        <label className="mb-1 block text-sm font-semibold">
+                        <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                           Reference (Optional)
                         </label>
                         <input
@@ -1268,13 +1268,13 @@ export default function SupplierClient() {
                           onChange={(event) =>
                             setAdditionalPaymentReference(event.target.value)
                           }
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
+                          className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                           placeholder="Receipt or transaction reference"
                         />
                       </div>
 
                       <div>
-                        <label className="mb-1 block text-sm font-semibold">
+                        <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                           Note (Optional)
                         </label>
                         <input
@@ -1283,7 +1283,7 @@ export default function SupplierClient() {
                           onChange={(event) =>
                             setAdditionalPaymentNote(event.target.value)
                           }
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2"
+                          className="w-full rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                           placeholder="Payment note"
                         />
                       </div>
@@ -1306,7 +1306,7 @@ export default function SupplierClient() {
                           setSelectedPurchaseId(null);
                         }}
                         disabled={paymentSaving}
-                        className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 font-semibold hover:bg-slate-100"
+                        className="rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-card px-5 py-2.5 font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-muted"
                       >
                         Cancel
                       </button>
@@ -1326,15 +1326,15 @@ export default function SupplierClient() {
       {activeTab === "PAYMENTS" && (
         <div
           id="supplier-payments-print-area"
-          className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+          className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm"
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-border px-5 py-4">
             <div>
-              <h2 className="font-bold text-slate-900">
+              <h2 className="font-bold text-slate-900 dark:text-foreground">
                 Supplier Payments
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
                 Search and filter payments recorded against all supplier purchases.
               </p>
             </div>
@@ -1385,9 +1385,9 @@ export default function SupplierClient() {
           </div>
 
           {/* Filters */}
-          <div className="no-print grid grid-cols-1 gap-4 border-b border-slate-200 p-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="no-print grid grid-cols-1 gap-4 border-b border-slate-200 dark:border-border p-5 md:grid-cols-2 xl:grid-cols-4">
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">
+              <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Search
               </label>
               <input
@@ -1395,18 +1395,18 @@ export default function SupplierClient() {
                 value={paymentSearch}
                 onChange={(event) => setPaymentSearch(event.target.value)}
                 placeholder="Supplier, purchase no. or reference"
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">
+              <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Payment Method
               </label>
               <select
                 value={paymentMethodFilter}
                 onChange={(event) => setPaymentMethodFilter(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
               >
                 <option value="ALL">All Methods</option>
                 <option value="CASH">Cash</option>
@@ -1418,7 +1418,7 @@ export default function SupplierClient() {
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">
+              <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Date From
               </label>
               <input
@@ -1426,12 +1426,12 @@ export default function SupplierClient() {
                 value={paymentDateFrom}
                 max={paymentDateTo || undefined}
                 onChange={(event) => setPaymentDateFrom(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-semibold text-slate-700">
+              <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">
                 Date To
               </label>
               <input
@@ -1439,34 +1439,34 @@ export default function SupplierClient() {
                 value={paymentDateTo}
                 min={paymentDateFrom || undefined}
                 onChange={(event) => setPaymentDateTo(event.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+                className="w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
               />
             </div>
           </div>
 
           {/* Filtered total */}
-          <div className="grid grid-cols-1 gap-4 border-b border-slate-200 p-5 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 p-4">
-              <p className="text-sm text-slate-500">
+          <div className="grid grid-cols-1 gap-4 border-b border-slate-200 dark:border-border p-5 sm:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4">
+              <p className="text-sm text-slate-500 dark:text-muted-foreground">
                 Matching Payments
               </p>
-              <p className="mt-2 text-xl font-black text-slate-900">
+              <p className="mt-2 text-xl font-black text-slate-900 dark:text-foreground">
                 {filteredPayments.length}
               </p>
             </div>
 
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-sm text-emerald-700">
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 p-4">
+              <p className="text-sm text-emerald-700 dark:text-emerald-400">
                 Total Filtered Payments
               </p>
-              <p className="mt-2 text-xl font-black text-emerald-800">
+              <p className="mt-2 text-xl font-black text-emerald-800 dark:text-emerald-300">
                 Rs. {formatMoney(filteredPaymentTotal)}
               </p>
             </div>
           </div>
 
           {/* Clear filters */}
-          <div className="flex justify-end border-t border-slate-200 p-4">
+          <div className="flex justify-end border-t border-slate-200 dark:border-border p-4">
             <button
               type="button"
               onClick={() => {
@@ -1475,7 +1475,7 @@ export default function SupplierClient() {
                 setPaymentDateFrom("");
                 setPaymentDateTo("");
               }}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 dark:border-border bg-white dark:bg-card px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-muted"
             >
               Clear Filters
             </button>
@@ -1484,8 +1484,8 @@ export default function SupplierClient() {
           {/* Payments table */}
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1000px]">
-              <thead className="bg-slate-50">
-                <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
+              <thead className="bg-slate-50 dark:bg-muted/40">
+                <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                   <th className="px-5 py-3">Supplier</th>
                   <th className="px-5 py-3">Purchase</th>
                   <th className="px-5 py-3">Date</th>
@@ -1496,37 +1496,37 @@ export default function SupplierClient() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-border">
                 {filteredPayments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-slate-50">
-                    <td className="px-5 py-4 font-semibold">
+                  <tr key={payment.id} className="hover:bg-slate-50 dark:hover:bg-muted/30">
+                    <td className="px-5 py-4 font-semibold text-slate-900 dark:text-foreground">
                       <div>{payment.supplierName}</div>
-                      <div className="mt-1 text-xs text-slate-500">
+                      <div className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
                         {payment.supplierCode}
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-700 dark:text-slate-300">
                       {payment.purchaseNo}
                     </td>
 
-                    <td className="px-5 py-4 whitespace-nowrap">
+                    <td className="px-5 py-4 whitespace-nowrap text-slate-600 dark:text-muted-foreground">
                       {formatDate(payment.paymentDate)}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-700 dark:text-slate-300">
                       {payment.paymentMethod}
                     </td>
 
-                    <td className="px-5 py-4 text-right font-bold text-emerald-700 whitespace-nowrap">
+                    <td className="px-5 py-4 text-right font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                       Rs. {formatMoney(Number(payment.amount))}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-600 dark:text-muted-foreground">
                       {payment.reference || "-"}
                     </td>
 
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 text-slate-600 dark:text-muted-foreground">
                       {payment.note || "-"}
                     </td>
                   </tr>
@@ -1536,7 +1536,7 @@ export default function SupplierClient() {
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-5 py-12 text-center text-sm text-slate-500"
+                      className="px-5 py-12 text-center text-sm text-slate-500 dark:text-muted-foreground"
                     >
                       No payments match your search or filters.
                     </td>
@@ -1551,8 +1551,8 @@ export default function SupplierClient() {
       {/* Statement */}
       {activeTab === "STATEMENT" && (
         <div className="space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <label className="mb-2 block text-sm font-bold text-slate-700">
+          <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <label className="mb-2 block text-sm font-bold text-slate-700 dark:text-slate-200">
               Select Supplier
             </label>
 
@@ -1565,7 +1565,7 @@ export default function SupplierClient() {
                   void loadStatement(id);
                 }
               }}
-              className="h-11 w-full max-w-lg rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-500"
+              className="h-11 w-full max-w-lg rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
             >
               <option value="">
                 Select supplier
@@ -1585,12 +1585,12 @@ export default function SupplierClient() {
           {statement && (
             <>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-sm text-slate-500">
+                <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5">
+                  <p className="text-sm text-slate-500 dark:text-muted-foreground">
                     Opening
                   </p>
 
-                  <p className="mt-2 text-xl font-black">
+                  <p className="mt-2 text-xl font-black text-slate-900 dark:text-foreground">
                     Rs.{" "}
                     {formatMoney(
                       statement.openingBalance
@@ -1598,12 +1598,12 @@ export default function SupplierClient() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-sm text-slate-500">
+                <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5">
+                  <p className="text-sm text-slate-500 dark:text-muted-foreground">
                     Debit
                   </p>
 
-                  <p className="mt-2 text-xl font-black">
+                  <p className="mt-2 text-xl font-black text-slate-900 dark:text-foreground">
                     Rs.{" "}
                     {formatMoney(
                       statement.totalDebit
@@ -1611,12 +1611,12 @@ export default function SupplierClient() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                  <p className="text-sm text-slate-500">
+                <div className="rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5">
+                  <p className="text-sm text-slate-500 dark:text-muted-foreground">
                     Credit
                   </p>
 
-                  <p className="mt-2 text-xl font-black">
+                  <p className="mt-2 text-xl font-black text-slate-900 dark:text-foreground">
                     Rs.{" "}
                     {formatMoney(
                       statement.totalCredit
@@ -1624,12 +1624,12 @@ export default function SupplierClient() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5">
-                  <p className="text-sm text-orange-700">
+                <div className="rounded-2xl border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/20 p-5">
+                  <p className="text-sm text-orange-700 dark:text-orange-400">
                     Outstanding
                   </p>
 
-                  <p className="mt-2 text-xl font-black text-orange-700">
+                  <p className="mt-2 text-xl font-black text-orange-700 dark:text-orange-400">
                     Rs.{" "}
                     {formatMoney(
                       Math.max(
@@ -1641,17 +1641,17 @@ export default function SupplierClient() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-200 px-5 py-4">
-                  <h2 className="font-bold">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+                <div className="border-b border-slate-200 dark:border-border px-5 py-4">
+                  <h2 className="font-bold text-slate-900 dark:text-foreground">
                     Supplier Ledger
                   </h2>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[800px]">
-                    <thead className="bg-slate-50">
-                      <tr className="text-left text-xs font-bold uppercase text-slate-500">
+                    <thead className="bg-slate-50 dark:bg-muted/40">
+                      <tr className="text-left text-xs font-bold uppercase text-slate-500 dark:text-muted-foreground">
                         <th className="px-5 py-3">
                           Date
                         </th>
@@ -1674,48 +1674,48 @@ export default function SupplierClient() {
                     </thead>
 
 
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-border">
                       {statement.openingBalance !== 0 && (
-                        <tr className="bg-emerald-50/50">
-                          <td className="px-5 py-4">-</td>
+                        <tr className="bg-emerald-50/50 dark:bg-emerald-950/20">
+                          <td className="px-5 py-4 text-slate-600 dark:text-muted-foreground">-</td>
 
-                          <td className="px-5 py-4 font-semibold">
+                          <td className="px-5 py-4 font-semibold text-slate-900 dark:text-foreground">
                             Opening Balance
                           </td>
 
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                             Rs. {formatMoney(statement.openingBalance)}
                           </td>
 
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                             Rs. {formatMoney(0)}
                           </td>
 
-                          <td className="px-5 py-4 text-right font-bold">
+                          <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-foreground">
                             Rs. {formatMoney(statement.openingBalance)}
                           </td>
                         </tr>
                       )}
 
                       {ledgerWithBalance.map((item) => (
-                        <tr key={item.id}>
-                          <td className="px-5 py-4">
+                        <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-muted/30">
+                          <td className="px-5 py-4 text-slate-600 dark:text-muted-foreground">
                             {formatDate(item.createdAt)}
                           </td>
 
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-4 text-slate-900 dark:text-foreground">
                             {item.description || "-"}
                           </td>
 
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                             Rs. {formatMoney(item.debit)}
                           </td>
 
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                             Rs. {formatMoney(item.credit)}
                           </td>
 
-                          <td className="px-5 py-4 text-right font-bold">
+                          <td className="px-5 py-4 text-right font-bold text-slate-900 dark:text-foreground">
                             Rs. {formatMoney(item.runningBalance)}
                           </td>
                         </tr>
@@ -1725,7 +1725,7 @@ export default function SupplierClient() {
                         <tr>
                           <td
                             colSpan={5}
-                            className="px-5 py-10 text-center text-sm text-slate-400"
+                            className="px-5 py-10 text-center text-sm text-slate-400 dark:text-muted-foreground"
                           >
                             No ledger transactions.
                           </td>
@@ -1737,17 +1737,17 @@ export default function SupplierClient() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div className="border-b border-slate-200 px-5 py-4">
-                  <h2 className="font-bold">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
+                <div className="border-b border-slate-200 dark:border-border px-5 py-4">
+                  <h2 className="font-bold text-slate-900 dark:text-foreground">
                     Purchase History
                   </h2>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[800px]">
-                    <thead className="bg-slate-50">
-                      <tr className="text-left text-xs font-bold uppercase text-slate-500">
+                    <thead className="bg-slate-50 dark:bg-muted/40">
+                      <tr className="text-left text-xs font-bold uppercase text-slate-500 dark:text-muted-foreground">
                         <th className="px-5 py-3">
                           Purchase
                         </th>
@@ -1774,35 +1774,35 @@ export default function SupplierClient() {
                       </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-border">
                       {statement.purchases.map(
                         (purchase) => (
-                          <tr key={purchase.id}>
-                            <td className="px-5 py-4 font-bold">
+                          <tr key={purchase.id} className="hover:bg-slate-50 dark:hover:bg-muted/30">
+                            <td className="px-5 py-4 font-bold text-slate-900 dark:text-foreground">
                               {purchase.purchaseNo}
                             </td>
 
-                            <td className="px-5 py-4">
+                            <td className="px-5 py-4 text-slate-600 dark:text-muted-foreground">
                               {formatDate(
                                 purchase.purchaseDate
                               )}
                             </td>
 
-                            <td className="px-5 py-4 text-right">
+                            <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                               Rs.{" "}
                               {formatMoney(
                                 purchase.total
                               )}
                             </td>
 
-                            <td className="px-5 py-4 text-right">
+                            <td className="px-5 py-4 text-right text-slate-700 dark:text-slate-300">
                               Rs.{" "}
                               {formatMoney(
                                 purchase.paidAmount
                               )}
                             </td>
 
-                            <td className="px-5 py-4 text-right">
+                            <td className="px-5 py-4 text-right font-bold text-orange-700 dark:text-orange-400">
                               Rs.{" "}
                               {formatMoney(
                                 purchase.balanceAmount
@@ -1810,7 +1810,7 @@ export default function SupplierClient() {
                             </td>
 
                             <td className="px-5 py-4 text-center">
-                              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
                                 {purchase.status}
                               </span>
                             </td>
@@ -1828,17 +1828,17 @@ export default function SupplierClient() {
 
       {/* Supplier Form Modal */}
       {formOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-border px-6 py-4">
               <div>
-                <h2 className="text-lg font-black">
+                <h2 className="text-lg font-black text-slate-900 dark:text-foreground">
                   {editingSupplier
                     ? "Edit Supplier"
                     : "Add Supplier"}
                 </h2>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">
                   Supplier master information
                 </p>
               </div>
@@ -1846,7 +1846,7 @@ export default function SupplierClient() {
               <button
                 type="button"
                 onClick={() => setFormOpen(false)}
-                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-muted"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1854,7 +1854,7 @@ export default function SupplierClient() {
 
             <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-sm font-bold">
+                <label className="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">
                   Supplier Code
                 </label>
 
@@ -1867,12 +1867,12 @@ export default function SupplierClient() {
                     })
                   }
                   placeholder="SUP002"
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-bold">
+                <label className="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">
                   Supplier Name
                 </label>
 
@@ -1885,12 +1885,12 @@ export default function SupplierClient() {
                     })
                   }
                   placeholder="Supplier name"
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-bold">
+                <label className="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">
                   Phone
                 </label>
 
@@ -1902,12 +1902,12 @@ export default function SupplierClient() {
                       phone: event.target.value,
                     })
                   }
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-bold">
+                <label className="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">
                   Email
                 </label>
 
@@ -1920,12 +1920,12 @@ export default function SupplierClient() {
                       email: event.target.value,
                     })
                   }
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-sm font-bold">
+                <label className="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">
                   Address
                 </label>
 
@@ -1938,12 +1938,12 @@ export default function SupplierClient() {
                       address: event.target.value,
                     })
                   }
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500"
+                  className="w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-sm font-bold">
+                <label className="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">
                   Opening Balance
                 </label>
 
@@ -1959,16 +1959,16 @@ export default function SupplierClient() {
                         event.target.value,
                     })
                   }
-                  className="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none focus:border-emerald-500"
+                  className="h-11 w-full rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-slate-200 dark:border-border px-6 py-4">
               <button
                 type="button"
                 onClick={() => setFormOpen(false)}
-                className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-700"
+                className="rounded-xl border border-slate-300 dark:border-border bg-white dark:bg-card px-5 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-muted"
               >
                 Cancel
               </button>
@@ -1977,7 +1977,7 @@ export default function SupplierClient() {
                 type="button"
                 disabled={saving}
                 onClick={saveSupplier}
-                className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
               >
                 {saving
                   ? "Saving..."
@@ -1993,17 +1993,17 @@ export default function SupplierClient() {
       {/* Supplier View Modal */}
       {selectedSupplier && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4"
           onClick={() => setSelectedSupplier(null)}
         >
           <div
-            className="w-full max-w-xl rounded-2xl bg-white shadow-2xl"
+            className="w-full max-w-xl rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-              <h2 className="text-lg font-black">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-border px-6 py-4">
+              <h2 className="text-lg font-black text-slate-900 dark:text-foreground">
                 Supplier Details
               </h2>
 
@@ -2012,69 +2012,69 @@ export default function SupplierClient() {
                 onClick={() =>
                   setSelectedSupplier(null)
                 }
-                className="rounded-lg p-2 hover:bg-slate-100"
+                className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-muted"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2">
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Code
                 </p>
 
-                <p className="mt-1 font-bold">
+                <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                   {selectedSupplier.code}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Name
                 </p>
 
-                <p className="mt-1 font-bold">
+                <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                   {selectedSupplier.name}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Phone
                 </p>
 
-                <p className="mt-1 font-bold">
+                <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                   {selectedSupplier.phone || "-"}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Email
                 </p>
 
-                <p className="mt-1 font-bold">
+                <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                   {selectedSupplier.email || "-"}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4 md:col-span-2">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4 md:col-span-2">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Address
                 </p>
 
-                <p className="mt-1 font-bold">
+                <p className="mt-1 font-bold text-slate-900 dark:text-foreground">
                   {selectedSupplier.address || "-"}
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Opening Balance
                 </p>
 
-                <p className="mt-1 font-black">
+                <p className="mt-1 font-black text-slate-900 dark:text-foreground">
                   Rs.{" "}
                   {formatMoney(
                     selectedSupplier.openingBalance
@@ -2082,12 +2082,12 @@ export default function SupplierClient() {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Status
                 </p>
 
-                <p className="mt-1 font-black text-emerald-700">
+                <p className="mt-1 font-black text-emerald-700 dark:text-emerald-400">
                   {selectedSupplier.isActive
                     ? "ACTIVE"
                     : "INACTIVE"}
@@ -2101,22 +2101,22 @@ export default function SupplierClient() {
       {/* Selected Purchase / Statement Modal */}
       {selectedPurchase && !showPaymentForm && (
         <div
-          className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/50 p-4"
+          className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4"
           onClick={() => setSelectedPurchaseId(null)}
         >
           <div
-            className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl"
+            className="w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl"
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-border px-6 py-4">
               <div>
-                <h2 className="font-black">
+                <h2 className="font-black text-slate-900 dark:text-foreground">
                   {selectedPurchase.purchaseNo}
                 </h2>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">
                   {statement?.supplier.name}
                 </p>
               </div>
@@ -2126,7 +2126,7 @@ export default function SupplierClient() {
                 onClick={() =>
                   setSelectedPurchaseId(null)
                 }
-                className="rounded-lg p-2 hover:bg-slate-100"
+                className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-muted"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -2134,9 +2134,9 @@ export default function SupplierClient() {
 
             <div className="space-y-3 p-6">
               <div className="flex justify-between">
-                <span>Total</span>
+                <span className="text-slate-600 dark:text-slate-300">Total</span>
 
-                <strong>
+                <strong className="text-slate-900 dark:text-foreground">
                   Rs.{" "}
                   {formatMoney(
                     selectedPurchase.total
@@ -2145,9 +2145,9 @@ export default function SupplierClient() {
               </div>
 
               <div className="flex justify-between">
-                <span>Paid</span>
+                <span className="text-slate-600 dark:text-slate-300">Paid</span>
 
-                <strong>
+                <strong className="text-slate-900 dark:text-foreground">
                   Rs.{" "}
                   {formatMoney(
                     selectedPurchase.paidAmount
@@ -2156,9 +2156,9 @@ export default function SupplierClient() {
               </div>
 
               <div className="flex justify-between">
-                <span>Balance</span>
+                <span className="text-slate-600 dark:text-slate-300">Balance</span>
 
-                <strong className="text-orange-600">
+                <strong className="text-orange-600 dark:text-orange-400">
                   Rs.{" "}
                   {formatMoney(
                     selectedPurchase.balanceAmount
@@ -2166,19 +2166,19 @@ export default function SupplierClient() {
                 </strong>
               </div>
 
-              <div className="border-t border-slate-200 pt-4">
+              <div className="border-t border-slate-200 dark:border-border pt-4">
                 {selectedPurchase.payments.map(
                   (payment) => (
                     <div
                       key={payment.id}
-                      className="rounded-xl bg-slate-50 p-4"
+                      className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4"
                     >
                       <div className="flex justify-between">
-                        <span>
+                        <span className="text-slate-600 dark:text-slate-300">
                           {payment.paymentMethod}
                         </span>
 
-                        <strong className="text-emerald-700">
+                        <strong className="text-emerald-700 dark:text-emerald-400">
                           Rs.{" "}
                           {formatMoney(
                             payment.amount
@@ -2186,7 +2186,7 @@ export default function SupplierClient() {
                         </strong>
                       </div>
 
-                      <div className="mt-1 text-xs text-slate-500">
+                      <div className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
                         {payment.reference ||
                           "No reference"}
                       </div>

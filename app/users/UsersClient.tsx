@@ -287,7 +287,7 @@ export default function UsersClient() {
               type="button"
               onClick={handleManualRefresh}
               disabled={loading}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-600 dark:text-slate-300 shadow-sm transition hover:bg-slate-50 dark:hover:bg-muted disabled:opacity-50"
               title="Refresh"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -297,36 +297,36 @@ export default function UsersClient() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Total System Users</span>
               <Users className="h-4 w-4 text-primary" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{users.length}</p>
-            <p className="mt-1 text-xs text-slate-400">Configured operator accounts</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">{users.length}</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">Configured operator accounts</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Active Users</span>
               <UserCheck className="h-4 w-4 text-emerald-500" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{activeCount}</p>
-            <p className="mt-1 text-xs text-slate-400">Can log in and operate POS</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">{activeCount}</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">Can log in and operate POS</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Configured Roles</span>
               <ShieldCheck className="h-4 w-4 text-purple-500" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">{roles.length}</p>
-            <p className="mt-1 text-xs text-slate-400">Role-based access categories</p>
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">{roles.length}</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">Role-based access categories</p>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -334,7 +334,7 @@ export default function UsersClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, username, email..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:bg-white focus:outline-none"
+              className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-card focus:outline-none"
             />
           </div>
 
@@ -342,7 +342,7 @@ export default function UsersClient() {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Roles</option>
               {roles.map((r) => (
@@ -355,7 +355,7 @@ export default function UsersClient() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -371,7 +371,7 @@ export default function UsersClient() {
                   setSelectedRole("ALL");
                   setSelectedStatus("ALL");
                 }}
-                className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="h-10 rounded-xl border border-slate-200 dark:border-border px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted"
               >
                 Clear
               </button>
@@ -380,7 +380,7 @@ export default function UsersClient() {
         </div>
 
         {/* Users Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card shadow-sm">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -389,13 +389,13 @@ export default function UsersClient() {
           ) : users.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
               <Users className="h-12 w-12 stroke-[1.2]" />
-              <p className="mt-3 text-base font-semibold text-slate-700">No users found</p>
-              <p className="mt-1 text-sm text-slate-400">Create staff or cashier accounts to grant access.</p>
+              <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200">No users found</p>
+              <p className="mt-1 text-sm text-slate-400 dark:text-muted-foreground">Create staff or cashier accounts to grant access.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600">
-                <thead className="border-b border-slate-100 bg-slate-50/75 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                <thead className="border-b border-slate-100 dark:border-border bg-slate-50/75 dark:bg-muted/40 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                   <tr>
                     <th className="px-5 py-3.5">User</th>
                     <th className="px-5 py-3.5">Contact / Email</th>
@@ -406,22 +406,22 @@ export default function UsersClient() {
                     <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-border">
                   {users.map((u) => (
-                    <tr key={u.id} className="transition-colors hover:bg-slate-50/50">
+                    <tr key={u.id} className="transition-colors hover:bg-slate-50/50 dark:hover:bg-muted/30">
                       <td className="whitespace-nowrap px-5 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 font-bold text-primary">
                             {u.fullName.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-900">{u.fullName}</p>
-                            <p className="font-mono text-xs text-slate-400">@{u.username}</p>
+                            <p className="font-semibold text-slate-900 dark:text-foreground">{u.fullName}</p>
+                            <p className="font-mono text-xs text-slate-400 dark:text-muted-foreground">@{u.username}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-600">
-                        {u.email || <span className="text-slate-400 italic">No email set</span>}
+                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-600 dark:text-muted-foreground">
+                        {u.email || <span className="text-slate-400 dark:text-muted-foreground italic">No email set</span>}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4">
                         <span
@@ -432,20 +432,20 @@ export default function UsersClient() {
                           {u.role?.name || "No Role"}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-600">
+                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-600 dark:text-muted-foreground">
                         <span>{u.salesCount} sales</span>
-                        <span className="mx-1.5 text-slate-300">•</span>
+                        <span className="mx-1.5 text-slate-300 dark:text-slate-600">•</span>
                         <span>{u.jobsCount} jobs</span>
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-500">
+                      <td className="whitespace-nowrap px-5 py-4 text-xs text-slate-500 dark:text-muted-foreground">
                         {formatDateTime(u.lastLoginAt)}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4 text-center">
                         <span
                           className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
                             u.status === "ACTIVE"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-slate-100 text-slate-600"
+                              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                              : "bg-slate-100 dark:bg-muted text-slate-600 dark:text-slate-300"
                           }`}
                         >
                           {u.status}
@@ -456,7 +456,7 @@ export default function UsersClient() {
                           <button
                             type="button"
                             onClick={() => openEditModal(u)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-700 dark:hover:text-foreground"
                             title="Edit User & Password"
                           >
                             <Edit2 className="h-4 w-4" />
@@ -466,7 +466,7 @@ export default function UsersClient() {
                               type="button"
                               onClick={() => handleDeactivateUser(u.id, u.username)}
                               disabled={deactivatingId === u.id}
-                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 disabled:opacity-50"
                               title="Deactivate User"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -486,16 +486,16 @@ export default function UsersClient() {
       {/* ADD USER MODAL */}
       {addModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border px-6 py-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Add New User</h3>
-                <p className="text-xs text-slate-500">Create credentials and assign access permissions</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">Add New User</h3>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">Create credentials and assign access permissions</p>
               </div>
               <button
                 type="button"
                 onClick={() => setAddModalOpen(false)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-600 dark:hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -503,7 +503,7 @@ export default function UsersClient() {
 
             <form onSubmit={handleCreateUser} className="space-y-4 p-6">
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Full Name *
                 </label>
                 <input
@@ -511,13 +511,13 @@ export default function UsersClient() {
                   value={formFullName}
                   onChange={(e) => setFormFullName(e.target.value)}
                   placeholder="e.g. Kasun Bandara"
-                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Username *
                 </label>
                 <input
@@ -525,13 +525,13 @@ export default function UsersClient() {
                   value={formUsername}
                   onChange={(e) => setFormUsername(e.target.value)}
                   placeholder="e.g. kasun"
-                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm font-mono text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm font-mono text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Email (Optional)
                 </label>
                 <input
@@ -539,12 +539,12 @@ export default function UsersClient() {
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   placeholder="e.g. kasun@pubudu.lk"
-                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Password (min 6 characters) *
                 </label>
                 <input
@@ -552,7 +552,7 @@ export default function UsersClient() {
                   value={formPassword}
                   onChange={(e) => setFormPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   required
                   minLength={6}
                 />
@@ -560,13 +560,13 @@ export default function UsersClient() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Role *
                   </label>
                   <select
                     value={formRoleId}
                     onChange={(e) => setFormRoleId(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                     required
                   >
                     {roles.map((r) => (
@@ -578,13 +578,13 @@ export default function UsersClient() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Status
                   </label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as "ACTIVE" | "INACTIVE" | "SUSPENDED")}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
@@ -592,11 +592,11 @@ export default function UsersClient() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-border pt-4">
                 <button
                   type="button"
                   onClick={() => setAddModalOpen(false)}
-                  className="h-10 rounded-xl px-4 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                  className="h-10 rounded-xl px-4 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-muted"
                 >
                   Cancel
                 </button>
@@ -617,16 +617,16 @@ export default function UsersClient() {
       {/* EDIT USER MODAL */}
       {editModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border px-6 py-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Edit User Profile</h3>
-                <p className="text-xs text-slate-500 font-mono">@{editingUser.username}</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">Edit User Profile</h3>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground font-mono">@{editingUser.username}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setEditModalOpen(false)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-600 dark:hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -634,39 +634,39 @@ export default function UsersClient() {
 
             <form onSubmit={handleUpdateUser} className="space-y-4 p-6">
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Full Name *
                 </label>
                 <input
                   type="text"
                   value={formFullName}
                   onChange={(e) => setFormFullName(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   required
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Email
                 </label>
                 <input
                   type="email"
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Role *
                   </label>
                   <select
                     value={formRoleId}
                     onChange={(e) => setFormRoleId(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                     required
                   >
                     {roles.map((r) => (
@@ -678,13 +678,13 @@ export default function UsersClient() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Status
                   </label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as "ACTIVE" | "INACTIVE" | "SUSPENDED")}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   >
                     <option value="ACTIVE">Active</option>
                     <option value="INACTIVE">Inactive</option>
@@ -693,8 +693,8 @@ export default function UsersClient() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-slate-50/75 p-3.5">
-                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+              <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50/75 dark:bg-muted/30 p-3.5">
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
                   <KeyRound className="h-3.5 w-3.5 text-amber-600" />
                   Reset Password (Leave blank to keep current)
                 </label>
@@ -703,16 +703,16 @@ export default function UsersClient() {
                   value={formNewPassword}
                   onChange={(e) => setFormNewPassword(e.target.value)}
                   placeholder="New password (optional)"
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:border-primary focus:outline-none"
+                  className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground focus:border-primary focus:outline-none"
                   minLength={6}
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-border pt-4">
                 <button
                   type="button"
                   onClick={() => setEditModalOpen(false)}
-                  className="h-10 rounded-xl px-4 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                  className="h-10 rounded-xl px-4 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-muted"
                 >
                   Cancel
                 </button>

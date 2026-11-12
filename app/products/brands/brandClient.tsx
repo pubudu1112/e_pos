@@ -604,17 +604,17 @@ export default function BrandClient() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-background text-foreground p-6">
 
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
 
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-foreground">
               Brands
             </h1>
 
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-muted-foreground">
               Manage product brands
             </p>
           </div>
@@ -634,16 +634,16 @@ export default function BrandClient() {
         </div>
 
         {/* Brand List */}
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-border bg-white dark:bg-card shadow-sm">
 
-          <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+          <div className="flex items-center justify-between border-b border-gray-200 dark:border-border px-5 py-4">
 
             <div>
-              <h2 className="font-semibold text-gray-700">
+              <h2 className="font-semibold text-gray-700 dark:text-foreground">
                 Brand List
               </h2>
 
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-gray-400 dark:text-muted-foreground">
                 {brands.length} brand
                 {brands.length === 1
                   ? ""
@@ -658,7 +658,7 @@ export default function BrandClient() {
                   type="button"
                   onClick={loadBrands}
                   disabled={loading}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-muted/40 px-3 py-2 text-xs font-medium text-gray-600 dark:text-slate-200 transition hover:bg-gray-50 dark:hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Refresh
                 </button>
@@ -667,7 +667,7 @@ export default function BrandClient() {
           </div>
 
           {loadingPermissions ? (
-            <div className="p-10 text-center text-gray-500">
+            <div className="p-10 text-center text-gray-500 dark:text-muted-foreground">
               Checking permissions...
             </div>
           ) : !canView ? (
@@ -677,13 +677,13 @@ export default function BrandClient() {
                 🔒
               </div>
 
-              <p className="font-medium text-gray-600">
+              <p className="font-medium text-gray-600 dark:text-muted-foreground">
                 You do not have permission to view brands.
               </p>
 
             </div>
           ) : loading ? (
-            <div className="p-10 text-center text-gray-500">
+            <div className="p-10 text-center text-gray-500 dark:text-muted-foreground">
               Loading brands...
             </div>
           ) : brands.length === 0 ? (
@@ -693,11 +693,11 @@ export default function BrandClient() {
                 🏷️
               </div>
 
-              <p className="font-medium text-gray-600">
+              <p className="font-medium text-gray-600 dark:text-muted-foreground">
                 No brands found
               </p>
 
-              <p className="mt-1 text-sm text-gray-400">
+              <p className="mt-1 text-sm text-gray-400 dark:text-muted-foreground">
                 Add your first product brand.
               </p>
 
@@ -719,27 +719,27 @@ export default function BrandClient() {
 
               <table className="w-full text-left text-sm">
 
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-muted/40">
 
                   <tr>
 
-                    <th className="px-5 py-3 font-semibold text-gray-600">
+                    <th className="px-5 py-3 font-semibold text-gray-600 dark:text-muted-foreground">
                       ID
                     </th>
 
-                    <th className="px-5 py-3 font-semibold text-gray-600">
+                    <th className="px-5 py-3 font-semibold text-gray-600 dark:text-muted-foreground">
                       Brand Name
                     </th>
 
-                    <th className="px-5 py-3 font-semibold text-gray-600">
+                    <th className="px-5 py-3 font-semibold text-gray-600 dark:text-muted-foreground">
                       Description
                     </th>
 
-                    <th className="px-5 py-3 font-semibold text-gray-600">
+                    <th className="px-5 py-3 font-semibold text-gray-600 dark:text-muted-foreground">
                       Status
                     </th>
 
-                    <th className="px-5 py-3 text-right font-semibold text-gray-600">
+                    <th className="px-5 py-3 text-right font-semibold text-gray-600 dark:text-muted-foreground">
                       Actions
                     </th>
 
@@ -753,18 +753,18 @@ export default function BrandClient() {
                     (brand) => (
                       <tr
                         key={brand.id}
-                        className="border-t border-gray-100 transition hover:bg-gray-50"
+                        className="border-t border-gray-100 dark:border-border/60 transition hover:bg-gray-50 dark:hover:bg-muted/30"
                       >
 
-                        <td className="px-5 py-4 text-gray-600">
+                        <td className="px-5 py-4 text-gray-600 dark:text-muted-foreground">
                           {brand.id}
                         </td>
 
-                        <td className="px-5 py-4 font-medium text-gray-800">
+                        <td className="px-5 py-4 font-medium text-gray-800 dark:text-foreground">
                           {brand.name}
                         </td>
 
-                        <td className="px-5 py-4 text-gray-500">
+                        <td className="px-5 py-4 text-gray-500 dark:text-muted-foreground">
                           {brand.description ||
                             "-"}
                         </td>
@@ -782,8 +782,8 @@ export default function BrandClient() {
                               }
                               className={`rounded-full px-3 py-1 text-xs font-medium transition ${
                                 brand.isActive
-                                  ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                  ? "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-200"
+                                  : "bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground hover:bg-gray-200"
                               }`}
                             >
                               {brand.isActive
@@ -794,8 +794,8 @@ export default function BrandClient() {
                             <span
                               className={`rounded-full px-3 py-1 text-xs font-medium ${
                                 brand.isActive
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-gray-100 text-gray-600"
+                                  ? "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400"
+                                  : "bg-gray-100 dark:bg-muted text-gray-600 dark:text-muted-foreground"
                               }`}
                             >
                               {brand.isActive
@@ -818,7 +818,7 @@ export default function BrandClient() {
                                     brand
                                   )
                                 }
-                                className="mr-4 text-blue-600 transition hover:text-blue-800 hover:underline"
+                                className="mr-4 text-blue-600 dark:text-blue-400 transition hover:text-blue-800 hover:underline"
                               >
                                 Edit
                               </button>
@@ -836,8 +836,8 @@ export default function BrandClient() {
                                 }
                                 className={
                                   brand.isActive
-                                    ? "text-red-600 transition hover:text-red-800 hover:underline"
-                                    : "text-green-600 transition hover:text-green-800 hover:underline"
+                                    ? "text-red-600 dark:text-red-400 transition hover:text-red-800 hover:underline"
+                                    : "text-green-600 dark:text-green-400 transition hover:text-green-800 hover:underline"
                                 }
                               >
                                 {brand.isActive
@@ -864,22 +864,22 @@ export default function BrandClient() {
         {/* Add / Edit Modal */}
         {showModal && (
 
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs px-4">
 
-            <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+            <div className="w-full max-w-md rounded-xl bg-white dark:bg-card border border-gray-200 dark:border-border shadow-xl">
 
               {/* Modal Header */}
-              <div className="flex items-center justify-between border-b px-6 py-4">
+              <div className="flex items-center justify-between border-b border-gray-200 dark:border-border px-6 py-4">
 
                 <div>
 
-                  <h2 className="text-lg font-semibold text-gray-800">
+                  <h2 className="text-lg font-semibold text-gray-800 dark:text-foreground">
                     {editingId
                       ? "Edit Brand"
                       : "Add Brand"}
                   </h2>
 
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-muted-foreground">
                     {editingId
                       ? "Update brand information"
                       : "Create a new product brand"}
@@ -891,7 +891,7 @@ export default function BrandClient() {
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="text-xl text-gray-400 transition hover:text-gray-700 disabled:opacity-50"
+                  className="text-xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-50"
                 >
                   ×
                 </button>
@@ -902,7 +902,7 @@ export default function BrandClient() {
               <div className="space-y-5 px-6 py-6">
 
                 {error && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
                     {error}
                   </div>
                 )}
@@ -910,7 +910,7 @@ export default function BrandClient() {
                 {/* Brand Name */}
                 <div>
 
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-200">
                     Brand Name
                     <span className="text-red-500">
                       {" "}*
@@ -928,10 +928,10 @@ export default function BrandClient() {
                     placeholder="Enter brand name"
                     disabled={saving}
                     maxLength={100}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full rounded-lg border border-gray-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-gray-900 dark:text-foreground outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
-                  <p className="mt-1 text-right text-xs text-gray-400">
+                  <p className="mt-1 text-right text-xs text-gray-400 dark:text-muted-foreground">
                     {name.length}/100
                   </p>
 
@@ -940,7 +940,7 @@ export default function BrandClient() {
                 {/* Description */}
                 <div>
 
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-200">
                     Description
                   </label>
 
@@ -955,10 +955,10 @@ export default function BrandClient() {
                     rows={3}
                     disabled={saving}
                     maxLength={255}
-                    className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    className="w-full resize-none rounded-lg border border-gray-300 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-gray-900 dark:text-foreground outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                   />
 
-                  <p className="mt-1 text-right text-xs text-gray-400">
+                  <p className="mt-1 text-right text-xs text-gray-400 dark:text-muted-foreground">
                     {description.length}/255
                   </p>
 
@@ -967,15 +967,15 @@ export default function BrandClient() {
                 {/* Status - Edit only */}
                 {editingId && (
 
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                  <div className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-muted/30 px-4 py-3">
 
                     <div>
 
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-gray-700 dark:text-slate-200">
                         Brand Status
                       </p>
 
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-gray-400 dark:text-muted-foreground">
                         Inactive brands won't be available
                         for new products.
                       </p>
@@ -993,7 +993,7 @@ export default function BrandClient() {
                       className={`relative h-6 w-11 rounded-full transition ${
                         isActive
                           ? "bg-green-500"
-                          : "bg-gray-300"
+                          : "bg-gray-300 dark:bg-muted"
                       }`}
                     >
 
@@ -1014,13 +1014,13 @@ export default function BrandClient() {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-3 border-t bg-gray-50 px-6 py-4">
+              <div className="flex justify-end gap-3 border-t border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/30 px-6 py-4">
 
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={saving}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50"
+                  className="rounded-lg border border-gray-300 dark:border-border bg-white dark:bg-card px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 transition hover:bg-gray-100 dark:hover:bg-muted/50 disabled:opacity-50"
                 >
                   Cancel
                 </button>

@@ -325,9 +325,9 @@ export default function ExpensesClient() {
             <button
               type="button"
               onClick={() => setCategoryModalOpen(true)}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3.5 text-sm font-semibold text-slate-700 dark:text-slate-200 shadow-sm transition hover:bg-slate-50 dark:hover:bg-muted"
             >
-              <Tag className="h-4 w-4 text-slate-500" />
+              <Tag className="h-4 w-4 text-slate-500 dark:text-muted-foreground" />
               <span>Categories</span>
             </button>
 
@@ -344,55 +344,55 @@ export default function ExpensesClient() {
 
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">This Month</span>
               <DollarSign className="h-4 w-4 text-rose-500" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">
               Rs. {formatPrice(summary.monthlyTotal)}
             </p>
-            <p className="mt-1 text-xs text-slate-400">Total monthly operating outflow</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">Total monthly operating outflow</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Today</span>
               <Calendar className="h-4 w-4 text-amber-500" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">
               Rs. {formatPrice(summary.todayTotal)}
             </p>
-            <p className="mt-1 text-xs text-slate-400">Logged since 12:00 AM</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">Logged since 12:00 AM</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Filtered Total</span>
               <WalletCards className="h-4 w-4 text-primary" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">
               Rs. {formatPrice(summary.totalFiltered)}
             </p>
-            <p className="mt-1 text-xs text-slate-400">{expenses.length} records matching search</p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">{expenses.length} records matching search</p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500">
+          <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between text-slate-500 dark:text-muted-foreground">
               <span className="text-xs font-semibold uppercase tracking-wider">Top Category</span>
               <Tag className="h-4 w-4 text-indigo-500" />
             </div>
-            <p className="mt-2 truncate text-xl font-bold text-slate-900">
+            <p className="mt-2 truncate text-xl font-bold text-slate-900 dark:text-foreground">
               {topCategoryEntry ? topCategoryEntry[0] : "—"}
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">
               {topCategoryEntry ? `Rs. ${formatPrice(topCategoryEntry[1])}` : "No expenses recorded"}
             </p>
           </div>
         </div>
 
         {/* Search & Filter Toolbar */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -400,7 +400,7 @@ export default function ExpensesClient() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by expense #, description..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:bg-white focus:outline-none"
+              className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-card focus:outline-none"
             />
           </div>
 
@@ -408,7 +408,7 @@ export default function ExpensesClient() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Categories</option>
               {categories.map((c) => (
@@ -421,7 +421,7 @@ export default function ExpensesClient() {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">Active</option>
@@ -432,7 +432,7 @@ export default function ExpensesClient() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm focus:border-primary focus:outline-none"
               title="From date"
             />
 
@@ -440,7 +440,7 @@ export default function ExpensesClient() {
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-sm focus:border-primary focus:outline-none"
               title="To date"
             />
 
@@ -454,7 +454,7 @@ export default function ExpensesClient() {
                   setDateFrom("");
                   setDateTo("");
                 }}
-                className="inline-flex h-10 items-center gap-1 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="inline-flex h-10 items-center gap-1 rounded-xl border border-slate-200 dark:border-border px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted"
               >
                 Clear
               </button>
@@ -464,7 +464,7 @@ export default function ExpensesClient() {
               type="button"
               onClick={handleManualRefresh}
               disabled={loading}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-border text-slate-600 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-muted disabled:opacity-50"
               title="Refresh"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -473,7 +473,7 @@ export default function ExpensesClient() {
         </div>
 
         {/* Expenses Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card shadow-sm">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -482,8 +482,8 @@ export default function ExpensesClient() {
           ) : expenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <WalletCards className="h-12 w-12 stroke-[1.2]" />
-              <p className="mt-3 text-base font-semibold text-slate-700">No expenses found</p>
-              <p className="mt-1 text-sm text-slate-400">Record your business operating costs to track profit.</p>
+              <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200">No expenses found</p>
+              <p className="mt-1 text-sm text-slate-400 dark:text-muted-foreground">Record your business operating costs to track profit.</p>
               <button
                 type="button"
                 onClick={openCreateModal}
@@ -495,8 +495,8 @@ export default function ExpensesClient() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600">
-                <thead className="border-b border-slate-100 bg-slate-50/75 text-xs font-bold uppercase tracking-wider text-slate-500">
+              <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                <thead className="border-b border-slate-100 dark:border-border bg-slate-50/75 dark:bg-muted/40 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                   <tr>
                     <th className="px-5 py-3.5">Expense #</th>
                     <th className="px-5 py-3.5">Date</th>
@@ -508,41 +508,41 @@ export default function ExpensesClient() {
                     <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-border">
                   {expenses.map((exp) => (
-                    <tr key={exp.id} className="transition-colors hover:bg-slate-50/50">
-                      <td className="whitespace-nowrap px-5 py-4 font-mono text-xs font-semibold text-slate-900">
+                    <tr key={exp.id} className="transition-colors hover:bg-slate-50/50 dark:hover:bg-muted/30">
+                      <td className="whitespace-nowrap px-5 py-4 font-mono text-xs font-semibold text-slate-900 dark:text-foreground">
                         {exp.expenseNo}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-slate-600">
+                      <td className="whitespace-nowrap px-5 py-4 text-slate-600 dark:text-muted-foreground">
                         {formatDate(exp.expenseDate)}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 dark:bg-muted px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200">
                           <Tag className="h-3 w-3 text-slate-400" />
                           {exp.category?.name || "General"}
                         </span>
                       </td>
                       <td className="px-5 py-4">
-                        <p className="max-w-xs truncate font-medium text-slate-800" title={exp.description}>
+                        <p className="max-w-xs truncate font-medium text-slate-800 dark:text-slate-200" title={exp.description}>
                           {exp.description}
                         </p>
                         {exp.createdBy && (
-                          <p className="text-xs text-slate-400">by {exp.createdBy.fullName}</p>
+                          <p className="text-xs text-slate-400 dark:text-muted-foreground">by {exp.createdBy.fullName}</p>
                         )}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-xs font-medium text-slate-600">
+                      <td className="whitespace-nowrap px-5 py-4 text-xs font-medium text-slate-600 dark:text-muted-foreground">
                         {exp.paymentMethod?.name || "Cash"}
                       </td>
-                      <td className="whitespace-nowrap px-5 py-4 text-right font-mono font-bold text-slate-900">
+                      <td className="whitespace-nowrap px-5 py-4 text-right font-mono font-bold text-slate-900 dark:text-foreground">
                         Rs. {formatPrice(exp.amount)}
                       </td>
                       <td className="whitespace-nowrap px-5 py-4 text-center">
                         <span
                           className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold ${
                             exp.status === "ACTIVE"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : "bg-rose-50 text-rose-700"
+                              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300"
+                              : "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300"
                           }`}
                         >
                           {exp.status}
@@ -553,7 +553,7 @@ export default function ExpensesClient() {
                           <button
                             type="button"
                             onClick={() => openEditModal(exp)}
-                            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-700 dark:hover:text-foreground"
                             title="Edit Expense"
                           >
                             <Edit2 className="h-4 w-4" />
@@ -562,7 +562,7 @@ export default function ExpensesClient() {
                             type="button"
                             onClick={() => handleDeleteExpense(exp.id)}
                             disabled={deletingId === exp.id}
-                            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 disabled:opacity-50"
                             title="Delete Expense"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -581,20 +581,20 @@ export default function ExpensesClient() {
       {/* ADD / EDIT EXPENSE MODAL */}
       {expenseModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border px-6 py-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">
                   {editingExpense ? "Edit Expense" : "Record New Expense"}
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   {editingExpense ? editingExpense.expenseNo : "Enter details of the shop expense"}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setExpenseModalOpen(false)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-600 dark:hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -602,13 +602,13 @@ export default function ExpensesClient() {
 
             <form onSubmit={handleSubmitExpense} className="space-y-4 p-6">
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Category *
                 </label>
                 <select
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   required
                 >
                   <option value="">Select Category</option>
@@ -621,21 +621,21 @@ export default function ExpensesClient() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Description / Note *
                 </label>
                 <textarea
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   placeholder="e.g. 5 Reams of Double A A4 Paper 80GSM, Ceylon Electricity Board bill"
-                  className="h-20 w-full resize-none rounded-xl border border-slate-200 p-3 text-sm text-slate-800 placeholder-slate-400 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-20 w-full resize-none rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 p-3 text-sm text-slate-800 dark:text-foreground placeholder-slate-400 shadow-sm focus:border-primary focus:outline-none"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Amount (Rs.) *
                   </label>
                   <div className="relative">
@@ -649,34 +649,34 @@ export default function ExpensesClient() {
                       value={formAmount}
                       onChange={(e) => setFormAmount(e.target.value)}
                       placeholder="0.00"
-                      className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-11 pr-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                      className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 pl-11 pr-3 text-sm font-semibold text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Expense Date *
                   </label>
                   <input
                     type="date"
                     value={formDate}
                     onChange={(e) => setFormDate(e.target.value)}
-                    className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                   Payment Method
                 </label>
                 <select
                   value={formPaymentMethod}
                   onChange={(e) => setFormPaymentMethod(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-800 shadow-sm focus:border-primary focus:outline-none"
+                  className="h-11 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3.5 text-sm text-slate-800 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                 >
                   <option value="">Cash (Default)</option>
                   {paymentMethods.map((p) => (
@@ -687,11 +687,11 @@ export default function ExpensesClient() {
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4">
+              <div className="flex items-center justify-end gap-3 border-t border-slate-100 dark:border-border pt-4">
                 <button
                   type="button"
                   onClick={() => setExpenseModalOpen(false)}
-                  className="h-10 rounded-xl px-4 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+                  className="h-10 rounded-xl px-4 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-muted"
                 >
                   Cancel
                 </button>
@@ -712,16 +712,16 @@ export default function ExpensesClient() {
       {/* MANAGE CATEGORIES MODAL */}
       {categoryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-900 dark:text-foreground shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border px-6 py-4">
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Expense Categories</h3>
-                <p className="text-xs text-slate-500">Add or review expense classification groups</p>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-foreground">Expense Categories</h3>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">Add or review expense classification groups</p>
               </div>
               <button
                 type="button"
                 onClick={() => setCategoryModalOpen(false)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-600 dark:hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -729,15 +729,15 @@ export default function ExpensesClient() {
 
             <div className="space-y-5 p-6">
               {/* Add Category Form */}
-              <form onSubmit={handleCreateCategory} className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-700">Add New Category</p>
+              <form onSubmit={handleCreateCategory} className="rounded-xl border border-slate-100 dark:border-border bg-slate-50 dark:bg-muted/40 p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">Add New Category</p>
                 <div className="mt-2.5 space-y-2.5">
                   <input
                     type="text"
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                     placeholder="Category Name (e.g. Courier & Delivery)"
-                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                     required
                   />
                   <input
@@ -745,12 +745,12 @@ export default function ExpensesClient() {
                     value={newCatDesc}
                     onChange={(e) => setNewCatDesc(e.target.value)}
                     placeholder="Short description (optional)"
-                    className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-primary focus:outline-none"
+                    className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 text-sm text-slate-900 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-900 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50"
+                    className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-900 dark:bg-primary text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 dark:hover:bg-primary/90 disabled:opacity-50"
                   >
                     {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
                     <span>Add Category</span>
@@ -760,17 +760,17 @@ export default function ExpensesClient() {
 
               {/* Categories List */}
               <div className="max-h-64 overflow-y-auto pr-1">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                   Existing Categories ({categories.length})
                 </p>
-                <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+                <div className="divide-y divide-slate-100 dark:divide-border rounded-xl border border-slate-100 dark:border-border">
                   {categories.map((c) => (
                     <div key={c.id} className="flex items-center justify-between p-3 text-sm">
                       <div>
-                        <p className="font-semibold text-slate-800">{c.name}</p>
-                        {c.description && <p className="text-xs text-slate-400">{c.description}</p>}
+                        <p className="font-semibold text-slate-800 dark:text-slate-200">{c.name}</p>
+                        {c.description && <p className="text-xs text-slate-400 dark:text-muted-foreground">{c.description}</p>}
                       </div>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                      <span className="rounded-full bg-slate-100 dark:bg-muted px-2 py-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                         {c._count?.expense || 0} expenses
                       </span>
                     </div>
@@ -778,11 +778,11 @@ export default function ExpensesClient() {
                 </div>
               </div>
 
-              <div className="flex justify-end border-t border-slate-100 pt-3">
+              <div className="flex justify-end border-t border-slate-100 dark:border-border pt-3">
                 <button
                   type="button"
                   onClick={() => setCategoryModalOpen(false)}
-                  className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                  className="rounded-xl bg-slate-100 dark:bg-muted px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-muted/80"
                 >
                   Close
                 </button>
