@@ -4,56 +4,47 @@ import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
 
 // GET - List customers with search, stats & pagination
+
 export async function GET(request: Request) {
   try {
+    console.log("CUSTOMER API: Step 1 - Starting");
+
     const session = await getSession();
+
+    console.log("CUSTOMER API: Step 2 - Session checked", !!session);
+
     if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search")?.trim() || "";
-    const status = searchParams.get("status") || "all";
+    console.log("CUSTOMER API: Step 3 - Loading customers");
 
-    const where: any = {};
-
-    if (status === "active") {
-      where.isActive = true;
-    } else if (status === "inactive") {
-      where.isActive = false;
-    }
-
-    if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { code: { contains: search } },
-        { phone: { contains: search } },
-        { email: { contains: search } },
-      ];
-    }
-
-    const [customers, totalCount, activeCount] = await Promise.all([
-      prisma.customer.findMany({
-        where,
-        orderBy: { name: "asc" },
-        include: {
-          _count: {
-            select: {
-              sale: true,
-              job: true,
-            },
+    const customers = await prisma.customer.findMany({
+      orderBy: { name: "asc" },
+      include: {
+        _count: {
+          select: {
+            sale: true,
+            job: true,
           },
         },
-      }),
-      prisma.customer.count(),
-      prisma.customer.count({ where: { isActive: true } }),
-    ]);
+      },
+    });
 
-    // Calculate total receivables / opening balance from customers
-    const totalReceivables = customers.reduce(
-      (sum, c) => sum + Number(c.openingBalance || 0),
-      0
-    );
+    console.log("CUSTOMER API: Step 4 - Customers loaded", customers.length);
+
+    const totalCount = await prisma.customer.count();
+
+    console.log("CUSTOMER API: Step 5 - Total count", totalCount);
+
+    const activeCount = await prisma.customer.count({
+      where: { isActive: true },
+    });
+
+    console.log("CUSTOMER API: Step 6 - Active count", activeCount);
 
     return NextResponse.json({
       success: true,
@@ -76,17 +67,26 @@ export async function GET(request: Request) {
         totalCustomers: totalCount,
         activeCustomers: activeCount,
         inactiveCustomers: totalCount - activeCount,
-        totalReceivables,
+        totalReceivables: customers.reduce(
+          (sum, c) => sum + Number(c.openingBalance || 0),
+          0
+        ),
       },
     });
   } catch (error) {
-    console.error("GET CUSTOMERS ERROR:", error);
+    console.error("CUSTOMER API DEBUG ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to fetch customers" },
+      {
+        success: false,
+        message: "Failed to fetch customers",
+        error: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
 }
+
 
 // POST - Create a new customer
 export async function POST(request: Request) {
