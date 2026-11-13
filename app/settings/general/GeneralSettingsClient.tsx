@@ -99,7 +99,7 @@ export default function GeneralSettingsClient() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-full bg-slate-50/50 dark:bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -109,8 +109,8 @@ export default function GeneralSettingsClient() {
                 <Settings className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">General Settings</h1>
-                <p className="text-sm text-slate-500">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">General Settings</h1>
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">
                   Configure store profile, thermal receipt headers, and invoicing numbering
                 </p>
               </div>

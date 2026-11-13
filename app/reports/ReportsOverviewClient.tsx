@@ -42,7 +42,7 @@ const reportCards = [
 
 export default function ReportsOverviewClient() {
   return (
-    <div className="min-h-full bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-full bg-slate-50/50 dark:bg-background p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div>
@@ -51,8 +51,8 @@ export default function ReportsOverviewClient() {
               <FileSpreadsheet className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Reports Hub</h1>
-              <p className="text-sm text-slate-500">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">Reports Hub</h1>
+              <p className="text-sm text-slate-500 dark:text-muted-foreground">
                 Access sales analytics, financial profit & loss statements, and activity audits
               </p>
             </div>

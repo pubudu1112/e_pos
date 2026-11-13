@@ -172,19 +172,19 @@ export default function MovementHistoryClient() {
       case "PURCHASE":
       case "SALE_RETURN":
       case "OPENING_STOCK":
-        return "bg-emerald-50 text-emerald-700";
+        return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40";
 
       case "SALE":
       case "PURCHASE_RETURN":
       case "DAMAGE":
       case "JOB_CONSUMPTION":
-        return "bg-red-50 text-red-700";
+        return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40";
 
       case "ADJUSTMENT":
-        return "bg-blue-50 text-blue-700";
+        return "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40";
 
       default:
-        return "bg-slate-100 text-slate-700";
+        return "bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-border";
     }
   }
 
@@ -247,22 +247,22 @@ export default function MovementHistoryClient() {
   // ---------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-background">
       <div className="mx-auto max-w-7xl p-4 md:p-6">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900">
-                <Boxes className="h-5 w-5 text-white" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 dark:bg-primary/20 dark:text-primary">
+                <Boxes className="h-5 w-5 text-white dark:text-primary" />
               </div>
 
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">
                   Stock Movement History
                 </h1>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">
                   View all inventory stock movements
                 </p>
               </div>
@@ -580,8 +580,8 @@ export default function MovementHistoryClient() {
           {/* Footer */}
           {!loading &&
             filteredMovements.length > 0 && (
-              <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs text-slate-500">
+              <div className="border-t border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 px-4 py-3">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Showing {filteredMovements.length} movement
                   {filteredMovements.length !== 1
                     ? "s"

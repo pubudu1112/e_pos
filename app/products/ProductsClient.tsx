@@ -178,7 +178,7 @@ export default function ProductsClient() {
       <button
         type="button"
         onClick={() => handleSort(key)}
-        className={`inline-flex items-center gap-1.5 hover:text-slate-900 ${
+        className={`inline-flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-foreground ${
           align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : ""
         }`}
         title={`Sort ${label} ${active && sortConfig.direction === "asc" ? "Z to A" : "A to Z"}`}

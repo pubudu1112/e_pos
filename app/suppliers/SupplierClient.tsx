@@ -614,11 +614,11 @@ export default function SupplierClient() {
             </div>
 
             <div>
-              <h1 className="text-2xl font-black text-slate-900">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-foreground">
                 Suppliers
               </h1>
 
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-muted-foreground">
                 Manage suppliers, purchases, payments and
                 outstanding balances.
               </p>

@@ -574,11 +574,11 @@ export default function TaxesClient() {
 
           <div>
 
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">
               Taxes
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-slate-500 dark:text-muted-foreground">
               Manage tax rates used for products and
               services.
             </p>

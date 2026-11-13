@@ -305,7 +305,7 @@ export default function ExpensesClient() {
   const topCategoryEntry = Object.entries(summary.categoryTotals).sort((a, b) => b[1] - a[1])[0];
 
   return (
-    <div className="min-h-full bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-full bg-slate-50/50 dark:bg-background p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Top Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -315,8 +315,8 @@ export default function ExpensesClient() {
                 <WalletCards className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Expenses</h1>
-                <p className="text-sm text-slate-500">Track and manage operational business expenses</p>
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">Expenses</h1>
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">Track and manage operational business expenses</p>
               </div>
             </div>
           </div>
@@ -394,13 +394,13 @@ export default function ExpensesClient() {
         {/* Search & Filter Toolbar */}
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by expense #, description..."
-              className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground placeholder-slate-400 focus:border-primary focus:bg-white dark:focus:bg-card focus:outline-none"
+              className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground placeholder-slate-400 dark:placeholder-muted-foreground focus:border-primary focus:bg-white dark:focus:bg-card focus:outline-none"
             />
           </div>
 
@@ -475,12 +475,12 @@ export default function ExpensesClient() {
         {/* Expenses Table */}
         <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card shadow-sm">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="mt-3 text-sm font-medium">Loading expenses...</p>
             </div>
           ) : expenses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-muted-foreground">
               <WalletCards className="h-12 w-12 stroke-[1.2]" />
               <p className="mt-3 text-base font-semibold text-slate-700 dark:text-slate-200">No expenses found</p>
               <p className="mt-1 text-sm text-slate-400 dark:text-muted-foreground">Record your business operating costs to track profit.</p>
@@ -639,7 +639,7 @@ export default function ExpensesClient() {
                     Amount (Rs.) *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 dark:text-muted-foreground">
                       Rs.
                     </span>
                     <input

@@ -517,7 +517,7 @@ export default function InventoryClient() {
         <button
           type="button"
           onClick={() => handleSort(column)}
-          className={`inline-flex items-center gap-2 whitespace-nowrap transition hover:text-slate-900 ${align === "right"
+          className={`inline-flex items-center gap-2 whitespace-nowrap transition hover:text-slate-900 dark:hover:text-foreground ${align === "right"
               ? "ml-auto"
               : align === "center"
                 ? "mx-auto"
@@ -548,16 +548,16 @@ export default function InventoryClient() {
         <div>
           <div className="flex items-center gap-3">
 
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900">
-              <Boxes className="h-5 w-5 text-white" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 dark:bg-primary/20 dark:text-primary">
+              <Boxes className="h-5 w-5 text-white dark:text-primary" />
             </div>
 
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">
                 Inventory
               </h1>
 
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-muted-foreground">
                 Monitor product stock and availability
               </p>
             </div>

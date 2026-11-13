@@ -589,11 +589,11 @@ export default function PurchaseClient() {
                         </div>
 
                         <div>
-                            <h1 className="text-2xl font-black text-slate-900">
+                            <h1 className="text-2xl font-black text-slate-900 dark:text-foreground">
                                 Purchase Entry
                             </h1>
 
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-slate-500 dark:text-muted-foreground">
                                 Receive products and update stock.
                             </p>
                         </div>
