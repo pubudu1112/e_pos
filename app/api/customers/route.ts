@@ -5,13 +5,11 @@ import { hasPermission } from "@/lib/auth/permissions";
 
 // GET - List customers with search, stats & pagination
 
+
+
 export async function GET(request: Request) {
   try {
-    console.log("CUSTOMER API: Step 1 - Starting");
-
     const session = await getSession();
-
-    console.log("CUSTOMER API: Step 2 - Session checked", !!session);
 
     if (!session) {
       return NextResponse.json(
@@ -20,57 +18,167 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log("CUSTOMER API: Step 3 - Loading customers");
+    const { searchParams } = new URL(request.url);
 
-    const customers = await prisma.customer.findMany({
-      orderBy: { name: "asc" },
-      include: {
-        _count: {
-          select: {
-            sale: true,
-            job: true,
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status") || "all";
+
+    // Build database filters
+    const where: any = {};
+
+    if (status === "active") {
+      where.isActive = true;
+    } else if (status === "inactive") {
+      where.isActive = false;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { code: { contains: search } },
+        { phone: { contains: search } },
+        { email: { contains: search } },
+      ];
+    }
+
+    // Fetch customers and global statistics
+    const [
+      customers,
+      totalCount,
+      activeCount,
+      receivableAggregate,
+      outstandingSalesByCustomer,
+      totalOutstandingSales,
+    ] = await Promise.all([
+      prisma.customer.findMany({
+        where,
+        orderBy: { name: "asc" },
+        include: {
+          _count: {
+            select: {
+              sale: true,
+              job: true,
+            },
           },
         },
-      },
+      }),
+
+      // Global customer count
+      prisma.customer.count(),
+
+      // Global active customer count
+      prisma.customer.count({
+        where: { isActive: true },
+      }),
+
+      // Total opening balances
+      prisma.customer.aggregate({
+        _sum: {
+          openingBalance: true,
+        },
+      }),
+
+      // Outstanding completed sales grouped by customer
+      prisma.sale.groupBy({
+        by: ["customerId"],
+        where: {
+          status: "COMPLETED",
+          balanceAmount: {
+            gt: 0,
+          },
+          customerId: {
+            not: null,
+          },
+        },
+        _sum: {
+          balanceAmount: true,
+        },
+      }),
+
+      // Total outstanding sales for all customers
+      prisma.sale.aggregate({
+        where: {
+          status: "COMPLETED",
+          balanceAmount: {
+            gt: 0,
+          },
+          customerId: {
+            not: null,
+          },
+        },
+        _sum: {
+          balanceAmount: true,
+        },
+      }),
+    ]);
+
+    // Create customer-wise outstanding balance map
+    const outstandingMap = new Map<number, number>();
+
+    outstandingSalesByCustomer.forEach((sale) => {
+      if (sale.customerId !== null) {
+        outstandingMap.set(
+          sale.customerId,
+          Number(sale._sum.balanceAmount || 0)
+        );
+      }
     });
 
-    console.log("CUSTOMER API: Step 4 - Customers loaded", customers.length);
+    // Calculate global receivables
+    const totalOpeningBalance = Number(
+      receivableAggregate._sum.openingBalance || 0
+    );
 
-    const totalCount = await prisma.customer.count();
+    const totalOutstanding = Number(
+      totalOutstandingSales._sum.balanceAmount || 0
+    );
 
-    console.log("CUSTOMER API: Step 5 - Total count", totalCount);
-
-    const activeCount = await prisma.customer.count({
-      where: { isActive: true },
-    });
-
-    console.log("CUSTOMER API: Step 6 - Active count", activeCount);
+    const totalReceivables =
+      totalOpeningBalance + totalOutstanding;
 
     return NextResponse.json({
       success: true,
-      data: customers.map((c) => ({
-        id: c.id,
-        code: c.code,
-        name: c.name,
-        phone: c.phone || "",
-        email: c.email || "",
-        address: c.address || "",
-        creditLimit: Number(c.creditLimit),
-        openingBalance: Number(c.openingBalance),
-        isActive: c.isActive,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
-        salesCount: c._count.sale,
-        jobsCount: c._count.job,
-      })),
+
+      data: customers.map((c) => {
+        const openingBalance = Number(c.openingBalance || 0);
+
+        const outstandingSales =
+          outstandingMap.get(c.id) || 0;
+
+        const balanceDue =
+          openingBalance + outstandingSales;
+
+        return {
+          id: c.id,
+          code: c.code,
+          name: c.name,
+          phone: c.phone || "",
+          email: c.email || "",
+          address: c.address || "",
+
+          creditLimit: Number(c.creditLimit || 0),
+          openingBalance,
+          outstandingSales,
+          balanceDue,
+
+          isActive: c.isActive,
+
+          createdAt:
+            c.createdAt instanceof Date &&
+            !Number.isNaN(c.createdAt.getTime())
+              ? c.createdAt.toISOString()
+              : "",
+
+          salesCount: c._count.sale,
+          jobsCount: c._count.job,
+        };
+      }),
+
       stats: {
         totalCustomers: totalCount,
         activeCustomers: activeCount,
         inactiveCustomers: totalCount - activeCount,
-        totalReceivables: customers.reduce(
-          (sum, c) => sum + Number(c.openingBalance || 0),
-          0
-        ),
+        totalReceivables,
       },
     });
   } catch (error) {
@@ -80,12 +188,17 @@ export async function GET(request: Request) {
       {
         success: false,
         message: "Failed to fetch customers",
-        error: error instanceof Error ? error.message : String(error),
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error),
       },
       { status: 500 }
     );
   }
 }
+
+
 
 
 // POST - Create a new customer

@@ -178,41 +178,31 @@ export async function GET(request: Request) {
         },
       });
 
+          // -------------------------------------------------------
+    // SUMMARY - ALL MATCHING SALES (NOT LIMITED TO 100)
     // -------------------------------------------------------
-    // SUMMARY
-    // -------------------------------------------------------
 
-    const summary = sales.reduce(
-      (result, sale) => {
-        result.totalSales += toNumber(
-          sale.total
-        );
+    const [summaryAggregate, orderCount] = await Promise.all([
+      prisma.sale.aggregate({
+        where,
+        _sum: {
+          total: true,
+          paidAmount: true,
+          balanceAmount: true,
+          discount: true,
+        },
+      }),
 
-        result.totalPaid += toNumber(
-          sale.paidAmount
-        );
+      prisma.sale.count({ where }),
+    ]);
 
-        result.totalBalance += toNumber(
-          sale.balanceAmount
-        );
-
-        result.totalDiscount += toNumber(
-          sale.discount
-        );
-
-        result.orderCount += 1;
-
-        return result;
-      },
-      {
-        totalSales: 0,
-        totalPaid: 0,
-        totalBalance: 0,
-        totalDiscount: 0,
-        orderCount: 0,
-      }
-    );
-
+    const summary = {
+      totalSales: toNumber(summaryAggregate._sum.total),
+      totalPaid: toNumber(summaryAggregate._sum.paidAmount),
+      totalBalance: toNumber(summaryAggregate._sum.balanceAmount),
+      totalDiscount: toNumber(summaryAggregate._sum.discount),
+      orderCount,
+    };
     // -------------------------------------------------------
     // FORMAT
     // -------------------------------------------------------

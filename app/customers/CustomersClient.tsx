@@ -31,13 +31,26 @@ type Customer = {
   address: string;
   creditLimit: number;
   openingBalance: number;
+  balanceDue: number;
   isActive: boolean;
   createdAt: string;
   salesCount: number;
   jobsCount: number;
 };
 
-type CustomerDetail = Customer & {
+type CustomerDetail = Omit<
+  Customer,
+  "salesCount" | "jobsCount"
+> & {
+  balanceDue: number;
+  outstandingSales: number;
+  availableCredit: number;
+  creditUtilization: number;
+  isCreditLimitExceeded: boolean;
+
+  lifetimeSales: number;
+  totalJobs: number;
+
   sales: Array<{
     id: number;
     invoiceNo: string;
@@ -48,6 +61,7 @@ type CustomerDetail = Customer & {
     paymentStatus: string;
     status: string;
   }>;
+
   jobs: Array<{
     id: number;
     jobNo: string;
@@ -59,6 +73,7 @@ type CustomerDetail = Customer & {
     balanceAmount: number;
     createdAt: string;
   }>;
+
   transactions: Array<{
     id: number;
     description: string;
@@ -69,13 +84,14 @@ type CustomerDetail = Customer & {
 };
 
 function formatRs(amount: number) {
-  return (
-    "Rs. " +
-    amount.toLocaleString("en-LK", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  );
+  const formatted = Math.abs(amount).toLocaleString("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return amount < 0
+    ? `-Rs. ${formatted}`
+    : `Rs. ${formatted}`;
 }
 
 export default function CustomersClient() {
@@ -433,15 +449,14 @@ export default function CustomersClient() {
 
                     <td className="py-3 px-4 text-right">
                       <span
-                        className={`font-bold ${
-                          c.openingBalance > 0
+                        className={`font-bold ${c.balanceDue > 0
                             ? "text-rose-600"
-                            : c.openingBalance < 0
-                            ? "text-emerald-600"
-                            : "text-slate-600"
-                        }`}
+                            : c.balanceDue < 0
+                              ? "text-emerald-600"
+                              : "text-slate-600"
+                          }`}
                       >
-                        {formatRs(c.openingBalance)}
+                        {formatRs(c.balanceDue)}
                       </span>
                     </td>
 
@@ -458,11 +473,10 @@ export default function CustomersClient() {
 
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          c.isActive
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-slate-100 text-slate-500 border border-slate-200"
-                        }`}
+                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${c.isActive
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-slate-100 text-slate-500 border border-slate-200"
+                          }`}
                       >
                         {c.isActive ? "Active" : "Inactive"}
                       </span>
@@ -679,27 +693,152 @@ export default function CustomersClient() {
               ) : (
                 <>
                   {/* Account Summary Cards */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Balance Due</p>
-                      <p className="mt-1 text-lg font-black text-rose-600">
-                        {formatRs(customerDetail.openingBalance)}
-                      </p>
+                  {/* ======================================================== */}
+                  {/* CUSTOMER CREDIT SUMMARY */}
+                  {/* ======================================================== */}
+
+                  <div className="space-y-4">
+
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+
+                      {/* Balance Due */}
+                      <div className="rounded-xl border border-rose-100 bg-rose-50/60 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
+                          Balance Due
+                        </p>
+
+                        <p className="mt-1 text-base font-black text-rose-600">
+                          {formatRs(customerDetail.balanceDue)}
+                        </p>
+                      </div>
+
+                      {/* Credit Limit */}
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                          Credit Limit
+                        </p>
+
+                        <p className="mt-1 text-base font-black text-slate-800">
+                          {formatRs(customerDetail.creditLimit)}
+                        </p>
+                      </div>
+
+                      {/* Available Credit */}
+                      <div className={`rounded-xl border p-3 ${customerDetail.availableCredit < 0
+                        ? "border-rose-100 bg-rose-50/60"
+                        : "border-emerald-100 bg-emerald-50/60"
+                        }`}>
+                        <p className={`text-[10px] font-bold uppercase tracking-wide ${customerDetail.availableCredit < 0
+                          ? "text-rose-500"
+                          : "text-emerald-600"
+                          }`}>
+                          Available Credit
+                        </p>
+
+                        <p className={`mt-1 text-base font-black ${customerDetail.availableCredit < 0
+                          ? "text-rose-600"
+                          : "text-emerald-700"
+                          }`}>
+                          {formatRs(customerDetail.availableCredit)}
+                        </p>
+                      </div>
+
+                      {/* Lifetime Sales */}
+                      <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-blue-500">
+                          Lifetime Sales
+                        </p>
+
+                        <p className="mt-1 text-base font-black text-blue-700">
+                          {customerDetail.lifetimeSales} Orders
+                        </p>
+                      </div>
+
                     </div>
 
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Credit Limit</p>
-                      <p className="mt-1 text-lg font-black text-slate-800">
-                        {formatRs(customerDetail.creditLimit)}
-                      </p>
+                    {/* Credit Utilization */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+
+                      <div className="mb-2 flex items-center justify-between gap-2">
+
+                        <div>
+                          <p className="text-xs font-bold text-slate-700">
+                            Credit Utilization
+                          </p>
+
+                          <p className="mt-0.5 text-[10px] text-slate-400">
+                            Used credit compared to the assigned credit limit
+                          </p>
+                        </div>
+
+                        <span className={`text-sm font-black ${customerDetail.isCreditLimitExceeded
+                          ? "text-rose-600"
+                          : "text-emerald-600"
+                          }`}>
+                          {customerDetail.creditUtilization.toFixed(1)}%
+                        </span>
+
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${customerDetail.isCreditLimitExceeded
+                            ? "bg-rose-500"
+                            : customerDetail.creditUtilization >= 80
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                            }`}
+                          style={{
+                            width: `${Math.min(
+                              Math.max(customerDetail.creditUtilization, 0),
+                              100
+                            )}%`,
+                          }}
+                        />
+
+                      </div>
+
+                      {/* Credit Warning */}
+                      {customerDetail.isCreditLimitExceeded ? (
+
+                        <div className="mt-3 flex items-start gap-2 rounded-lg border border-rose-200 bg-rose-50 p-2.5">
+
+                          <span className="text-xs font-bold text-rose-600">
+                            Credit limit exceeded by{" "}
+                            {formatRs(
+                              customerDetail.balanceDue -
+                              customerDetail.creditLimit
+                            )}
+                          </span>
+
+                        </div>
+
+                      ) : customerDetail.creditUtilization >= 80 &&
+                        customerDetail.creditLimit > 0 ? (
+
+                        <p className="mt-3 text-[11px] font-semibold text-amber-600">
+                          Warning: Customer is approaching the credit limit.
+                        </p>
+
+                      ) : customerDetail.creditLimit === 0 ? (
+
+                        <p className="mt-3 text-[11px] text-slate-400">
+                          No credit limit has been assigned.
+                        </p>
+
+                      ) : (
+
+                        <p className="mt-3 text-[11px] font-medium text-emerald-600">
+                          Customer is within the assigned credit limit.
+                        </p>
+
+                      )}
+
                     </div>
 
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">Lifetime Sales</p>
-                      <p className="mt-1 text-lg font-black text-blue-600">
-                        {customerDetail.sales.length} Orders
-                      </p>
-                    </div>
                   </div>
 
                   {/* Recent Invoices Table */}
@@ -720,6 +859,7 @@ export default function CustomersClient() {
                               <th className="p-2.5">Date</th>
                               <th className="p-2.5 text-right">Total</th>
                               <th className="p-2.5 text-right">Paid</th>
+                              <th className="p-2.5 text-right">Balance</th>
                               <th className="p-2.5 text-center">Status</th>
                             </tr>
                           </thead>
@@ -737,6 +877,9 @@ export default function CustomersClient() {
                                 </td>
                                 <td className="p-2.5 text-right text-emerald-600 font-semibold">
                                   {formatRs(s.paidAmount)}
+                                </td>
+                                <td className="p-2.5 text-right font-semibold text-rose-600">
+                                  {formatRs(s.balanceAmount)}
                                 </td>
                                 <td className="p-2.5 text-center">
                                   <span className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
