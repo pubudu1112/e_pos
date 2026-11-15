@@ -34,6 +34,26 @@ CALL `AddWarrantyMonthsToProduct`();
 DROP PROCEDURE `AddWarrantyMonthsToProduct`;
 
 -- ------------------------------------------------------------
+-- 1.1 ADD warrantyEnabled TO Category TABLE IF NOT PRESENT
+-- ------------------------------------------------------------
+DROP PROCEDURE IF EXISTS `AddWarrantyEnabledToCategory`;
+DELIMITER $$
+CREATE PROCEDURE `AddWarrantyEnabledToCategory`()
+BEGIN
+    IF NOT EXISTS (
+        SELECT * FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'Category'
+          AND COLUMN_NAME = 'warrantyEnabled'
+    ) THEN
+        ALTER TABLE `Category` ADD COLUMN `warrantyEnabled` BOOLEAN NOT NULL DEFAULT false AFTER `isActive`;
+    END IF;
+END$$
+DELIMITER ;
+CALL `AddWarrantyEnabledToCategory`();
+DROP PROCEDURE `AddWarrantyEnabledToCategory`;
+
+-- ------------------------------------------------------------
 -- 2. ADD Cost Breakdown Columns TO Service TABLE IF NOT PRESENT
 -- ------------------------------------------------------------
 DROP PROCEDURE IF EXISTS `AddCostColumnsToService`;

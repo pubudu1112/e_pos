@@ -452,10 +452,10 @@ export default function JobsClient() {
               <BriefcaseBusiness className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-foreground">
                 Job Tracking & Work Orders
               </h1>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">
                 Manage print, photocopy, binding & design jobs across production stages
               </p>
             </div>
@@ -467,7 +467,7 @@ export default function JobsClient() {
             type="button"
             onClick={loadJobs}
             disabled={loading}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 transition"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card text-slate-600 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-muted/40 transition"
             title="Refresh jobs"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin text-purple-600" : ""}`} />
@@ -485,34 +485,34 @@ export default function JobsClient() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-5">
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">All Jobs</p>
-          <p className="mt-1 text-2xl font-black text-slate-900">{stats.total}</p>
+        <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
+          <p className="text-[11px] font-bold text-slate-400 dark:text-muted-foreground uppercase tracking-wider">All Jobs</p>
+          <p className="mt-1 text-2xl font-black text-slate-900 dark:text-foreground">{stats.total}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
           <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">New Orders</p>
-          <p className="mt-1 text-2xl font-black text-blue-700">{stats.new}</p>
+          <p className="mt-1 text-2xl font-black text-blue-700 dark:text-blue-400">{stats.new}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
           <p className="text-[11px] font-bold text-amber-600 uppercase tracking-wider">In Production</p>
-          <p className="mt-1 text-2xl font-black text-amber-700">{stats.inProgress}</p>
+          <p className="mt-1 text-2xl font-black text-amber-700 dark:text-amber-400">{stats.inProgress}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+        <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
           <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Ready for Pickup</p>
-          <p className="mt-1 text-2xl font-black text-emerald-700">{stats.ready}</p>
+          <p className="mt-1 text-2xl font-black text-emerald-700 dark:text-emerald-400">{stats.ready}</p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Delivered</p>
-          <p className="mt-1 text-2xl font-black text-slate-800">{stats.delivered}</p>
+        <div className="rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
+          <p className="text-[11px] font-bold text-slate-500 dark:text-muted-foreground uppercase tracking-wider">Delivered</p>
+          <p className="mt-1 text-2xl font-black text-slate-800 dark:text-foreground">{stats.delivered}</p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm">
+      <div className="flex flex-col sm:flex-row gap-3 rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-3 shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
@@ -520,7 +520,7 @@ export default function JobsClient() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by job no (JOB-202611-...), title, customer name or phone..."
-            className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-10 pr-4 text-xs font-medium text-slate-900 outline-none focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 transition"
+            className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-slate-50/60 dark:bg-muted/40 pl-10 pr-4 text-xs font-medium text-slate-900 dark:text-foreground outline-none focus:border-purple-500 focus:bg-white dark:focus:bg-card focus:ring-2 focus:ring-purple-100 transition"
           />
         </div>
 
@@ -528,7 +528,7 @@ export default function JobsClient() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none focus:border-purple-500"
+            className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 text-xs font-bold text-slate-700 dark:text-foreground outline-none focus:border-purple-500"
           >
             <option value="all">All Stages</option>
             <option value="NEW">New Order</option>
@@ -543,7 +543,7 @@ export default function JobsClient() {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none focus:border-purple-500"
+            className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3 text-xs font-bold text-slate-700 dark:text-foreground outline-none focus:border-purple-500"
           >
             <option value="all">All Priorities</option>
             <option value="URGENT">Urgent</option>
@@ -555,7 +555,7 @@ export default function JobsClient() {
       </div>
 
       {/* Jobs Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card shadow-sm">
         {loading ? (
           <div className="flex h-64 flex-col items-center justify-center text-slate-400">
             <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -563,18 +563,18 @@ export default function JobsClient() {
           </div>
         ) : jobs.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center text-center p-6">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-muted text-slate-400">
               <BriefcaseBusiness className="h-7 w-7" />
             </div>
-            <p className="mt-3 text-sm font-bold text-slate-800">No jobs found</p>
-            <p className="text-xs text-slate-400 mt-1 max-w-xs">
+            <p className="mt-3 text-sm font-bold text-slate-800 dark:text-foreground">No jobs found</p>
+            <p className="text-xs text-slate-400 dark:text-muted-foreground mt-1 max-w-xs">
               No matching work orders. Click &quot;New Work Order&quot; to log a custom job.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <thead className="border-b border-slate-200/80 dark:border-border bg-slate-50/80 dark:bg-muted/40 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                 <tr>
                   <th className="py-3.5 px-4">Job Info</th>
                   <th className="py-3.5 px-4">Customer</th>
@@ -586,22 +586,22 @@ export default function JobsClient() {
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 dark:divide-border/60 font-medium text-slate-700 dark:text-slate-200">
                 {jobs.map((j) => {
                   const statusInfo = STATUS_CONFIG[j.status] || STATUS_CONFIG.NEW;
                   const priorityInfo = PRIORITY_CONFIG[j.priority] || PRIORITY_CONFIG.NORMAL;
                   return (
-                    <tr key={j.id} className="hover:bg-slate-50/60 transition">
+                    <tr key={j.id} className="hover:bg-slate-50/60 dark:hover:bg-muted/30 transition">
                       <td className="py-3 px-4">
                         <div className="flex items-start gap-2.5">
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-purple-700 font-bold text-xs mt-0.5">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-bold text-xs mt-0.5">
                             <BriefcaseBusiness className="h-4 w-4" />
                           </div>
                           <div>
-                            <p className="font-bold text-slate-900">{j.title}</p>
-                            <span className="font-mono text-[10px] text-slate-400">{j.jobNo}</span>
+                            <p className="font-bold text-slate-900 dark:text-foreground">{j.title}</p>
+                            <span className="font-mono text-[10px] text-slate-400 dark:text-muted-foreground">{j.jobNo}</span>
                             {j.itemsCount > 0 && (
-                              <span className="ml-2 text-[10px] text-slate-500 font-semibold">
+                              <span className="ml-2 text-[10px] text-slate-500 dark:text-muted-foreground font-semibold">
                                 • {j.itemsCount} items
                               </span>
                             )}
@@ -612,16 +612,16 @@ export default function JobsClient() {
                       <td className="py-3 px-4">
                         {j.customer ? (
                           <div>
-                            <p className="font-semibold text-slate-800">{j.customer.name}</p>
+                            <p className="font-semibold text-slate-800 dark:text-foreground">{j.customer.name}</p>
                             {j.customer.phone && (
-                              <p className="text-[11px] text-slate-400 flex items-center gap-1">
+                              <p className="text-[11px] text-slate-400 dark:text-muted-foreground flex items-center gap-1">
                                 <Phone className="h-3 w-3" />
                                 {j.customer.phone}
                               </p>
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">Walk-in</span>
+                          <span className="text-slate-400 dark:text-muted-foreground italic">Walk-in</span>
                         )}
                       </td>
 
@@ -640,27 +640,27 @@ export default function JobsClient() {
 
                       <td className="py-3 px-4">
                         {j.dueDate ? (
-                          <div className="flex items-center gap-1.5 text-slate-600">
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                             <Calendar className="h-3.5 w-3.5 text-slate-400" />
                             <span>{new Date(j.dueDate).toLocaleDateString("en-LK")}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-300">-</span>
+                          <span className="text-slate-300 dark:text-slate-600">-</span>
                         )}
                       </td>
 
-                      <td className="py-3 px-4 text-right font-black text-slate-900">
+                      <td className="py-3 px-4 text-right font-black text-slate-900 dark:text-foreground">
                         {formatRs(j.total)}
                       </td>
 
-                      <td className="py-3 px-4 text-right font-semibold text-emerald-600">
+                      <td className="py-3 px-4 text-right font-semibold text-emerald-600 dark:text-emerald-400">
                         {formatRs(j.advanceAmount)}
                       </td>
 
                       <td className="py-3 px-4 text-right">
                         <span
                           className={`font-black ${
-                            j.balanceAmount > 0 ? "text-rose-600" : "text-slate-400"
+                            j.balanceAmount > 0 ? "text-rose-600 dark:text-rose-400" : "text-slate-400 dark:text-muted-foreground"
                           }`}
                         >
                           {formatRs(j.balanceAmount)}
@@ -675,7 +675,7 @@ export default function JobsClient() {
                               setStatusModalJob(j);
                               setNewStatus(j.status);
                             }}
-                            className="rounded-lg p-1.5 text-slate-600 hover:bg-purple-50 hover:text-purple-700 transition"
+                            className="rounded-lg p-1.5 text-slate-600 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-purple-700 dark:hover:text-purple-300 transition"
                             title="Update Job Stage / Status"
                           >
                             <Clock className="h-4 w-4" />
@@ -688,7 +688,7 @@ export default function JobsClient() {
                                 setPaymentModalJob(j);
                                 setPaymentAmount(j.balanceAmount.toString());
                               }}
-                              className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50 transition"
+                              className="rounded-lg p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition"
                               title="Collect Payment"
                             >
                               <DollarSign className="h-4 w-4" />
@@ -698,7 +698,7 @@ export default function JobsClient() {
                           <button
                             type="button"
                             onClick={() => setViewingJob(j)}
-                            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition"
+                            className="rounded-lg p-1.5 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-800 dark:hover:text-foreground transition"
                             title="View Work Order Sheet"
                           >
                             <Eye className="h-4 w-4" />
@@ -707,7 +707,7 @@ export default function JobsClient() {
                           <button
                             type="button"
                             onClick={() => printJobSheet(j)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-700 dark:hover:text-foreground transition"
                             title="Print Work Order Ticket"
                           >
                             <Printer className="h-4 w-4" />
@@ -726,16 +726,16 @@ export default function JobsClient() {
       {/* New Work Order Modal */}
       {isNewJobModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/70">
+          <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border px-6 py-4 bg-slate-50/70 dark:bg-muted/40">
               <div>
-                <h3 className="text-base font-black text-slate-900">Create New Work Order</h3>
-                <p className="text-xs text-slate-500">Record custom printing, binding, scanning or photocopy order</p>
+                <h3 className="text-base font-black text-slate-900 dark:text-foreground">Create New Work Order</h3>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">Record custom printing, binding, scanning or photocopy order</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsNewJobModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 dark:hover:bg-muted"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -744,23 +744,23 @@ export default function JobsClient() {
             <form onSubmit={handleCreateJob} className="flex-1 overflow-y-auto p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-700">Job Title / Summary *</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Job Title / Summary *</label>
                   <input
                     type="text"
                     required
                     value={jobForm.title}
                     onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
                     placeholder="e.g. 50 Thesis Hardcover Binding with Gold Foil"
-                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Customer</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Customer</label>
                   <select
                     value={jobForm.customerId}
                     onChange={(e) => setJobForm({ ...jobForm, customerId: e.target.value })}
-                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
                   >
                     <option value="">Walk-in Customer</option>
                     {dropdowns.customers.map((c) => (
@@ -772,11 +772,11 @@ export default function JobsClient() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Priority</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Priority</label>
                   <select
                     value={jobForm.priority}
                     onChange={(e) => setJobForm({ ...jobForm, priority: e.target.value as JobPriority })}
-                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-900 focus:border-purple-500 focus:outline-none"
+                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-bold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
                   >
                     <option value="LOW">Low</option>
                     <option value="NORMAL">Normal</option>
@@ -786,11 +786,11 @@ export default function JobsClient() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Assigned Staff / Operator</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Assigned Staff / Operator</label>
                   <select
                     value={jobForm.assignedToId}
                     onChange={(e) => setJobForm({ ...jobForm, assignedToId: e.target.value })}
-                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {dropdowns.users.map((u) => (
@@ -802,37 +802,37 @@ export default function JobsClient() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700">Target Due Date</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Target Due Date</label>
                   <input
                     type="date"
                     value={jobForm.dueDate}
                     onChange={(e) => setJobForm({ ...jobForm, dueDate: e.target.value })}
-                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                    className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-slate-700">Instructions / Notes</label>
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Instructions / Notes</label>
                   <textarea
                     rows={2}
                     value={jobForm.description}
                     onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
                     placeholder="Specific instructions e.g. Blue leather cover, 80gsm paper, gold embossed lettering on front & spine"
-                    className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                    className="mt-1 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 p-2.5 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Dynamic Job Items Builder */}
-              <div className="border-t border-slate-200/80 pt-4">
+              <div className="border-t border-slate-200/80 dark:border-border pt-4">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-700">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200">
                     Services & Production Items
                   </label>
                   <button
                     type="button"
                     onClick={handleAddItemRow}
-                    className="flex items-center gap-1 text-[11px] font-bold text-purple-600 hover:text-purple-800"
+                    className="flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:text-purple-800"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Add Item</span>
@@ -841,12 +841,12 @@ export default function JobsClient() {
 
                 <div className="space-y-2">
                   {jobForm.items.map((it, idx) => (
-                    <div key={idx} className="flex items-center gap-2 rounded-xl border border-slate-200 p-2 bg-slate-50/50">
+                    <div key={idx} className="flex items-center gap-2 rounded-xl border border-slate-200 dark:border-border p-2 bg-slate-50/50 dark:bg-muted/30">
                       <div className="w-1/3">
                         <select
                           value={it.serviceId}
                           onChange={(e) => handleItemChange(idx, "serviceId", e.target.value)}
-                          className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-800 focus:outline-none"
+                          className="h-9 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-2 text-xs font-semibold text-slate-800 dark:text-foreground focus:outline-none"
                         >
                           <option value="">Preset Service...</option>
                           {dropdowns.services.map((s) => (
@@ -864,7 +864,7 @@ export default function JobsClient() {
                           value={it.description}
                           onChange={(e) => handleItemChange(idx, "description", e.target.value)}
                           placeholder="Description"
-                          className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold text-slate-800 focus:outline-none"
+                          className="h-9 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-2 text-xs font-semibold text-slate-800 dark:text-foreground focus:outline-none"
                         />
                       </div>
 
@@ -875,7 +875,7 @@ export default function JobsClient() {
                           value={it.quantity}
                           onChange={(e) => handleItemChange(idx, "quantity", Number(e.target.value))}
                           placeholder="Qty"
-                          className="h-9 w-full rounded-lg border border-slate-200 bg-white text-center text-xs font-bold text-slate-800 focus:outline-none"
+                          className="h-9 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 text-center text-xs font-bold text-slate-800 dark:text-foreground focus:outline-none"
                         />
                       </div>
 
@@ -887,7 +887,7 @@ export default function JobsClient() {
                           value={it.unitPrice}
                           onChange={(e) => handleItemChange(idx, "unitPrice", Number(e.target.value))}
                           placeholder="Price"
-                          className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-right text-xs font-bold text-slate-800 focus:outline-none"
+                          className="h-9 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-2 text-right text-xs font-bold text-slate-800 dark:text-foreground focus:outline-none"
                         />
                       </div>
 
@@ -906,15 +906,15 @@ export default function JobsClient() {
               </div>
 
               {/* Advance Deposit & Totals */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                <div className="flex justify-between items-center text-sm font-black text-slate-900">
+              <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/30 p-4 space-y-3">
+                <div className="flex justify-between items-center text-sm font-black text-slate-900 dark:text-foreground">
                   <span>Calculated Job Total:</span>
-                  <span className="text-base text-purple-700">{formatRs(calculatedJobTotal)}</span>
+                  <span className="text-base text-purple-700 dark:text-purple-400">{formatRs(calculatedJobTotal)}</span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200 dark:border-border">
                   <div>
-                    <label className="text-xs font-bold text-slate-700">Advance Deposit (Rs.)</label>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Advance Deposit (Rs.)</label>
                     <input
                       type="number"
                       min="0"
@@ -922,35 +922,35 @@ export default function JobsClient() {
                       value={jobForm.advanceAmount}
                       onChange={(e) => setJobForm({ ...jobForm, advanceAmount: e.target.value })}
                       placeholder="0.00"
-                      className="mt-1 h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-900 focus:outline-none"
+                      className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-bold text-slate-900 dark:text-foreground focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-700">Payment Reference</label>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Payment Reference</label>
                     <input
                       type="text"
                       value={jobForm.paymentReference}
                       onChange={(e) => setJobForm({ ...jobForm, paymentReference: e.target.value })}
                       placeholder="e.g. Cash, Slip no"
-                      className="mt-1 h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 focus:outline-none"
+                      className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center text-xs text-slate-600 pt-1">
+                <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300 pt-1">
                   <span>Remaining Balance:</span>
-                  <span className="font-bold text-rose-600">
+                  <span className="font-bold text-rose-600 dark:text-rose-400">
                     {formatRs(Math.max(0, calculatedJobTotal - (Number(jobForm.advanceAmount) || 0)))}
                   </span>
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 pt-4 flex gap-3">
+              <div className="border-t border-slate-100 dark:border-border pt-4 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setIsNewJobModalOpen(false)}
-                  className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 transition"
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-border py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted/40 transition"
                 >
                   Cancel
                 </button>
@@ -970,21 +970,21 @@ export default function JobsClient() {
       {/* View Job Work Order Details Modal */}
       {viewingJob && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/80">
+          <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border px-6 py-4 bg-slate-50/80 dark:bg-muted/40">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-600 text-white font-bold">
                   <BriefcaseBusiness className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">{viewingJob.title}</h3>
-                  <p className="text-xs font-mono text-purple-600 font-bold">{viewingJob.jobNo}</p>
+                  <h3 className="text-base font-black text-slate-900 dark:text-foreground">{viewingJob.title}</h3>
+                  <p className="text-xs font-mono text-purple-600 dark:text-purple-400 font-bold">{viewingJob.jobNo}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setViewingJob(null)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 transition"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 dark:hover:bg-muted transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -992,15 +992,15 @@ export default function JobsClient() {
 
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               {/* Status & Priority Row */}
-              <div className="flex items-center justify-between bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+              <div className="flex items-center justify-between bg-slate-50 dark:bg-muted/30 p-3.5 rounded-xl border border-slate-200 dark:border-border">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">Stage:</span>
+                  <span className="text-xs text-slate-500 dark:text-muted-foreground">Stage:</span>
                   <span className={`rounded-full px-3 py-1 text-xs font-bold ${STATUS_CONFIG[viewingJob.status]?.bg} ${STATUS_CONFIG[viewingJob.status]?.text}`}>
                     {STATUS_CONFIG[viewingJob.status]?.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">Priority:</span>
+                  <span className="text-xs text-slate-500 dark:text-muted-foreground">Priority:</span>
                   <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${PRIORITY_CONFIG[viewingJob.priority]?.badge}`}>
                     {PRIORITY_CONFIG[viewingJob.priority]?.label}
                   </span>
@@ -1009,51 +1009,51 @@ export default function JobsClient() {
 
               {/* Meta Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="rounded-xl border border-slate-200 p-3">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Customer</p>
-                  <p className="font-bold text-slate-800 mt-0.5">{viewingJob.customer?.name || "Walk-in"}</p>
+                <div className="rounded-xl border border-slate-200 dark:border-border p-3">
+                  <p className="text-[10px] text-slate-400 dark:text-muted-foreground uppercase font-bold">Customer</p>
+                  <p className="font-bold text-slate-800 dark:text-foreground mt-0.5">{viewingJob.customer?.name || "Walk-in"}</p>
                   {viewingJob.customer?.phone && (
-                    <p className="text-[10px] text-slate-500">{viewingJob.customer.phone}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-muted-foreground">{viewingJob.customer.phone}</p>
                   )}
                 </div>
 
-                <div className="rounded-xl border border-slate-200 p-3">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Target Due Date</p>
-                  <p className="font-bold text-slate-800 mt-0.5">
+                <div className="rounded-xl border border-slate-200 dark:border-border p-3">
+                  <p className="text-[10px] text-slate-400 dark:text-muted-foreground uppercase font-bold">Target Due Date</p>
+                  <p className="font-bold text-slate-800 dark:text-foreground mt-0.5">
                     {viewingJob.dueDate ? new Date(viewingJob.dueDate).toLocaleDateString("en-LK") : "Open"}
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 p-3">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Operator</p>
-                  <p className="font-bold text-slate-800 mt-0.5">
+                <div className="rounded-xl border border-slate-200 dark:border-border p-3">
+                  <p className="text-[10px] text-slate-400 dark:text-muted-foreground uppercase font-bold">Operator</p>
+                  <p className="font-bold text-slate-800 dark:text-foreground mt-0.5">
                     {viewingJob.assignedTo?.fullName || "Unassigned"}
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 p-3">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">Created On</p>
-                  <p className="font-bold text-slate-800 mt-0.5">
+                <div className="rounded-xl border border-slate-200 dark:border-border p-3">
+                  <p className="text-[10px] text-slate-400 dark:text-muted-foreground uppercase font-bold">Created On</p>
+                  <p className="font-bold text-slate-800 dark:text-foreground mt-0.5">
                     {new Date(viewingJob.createdAt).toLocaleDateString("en-LK")}
                   </p>
                 </div>
               </div>
 
               {viewingJob.description && (
-                <div className="rounded-xl border border-slate-200 bg-amber-50/50 p-3.5 text-xs">
-                  <p className="font-bold text-amber-900 mb-1">Production Instructions:</p>
-                  <p className="text-slate-700 leading-relaxed">{viewingJob.description}</p>
+                <div className="rounded-xl border border-slate-200 dark:border-border bg-amber-50/50 dark:bg-amber-950/20 p-3.5 text-xs">
+                  <p className="font-bold text-amber-900 dark:text-amber-300 mb-1">Production Instructions:</p>
+                  <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{viewingJob.description}</p>
                 </div>
               )}
 
               {/* Items List */}
               <div>
-                <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-2">
+                <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 mb-2">
                   Work Order Items
                 </h4>
-                <div className="overflow-hidden rounded-xl border border-slate-200 text-xs">
+                <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border text-xs">
                   <table className="w-full text-left">
-                    <thead className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500">
+                    <thead className="bg-slate-50 dark:bg-muted/40 border-b border-slate-200 dark:border-border font-bold text-slate-500 dark:text-muted-foreground">
                       <tr>
                         <th className="p-2.5">Item / Service</th>
                         <th className="p-2.5 text-center">Qty</th>
@@ -1061,13 +1061,13 @@ export default function JobsClient() {
                         <th className="p-2.5 text-right">Total</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-border/60">
                       {viewingJob.items.map((it) => (
                         <tr key={it.id}>
-                          <td className="p-2.5 font-bold text-slate-800">{it.description}</td>
-                          <td className="p-2.5 text-center">{it.quantity}</td>
-                          <td className="p-2.5 text-right">{formatRs(it.unitPrice)}</td>
-                          <td className="p-2.5 text-right font-bold">{formatRs(it.total)}</td>
+                          <td className="p-2.5 font-bold text-slate-800 dark:text-slate-200">{it.description}</td>
+                          <td className="p-2.5 text-center text-slate-700 dark:text-slate-300">{it.quantity}</td>
+                          <td className="p-2.5 text-right text-slate-700 dark:text-slate-300">{formatRs(it.unitPrice)}</td>
+                          <td className="p-2.5 text-right font-bold text-slate-900 dark:text-foreground">{formatRs(it.total)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1076,31 +1076,31 @@ export default function JobsClient() {
               </div>
 
               {/* Payment Summary */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs">
+              <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/30 p-4 space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span>Job Total</span>
-                  <span className="font-black text-slate-900 text-sm">{formatRs(viewingJob.total)}</span>
+                  <span className="text-slate-600 dark:text-slate-300">Job Total</span>
+                  <span className="font-black text-slate-900 dark:text-foreground text-sm">{formatRs(viewingJob.total)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-600 font-bold">
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
                   <span>Advance / Payments Received</span>
                   <span>{formatRs(viewingJob.advanceAmount)}</span>
                 </div>
-                <div className="flex justify-between border-t border-slate-200 pt-2 font-black text-sm">
-                  <span>Balance Due</span>
-                  <span className={viewingJob.balanceAmount > 0 ? "text-rose-600" : "text-emerald-700"}>
+                <div className="flex justify-between border-t border-slate-200 dark:border-border pt-2 font-black text-sm">
+                  <span className="text-slate-700 dark:text-slate-200">Balance Due</span>
+                  <span className={viewingJob.balanceAmount > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400"}>
                     {formatRs(viewingJob.balanceAmount)}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-slate-100 px-6 py-3 bg-slate-50 flex items-center justify-between">
+            <div className="border-t border-slate-100 dark:border-border px-6 py-3 bg-slate-50 dark:bg-muted/40 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => printJobSheet(viewingJob)}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition shadow-sm"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-muted transition shadow-sm"
               >
-                <Printer className="h-4 w-4 text-purple-600" />
+                <Printer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 <span>Print Ticket</span>
               </button>
 
@@ -1118,7 +1118,7 @@ export default function JobsClient() {
                 <button
                   type="button"
                   onClick={() => setViewingJob(null)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 transition"
+                  className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-muted transition"
                 >
                   Close
                 </button>
@@ -1133,27 +1133,27 @@ export default function JobsClient() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in">
           <form
             onSubmit={handleStatusSubmit}
-            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border p-5 shadow-2xl space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border pb-3">
+              <h3 className="text-sm font-black text-slate-900 dark:text-foreground">
                 Update Job Stage - {statusModalJob.jobNo}
               </h3>
               <button
                 type="button"
                 onClick={() => setStatusModalJob(null)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Production Stage</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Production Stage</label>
               <select
                 value={newStatus}
                 onChange={(e) => setNewStatus(e.target.value as JobStatus)}
-                className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-800 focus:border-purple-500 focus:outline-none"
+                className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-bold text-slate-800 dark:text-foreground focus:border-purple-500 focus:outline-none"
               >
                 <option value="NEW">New Order</option>
                 <option value="DESIGNING">Designing</option>
@@ -1168,13 +1168,13 @@ export default function JobsClient() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Stage Transition Note</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Stage Transition Note</label>
               <textarea
                 rows={2}
                 value={statusNote}
                 onChange={(e) => setStatusNote(e.target.value)}
                 placeholder="e.g. Printing completed, now moved to spiral binding"
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 focus:border-purple-500 focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 p-2.5 text-xs font-semibold text-slate-800 dark:text-foreground focus:border-purple-500 focus:outline-none"
               />
             </div>
 
@@ -1182,7 +1182,7 @@ export default function JobsClient() {
               <button
                 type="button"
                 onClick={() => setStatusModalJob(null)}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-border py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted/40"
               >
                 Cancel
               </button>
@@ -1203,29 +1203,29 @@ export default function JobsClient() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in">
           <form
             onSubmit={handlePaymentSubmit}
-            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border p-5 shadow-2xl space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border pb-3">
               <div>
-                <h3 className="text-sm font-black text-slate-900">Collect Job Balance</h3>
-                <p className="text-xs text-slate-500 font-mono">{paymentModalJob.jobNo}</p>
+                <h3 className="text-sm font-black text-slate-900 dark:text-foreground">Collect Job Balance</h3>
+                <p className="text-xs text-slate-500 dark:text-muted-foreground font-mono">{paymentModalJob.jobNo}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setPaymentModalJob(null)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-3 border border-slate-200 flex justify-between items-center text-xs">
-              <span className="text-slate-500">Remaining Balance:</span>
-              <span className="font-black text-rose-600 text-sm">{formatRs(paymentModalJob.balanceAmount)}</span>
+            <div className="rounded-xl bg-slate-50 dark:bg-muted/30 p-3 border border-slate-200 dark:border-border flex justify-between items-center text-xs">
+              <span className="text-slate-500 dark:text-muted-foreground">Remaining Balance:</span>
+              <span className="font-black text-rose-600 dark:text-rose-400 text-sm">{formatRs(paymentModalJob.balanceAmount)}</span>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Payment Amount (Rs.) *</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Payment Amount (Rs.) *</label>
               <input
                 type="number"
                 min="0.01"
@@ -1233,29 +1233,29 @@ export default function JobsClient() {
                 required
                 value={paymentAmount}
                 onChange={(e) => setPaymentAmount(e.target.value)}
-                className="mt-1 h-10 w-full rounded-xl border border-slate-200 px-3 text-sm font-black text-slate-900 focus:border-purple-500 focus:outline-none"
+                className="mt-1 h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm font-black text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Payment Reference</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Payment Reference</label>
               <input
                 type="text"
                 value={paymentRef}
                 onChange={(e) => setPaymentRef(e.target.value)}
                 placeholder="e.g. Cash receipt, Card slip no"
-                className="mt-1 h-9 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-slate-700">Note</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-200">Note</label>
               <input
                 type="text"
                 value={paymentNote}
                 onChange={(e) => setPaymentNote(e.target.value)}
                 placeholder="Final payment on collection"
-                className="mt-1 h-9 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-purple-500 focus:outline-none"
+                className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-semibold text-slate-900 dark:text-foreground focus:border-purple-500 focus:outline-none"
               />
             </div>
 
@@ -1263,7 +1263,7 @@ export default function JobsClient() {
               <button
                 type="button"
                 onClick={() => setPaymentModalJob(null)}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-border py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted/40"
               >
                 Cancel
               </button>

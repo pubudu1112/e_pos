@@ -172,19 +172,19 @@ export default function MovementHistoryClient() {
       case "PURCHASE":
       case "SALE_RETURN":
       case "OPENING_STOCK":
-        return "bg-emerald-50 text-emerald-700";
+        return "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40";
 
       case "SALE":
       case "PURCHASE_RETURN":
       case "DAMAGE":
       case "JOB_CONSUMPTION":
-        return "bg-red-50 text-red-700";
+        return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200/50 dark:border-red-800/40";
 
       case "ADJUSTMENT":
-        return "bg-blue-50 text-blue-700";
+        return "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40";
 
       default:
-        return "bg-slate-100 text-slate-700";
+        return "bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-border";
     }
   }
 
@@ -247,22 +247,22 @@ export default function MovementHistoryClient() {
   // ---------------------------------------------------------
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-background">
       <div className="mx-auto max-w-7xl p-4 md:p-6">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900">
-                <Boxes className="h-5 w-5 text-white" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 dark:bg-primary/20 dark:text-primary">
+                <Boxes className="h-5 w-5 text-white dark:text-primary" />
               </div>
 
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">
                   Stock Movement History
                 </h1>
 
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">
                   View all inventory stock movements
                 </p>
               </div>
@@ -273,7 +273,7 @@ export default function MovementHistoryClient() {
             type="button"
             onClick={loadMovements}
             disabled={loading}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-4 text-sm font-medium text-white transition hover:bg-slate-800 dark:hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <RefreshCw
               className={`h-4 w-4 ${
@@ -287,59 +287,59 @@ export default function MovementHistoryClient() {
 
         {/* Summary Cards */}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
+            <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
               Total Movements
             </p>
 
-            <p className="mt-2 text-2xl font-bold text-slate-900">
+            <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-foreground">
               {totalMovements}
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
                   Stock In
                 </p>
 
-                <p className="mt-2 text-2xl font-bold text-emerald-600">
+                <p className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                   {stockInMovements}
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50">
-                <ArrowDownLeft className="h-5 w-5 text-emerald-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/40">
+                <ArrowDownLeft className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500">
+                <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">
                   Stock Out
                 </p>
 
-                <p className="mt-2 text-2xl font-bold text-red-600">
+                <p className="mt-2 text-2xl font-bold text-red-600 dark:text-red-400">
                   {stockOutMovements}
                 </p>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50">
-                <ArrowUpRight className="h-5 w-5 text-red-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/40">
+                <ArrowUpRight className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-6 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card p-4 shadow-sm">
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_auto]">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
 
               <input
                 type="text"
@@ -353,7 +353,7 @@ export default function MovementHistoryClient() {
                   }
                 }}
                 placeholder="Search product, code, reference or note..."
-                className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                className="h-10 w-full rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 focus:bg-white dark:focus:bg-card"
               />
             </div>
 
@@ -367,7 +367,7 @@ export default function MovementHistoryClient() {
                   loadMovements();
                 }, 0);
               }}
-              className="h-10 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              className="h-10 rounded-lg border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400 focus:bg-white dark:focus:bg-card"
             >
               <option value="">
                 All Movement Types
@@ -388,7 +388,7 @@ export default function MovementHistoryClient() {
               <button
                 type="button"
                 onClick={loadMovements}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-medium text-white hover:bg-slate-800"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 dark:bg-primary dark:text-primary-foreground px-4 text-sm font-medium text-white hover:bg-slate-800 dark:hover:bg-primary/90"
               >
                 <Search className="h-4 w-4" />
                 Search
@@ -398,7 +398,7 @@ export default function MovementHistoryClient() {
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/30 px-4 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted"
                 >
                   <X className="h-4 w-4" />
                   Clear
@@ -410,49 +410,49 @@ export default function MovementHistoryClient() {
 
         {/* Error */}
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-6 rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
             {error}
           </div>
         )}
 
         {/* Table */}
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card shadow-sm">
           <div className="overflow-x-auto">
             <table className="min-w-[1050px] w-full">
-              <thead className="border-b border-slate-200 bg-slate-50">
+              <thead className="border-b border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     Date / Time
                   </th>
 
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     Product
                   </th>
 
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     Type
                   </th>
 
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     Quantity
                   </th>
 
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     Reference
                   </th>
 
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-muted-foreground">
                     Note
                   </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-border/60">
                 {loading ? (
                   <tr>
                     <td
                       colSpan={6}
-                      className="px-4 py-12 text-center text-sm text-slate-500"
+                      className="px-4 py-12 text-center text-sm text-slate-500 dark:text-muted-foreground"
                     >
                       Loading stock movements...
                     </td>
@@ -464,13 +464,13 @@ export default function MovementHistoryClient() {
                       className="px-4 py-12 text-center"
                     >
                       <div className="flex flex-col items-center justify-center">
-                        <Boxes className="mb-3 h-10 w-10 text-slate-300" />
+                        <Boxes className="mb-3 h-10 w-10 text-slate-300 dark:text-slate-600" />
 
-                        <p className="text-sm font-medium text-slate-600">
+                        <p className="text-sm font-medium text-slate-600 dark:text-muted-foreground">
                           No stock movements found
                         </p>
 
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">
                           Stock movement records will appear here.
                         </p>
                       </div>
@@ -481,11 +481,11 @@ export default function MovementHistoryClient() {
                     (movement) => (
                       <tr
                         key={movement.id}
-                        className="transition hover:bg-slate-50"
+                        className="transition hover:bg-slate-50 dark:hover:bg-muted/30"
                       >
                         {/* Date */}
                         <td className="whitespace-nowrap px-4 py-4">
-                          <p className="text-sm font-medium text-slate-800">
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
                             {formatDate(
                               movement.createdAt
                             )}
@@ -495,11 +495,11 @@ export default function MovementHistoryClient() {
                         {/* Product */}
                         <td className="px-4 py-4">
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-foreground">
                               {movement.product.name}
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
                               {movement.product.code}
 
                               {movement.product.barcode
@@ -528,9 +528,9 @@ export default function MovementHistoryClient() {
                             {isStockIn(
                               movement.type
                             ) ? (
-                              <ArrowDownLeft className="h-4 w-4 text-emerald-600" />
+                              <ArrowDownLeft className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                             ) : (
-                              <ArrowUpRight className="h-4 w-4 text-red-600" />
+                              <ArrowUpRight className="h-4 w-4 text-red-600 dark:text-red-400" />
                             )}
 
                             <span
@@ -538,8 +538,8 @@ export default function MovementHistoryClient() {
                                 isStockIn(
                                   movement.type
                                 )
-                                  ? "text-emerald-600"
-                                  : "text-red-600"
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-red-600 dark:text-red-400"
                               }`}
                             >
                               {isStockIn(
@@ -557,7 +557,7 @@ export default function MovementHistoryClient() {
 
                         {/* Reference */}
                         <td className="px-4 py-4">
-                          <span className="text-sm text-slate-700">
+                          <span className="text-sm text-slate-700 dark:text-slate-300">
                             {movement.referenceId ||
                               "-"}
                           </span>
@@ -565,7 +565,7 @@ export default function MovementHistoryClient() {
 
                         {/* Note */}
                         <td className="max-w-xs px-4 py-4">
-                          <p className="truncate text-sm text-slate-600">
+                          <p className="truncate text-sm text-slate-600 dark:text-muted-foreground">
                             {movement.note || "-"}
                           </p>
                         </td>
@@ -580,8 +580,8 @@ export default function MovementHistoryClient() {
           {/* Footer */}
           {!loading &&
             filteredMovements.length > 0 && (
-              <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs text-slate-500">
+              <div className="border-t border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/40 px-4 py-3">
+                <p className="text-xs text-slate-500 dark:text-muted-foreground">
                   Showing {filteredMovements.length} movement
                   {filteredMovements.length !== 1
                     ? "s"

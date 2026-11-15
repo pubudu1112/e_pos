@@ -50,18 +50,18 @@ function formatTimestamp(iso: string) {
 function getActionBadge(action: string) {
   const norm = action.toUpperCase();
   if (norm.includes("CREATE") || norm.includes("SALE") || norm.includes("ADD")) {
-    return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400";
   }
   if (norm.includes("UPDATE") || norm.includes("EDIT") || norm.includes("STATUS")) {
-    return "border-amber-200 bg-amber-50 text-amber-700";
+    return "border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400";
   }
   if (norm.includes("DELETE") || norm.includes("CANCEL")) {
-    return "border-rose-200 bg-rose-50 text-rose-700";
+    return "border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400";
   }
   if (norm.includes("LOGIN") || norm.includes("AUTH")) {
-    return "border-blue-200 bg-blue-50 text-blue-700";
+    return "border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400";
   }
-  return "border-slate-200 bg-slate-100 text-slate-700";
+  return "border-slate-200 dark:border-border bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300";
 }
 
 export default function ActivityLogsClient() {
@@ -118,7 +118,7 @@ export default function ActivityLogsClient() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-full bg-slate-50/50 dark:bg-background p-4 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -128,8 +128,8 @@ export default function ActivityLogsClient() {
                 <FileText className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Activity & Audit Logs</h1>
-                <p className="text-sm text-slate-500">
+                <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">Activity & Audit Logs</h1>
+                <p className="text-sm text-slate-500 dark:text-muted-foreground">
                   Real-time timeline of user actions, sales, jobs, and security events
                 </p>
               </div>
@@ -140,7 +140,7 @@ export default function ActivityLogsClient() {
             type="button"
             onClick={handleManualRefresh}
             disabled={loading}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card px-4 text-sm font-semibold text-slate-700 dark:text-foreground shadow-sm transition hover:bg-slate-50 dark:hover:bg-muted/40 disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             <span>Refresh</span>
@@ -148,7 +148,7 @@ export default function ActivityLogsClient() {
         </div>
 
         {/* Filter Toolbar */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <input
@@ -159,7 +159,7 @@ export default function ActivityLogsClient() {
                 setPage(1);
               }}
               placeholder="Search by action, entity, details..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 focus:border-primary focus:bg-white focus:outline-none"
+              className="h-10 w-full rounded-xl border border-slate-200 dark:border-border bg-slate-50/50 dark:bg-muted/40 pl-10 pr-4 text-sm text-slate-900 dark:text-foreground placeholder-slate-400 dark:placeholder-muted-foreground focus:border-primary focus:bg-white dark:focus:bg-muted focus:outline-none"
             />
           </div>
 
@@ -170,7 +170,7 @@ export default function ActivityLogsClient() {
                 setActionFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Actions</option>
               <option value="CREATE">Create</option>
@@ -186,7 +186,7 @@ export default function ActivityLogsClient() {
                 setUserFilter(e.target.value);
                 setPage(1);
               }}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Operators</option>
               {users.map((u) => (
@@ -203,7 +203,7 @@ export default function ActivityLogsClient() {
                 setDateFrom(e.target.value);
                 setPage(1);
               }}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
               title="From date"
             />
 
@@ -214,7 +214,7 @@ export default function ActivityLogsClient() {
                 setDateTo(e.target.value);
                 setPage(1);
               }}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-sm focus:border-primary focus:outline-none"
+              className="h-10 rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-xs font-medium text-slate-700 dark:text-foreground shadow-sm focus:border-primary focus:outline-none"
               title="To date"
             />
 
@@ -229,7 +229,7 @@ export default function ActivityLogsClient() {
                   setDateTo("");
                   setPage(1);
                 }}
-                className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="h-10 rounded-xl border border-slate-200 dark:border-border px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted/40"
               >
                 Clear
               </button>
@@ -238,23 +238,23 @@ export default function ActivityLogsClient() {
         </div>
 
         {/* Audit Log Table */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 dark:border-border bg-white dark:bg-card shadow-sm">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="mt-3 text-sm font-medium">Fetching activity log...</p>
             </div>
           ) : logs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-muted-foreground">
               <Activity className="h-12 w-12 stroke-[1.2]" />
-              <p className="mt-3 text-base font-semibold text-slate-700">No activity logs recorded</p>
-              <p className="mt-1 text-sm text-slate-400">User operations and transactions will appear here.</p>
+              <p className="mt-3 text-base font-semibold text-slate-700 dark:text-foreground">No activity logs recorded</p>
+              <p className="mt-1 text-sm text-slate-400 dark:text-muted-foreground">User operations and transactions will appear here.</p>
             </div>
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="border-b border-slate-100 bg-slate-50/75 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                  <thead className="border-b border-slate-100 dark:border-border bg-slate-50/75 dark:bg-muted/40 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">
                     <tr>
                       <th className="px-5 py-3.5">Timestamp</th>
                       <th className="px-5 py-3.5">Operator</th>
@@ -265,28 +265,28 @@ export default function ActivityLogsClient() {
                       <th className="px-5 py-3.5 text-right">View</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-border">
                     {logs.map((log) => {
                       const { date, time } = formatTimestamp(log.createdAt);
                       return (
-                        <tr key={log.id} className="transition-colors hover:bg-slate-50/50">
+                        <tr key={log.id} className="transition-colors hover:bg-slate-50/50 dark:hover:bg-muted/30">
                           <td className="whitespace-nowrap px-5 py-3.5 text-xs">
-                            <span className="font-semibold text-slate-900">{date}</span>
-                            <span className="ml-1.5 text-slate-400">{time}</span>
+                            <span className="font-semibold text-slate-900 dark:text-foreground">{date}</span>
+                            <span className="ml-1.5 text-slate-400 dark:text-muted-foreground">{time}</span>
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
                             {log.user ? (
                               <div className="flex items-center gap-2">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 dark:bg-muted text-xs font-bold text-slate-700 dark:text-slate-300">
                                   {log.user.fullName.charAt(0)}
                                 </div>
                                 <div>
-                                  <p className="text-xs font-semibold text-slate-900">{log.user.fullName}</p>
-                                  <p className="text-[10px] text-slate-400">@{log.user.username}</p>
+                                  <p className="text-xs font-semibold text-slate-900 dark:text-foreground">{log.user.fullName}</p>
+                                  <p className="text-[10px] text-slate-400 dark:text-muted-foreground">@{log.user.username}</p>
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs italic text-slate-400">System</span>
+                              <span className="text-xs italic text-slate-400 dark:text-muted-foreground">System</span>
                             )}
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5">
@@ -298,23 +298,23 @@ export default function ActivityLogsClient() {
                               {log.action}
                             </span>
                           </td>
-                          <td className="whitespace-nowrap px-5 py-3.5 text-xs font-semibold text-slate-700">
+                          <td className="whitespace-nowrap px-5 py-3.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
                             {log.entity || "—"}{" "}
                             {log.entityId && (
-                              <span className="font-mono text-slate-400">#{log.entityId}</span>
+                              <span className="font-mono text-slate-400 dark:text-muted-foreground">#{log.entityId}</span>
                             )}
                           </td>
-                          <td className="max-w-md truncate px-5 py-3.5 text-xs text-slate-700" title={log.details || ""}>
+                          <td className="max-w-md truncate px-5 py-3.5 text-xs text-slate-700 dark:text-slate-300" title={log.details || ""}>
                             {log.details || "—"}
                           </td>
-                          <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-slate-400">
+                          <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-slate-400 dark:text-muted-foreground">
                             {log.ipAddress || "127.0.0.1"}
                           </td>
                           <td className="whitespace-nowrap px-5 py-3.5 text-right">
                             <button
                               type="button"
                               onClick={() => setSelectedLog(log)}
-                              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-700 dark:hover:text-foreground"
                               title="Inspect Details"
                             >
                               <Eye className="h-4 w-4" />
@@ -328,7 +328,7 @@ export default function ActivityLogsClient() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4 text-xs text-slate-500">
+              <div className="flex items-center justify-between border-t border-slate-100 dark:border-border px-6 py-4 text-xs text-slate-500 dark:text-muted-foreground">
                 <span>
                   Showing {logs.length} of {pagination.total} entries
                 </span>
@@ -337,7 +337,7 @@ export default function ActivityLogsClient() {
                     type="button"
                     disabled={page <= 1}
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    className="inline-flex h-8 items-center gap-1 rounded-lg border border-slate-200 px-2.5 font-medium hover:bg-slate-50 disabled:opacity-40"
+                    className="inline-flex h-8 items-center gap-1 rounded-lg border border-slate-200 dark:border-border px-2.5 font-medium hover:bg-slate-50 dark:hover:bg-muted/40 disabled:opacity-40"
                   >
                     <ChevronLeft className="h-3.5 w-3.5" />
                     Previous
@@ -349,7 +349,7 @@ export default function ActivityLogsClient() {
                     type="button"
                     disabled={page >= pagination.totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                    className="inline-flex h-8 items-center gap-1 rounded-lg border border-slate-200 px-2.5 font-medium hover:bg-slate-50 disabled:opacity-40"
+                    className="inline-flex h-8 items-center gap-1 rounded-lg border border-slate-200 dark:border-border px-2.5 font-medium hover:bg-slate-50 dark:hover:bg-muted/40 disabled:opacity-40"
                   >
                     Next
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -364,54 +364,54 @@ export default function ActivityLogsClient() {
       {/* Details Modal */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">Audit Log Details</h3>
+          <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-border bg-white dark:bg-card p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-border pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-foreground">Audit Log Details</h3>
               <button
                 type="button"
                 onClick={() => setSelectedLog(null)}
-                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                className="rounded-xl p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-600 dark:hover:text-foreground"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between border-b border-slate-100 py-1.5">
-                <span className="text-slate-500">Log ID</span>
-                <span className="font-mono font-semibold text-slate-800">#{selectedLog.id}</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-border py-1.5">
+                <span className="text-slate-500 dark:text-muted-foreground">Log ID</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-foreground">#{selectedLog.id}</span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 py-1.5">
-                <span className="text-slate-500">Action</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-border py-1.5">
+                <span className="text-slate-500 dark:text-muted-foreground">Action</span>
                 <span className={`rounded px-2 py-0.5 text-xs font-bold ${getActionBadge(selectedLog.action)}`}>
                   {selectedLog.action}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 py-1.5">
-                <span className="text-slate-500">Target Entity</span>
-                <span className="font-semibold text-slate-800">
+              <div className="flex justify-between border-b border-slate-100 dark:border-border py-1.5">
+                <span className="text-slate-500 dark:text-muted-foreground">Target Entity</span>
+                <span className="font-semibold text-slate-800 dark:text-foreground">
                   {selectedLog.entity || "—"} {selectedLog.entityId && `(#${selectedLog.entityId})`}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 py-1.5">
-                <span className="text-slate-500">Operator</span>
-                <span className="font-semibold text-slate-800">
+              <div className="flex justify-between border-b border-slate-100 dark:border-border py-1.5">
+                <span className="text-slate-500 dark:text-muted-foreground">Operator</span>
+                <span className="font-semibold text-slate-800 dark:text-foreground">
                   {selectedLog.user ? `${selectedLog.user.fullName} (@${selectedLog.user.username})` : "System"}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 py-1.5">
-                <span className="text-slate-500">Timestamp</span>
-                <span className="font-semibold text-slate-800">
+              <div className="flex justify-between border-b border-slate-100 dark:border-border py-1.5">
+                <span className="text-slate-500 dark:text-muted-foreground">Timestamp</span>
+                <span className="font-semibold text-slate-800 dark:text-foreground">
                   {new Date(selectedLog.createdAt).toLocaleString("en-LK")}
                 </span>
               </div>
-              <div className="flex justify-between border-b border-slate-100 py-1.5">
-                <span className="text-slate-500">Client IP Address</span>
-                <span className="font-mono text-slate-800">{selectedLog.ipAddress || "127.0.0.1"}</span>
+              <div className="flex justify-between border-b border-slate-100 dark:border-border py-1.5">
+                <span className="text-slate-500 dark:text-muted-foreground">Client IP Address</span>
+                <span className="font-mono text-slate-800 dark:text-foreground">{selectedLog.ipAddress || "127.0.0.1"}</span>
               </div>
               <div>
-                <span className="block text-xs font-bold uppercase tracking-wider text-slate-500">Details Payload</span>
-                <div className="mt-1.5 rounded-xl bg-slate-50 p-3 font-mono text-xs text-slate-800 break-words">
+                <span className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-muted-foreground">Details Payload</span>
+                <div className="mt-1.5 rounded-xl border border-slate-200/50 dark:border-border bg-slate-50 dark:bg-muted/40 p-3 font-mono text-xs text-slate-800 dark:text-slate-200 break-words">
                   {selectedLog.details || "No extra payload recorded."}
                 </div>
               </div>
@@ -421,7 +421,7 @@ export default function ActivityLogsClient() {
               <button
                 type="button"
                 onClick={() => setSelectedLog(null)}
-                className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                className="rounded-xl bg-slate-100 dark:bg-muted px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-muted/80"
               >
                 Close
               </button>

@@ -290,19 +290,19 @@ export default function StockAdjustmentModal({
   // ============================================================
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
 
-      <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-2xl">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-border px-6 py-4">
 
           <div>
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-foreground">
               Stock Adjustment
             </h2>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
               Increase or decrease product stock
             </p>
           </div>
@@ -311,7 +311,7 @@ export default function StockAdjustmentModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed"
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-muted hover:text-slate-700 dark:hover:text-foreground transition disabled:cursor-not-allowed"
           >
             <X className="h-5 w-5" />
           </button>
@@ -333,14 +333,14 @@ export default function StockAdjustmentModal({
             className="relative"
           >
 
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Product
             </label>
 
             {/* SEARCH INPUT */}
             <div className="relative">
 
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
 
               <input
                 type="text"
@@ -354,7 +354,7 @@ export default function StockAdjustmentModal({
                 disabled={saving}
                 placeholder="Search product name, brand or code..."
                 autoComplete="off"
-                className="h-11 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-10 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="h-11 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 pl-10 pr-10 text-sm text-slate-900 dark:text-foreground outline-none transition placeholder:text-slate-400 dark:placeholder:text-muted-foreground focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
 
               {productSearch && (
@@ -362,7 +362,7 @@ export default function StockAdjustmentModal({
                   type="button"
                   onClick={handleClearProduct}
                   disabled={saving}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -375,7 +375,7 @@ export default function StockAdjustmentModal({
             {/* ============================================ */}
 
             {productDropdownOpen && !saving && (
-              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl">
+              <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-64 overflow-y-auto rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-card shadow-xl">
 
                 {filteredProducts.length > 0 ? (
 
@@ -387,9 +387,9 @@ export default function StockAdjustmentModal({
                       onClick={() =>
                         handleSelectProduct(product)
                       }
-                      className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-left transition last:border-0 hover:bg-blue-50 ${productId === String(product.id)
-                          ? "bg-blue-50"
-                          : "bg-white"
+                      className={`flex w-full items-center justify-between gap-3 border-b border-slate-100 dark:border-border/60 px-4 py-3 text-left transition last:border-0 hover:bg-blue-50 dark:hover:bg-muted/40 ${productId === String(product.id)
+                          ? "bg-blue-50 dark:bg-muted/50"
+                          : "bg-white dark:bg-card"
                         }`}
                     >
 
@@ -397,19 +397,19 @@ export default function StockAdjustmentModal({
                       <div className="min-w-0 flex-1">
 
                         {/* Product Name */}
-                        <p className="truncate text-sm font-semibold text-slate-900">
+                        <p className="truncate text-sm font-semibold text-slate-900 dark:text-foreground">
                           {product.name}
                         </p>
 
                         {/* Brand */}
                         {product.brand && (
-                          <p className="mt-1 truncate text-xs font-medium text-blue-600">
+                          <p className="mt-1 truncate text-xs font-medium text-blue-600 dark:text-blue-400">
                             Brand: {product.brand}
                           </p>
                         )}
 
                         {/* Product Code */}
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">
                           Code: {product.code}
                         </p>
 
@@ -418,11 +418,11 @@ export default function StockAdjustmentModal({
                       {/* CURRENT STOCK */}
                       <div className="shrink-0 text-right">
 
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-400 dark:text-muted-foreground">
                           Stock
                         </p>
 
-                        <p className="text-sm font-semibold text-slate-700">
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                           {product.quantity.toLocaleString(
                             "en-US",
                             {
@@ -436,7 +436,7 @@ export default function StockAdjustmentModal({
 
                       {/* SELECTED INDICATOR */}
                       {productId === String(product.id) && (
-                        <Check className="h-4 w-4 shrink-0 text-blue-600" />
+                        <Check className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
                       )}
 
                     </button>
@@ -447,13 +447,13 @@ export default function StockAdjustmentModal({
 
                   <div className="px-4 py-6 text-center">
 
-                    <Package className="mx-auto mb-2 h-6 w-6 text-slate-300" />
+                    <Package className="mx-auto mb-2 h-6 w-6 text-slate-300 dark:text-slate-600" />
 
-                    <p className="text-sm font-medium text-slate-600">
+                    <p className="text-sm font-medium text-slate-600 dark:text-muted-foreground">
                       No products found
                     </p>
 
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-400 dark:text-muted-foreground">
                       Try another product name, brand or code.
                     </p>
 
@@ -466,7 +466,7 @@ export default function StockAdjustmentModal({
 
             {/* SELECTED PRODUCT INDICATOR */}
             {selectedProduct && (
-              <p className="mt-2 flex items-center gap-1 text-xs text-emerald-600">
+              <p className="mt-2 flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                 <Check className="h-3.5 w-3.5" />
                 Product selected successfully
               </p>
@@ -479,28 +479,28 @@ export default function StockAdjustmentModal({
           {/* ================================================ */}
 
           {selectedProduct && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-xl border border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/30 p-4">
 
               <div className="flex items-center gap-3">
 
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm">
-                  <Package className="h-5 w-5 text-slate-600" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-muted shadow-sm">
+                  <Package className="h-5 w-5 text-slate-600 dark:text-slate-300" />
                 </div>
 
                 {/* PRODUCT DETAILS */}
                 <div className="min-w-0 flex-1">
 
-                  <p className="truncate text-sm font-semibold text-slate-900">
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-foreground">
                     {selectedProduct.name}
                   </p>
 
                   {selectedProduct.brand && (
-                    <p className="mt-1 truncate text-xs font-medium text-blue-600">
+                    <p className="mt-1 truncate text-xs font-medium text-blue-600 dark:text-blue-400">
                       Brand: {selectedProduct.brand}
                     </p>
                   )}
 
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-muted-foreground">
                     Code: {selectedProduct.code}
                   </p>
 
@@ -509,11 +509,11 @@ export default function StockAdjustmentModal({
                 {/* CURRENT STOCK */}
                 <div className="shrink-0 text-right">
 
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-muted-foreground">
                     Current Stock
                   </p>
 
-                  <p className="text-lg font-bold text-slate-900">
+                  <p className="text-lg font-bold text-slate-900 dark:text-foreground">
                     {currentStock.toLocaleString("en-US", {
                       maximumFractionDigits: 3,
                     })}{" "}
@@ -533,7 +533,7 @@ export default function StockAdjustmentModal({
 
           <div>
 
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Adjustment Type
             </label>
 
@@ -544,8 +544,8 @@ export default function StockAdjustmentModal({
                 onClick={() => setType("IN")}
                 disabled={saving}
                 className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition ${type === "IN"
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+                    : "border-slate-200 dark:border-border bg-white dark:bg-muted/30 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted/50"
                   }`}
               >
                 <ArrowDownToLine className="h-4 w-4" />
@@ -557,8 +557,8 @@ export default function StockAdjustmentModal({
                 onClick={() => setType("OUT")}
                 disabled={saving}
                 className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold transition ${type === "OUT"
-                    ? "border-red-500 bg-red-50 text-red-700"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    ? "border-red-500 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400"
+                    : "border-slate-200 dark:border-border bg-white dark:bg-muted/30 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-muted/50"
                   }`}
               >
                 <ArrowUpFromLine className="h-4 w-4" />
@@ -575,7 +575,7 @@ export default function StockAdjustmentModal({
 
           <div>
 
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Quantity
             </label>
 
@@ -589,7 +589,7 @@ export default function StockAdjustmentModal({
               }
               disabled={saving}
               placeholder="0.000"
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+              className="h-11 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
             />
 
           </div>
@@ -601,10 +601,10 @@ export default function StockAdjustmentModal({
           {selectedProduct && adjustmentQuantity > 0 && (
             <div
               className={`rounded-lg border p-3 text-sm ${resultingStock < 0
-                  ? "border-red-200 bg-red-50 text-red-700"
+                  ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400"
                   : type === "IN"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-amber-200 bg-amber-50 text-amber-700"
+                    ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+                    : "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
                 }`}
             >
 
@@ -632,7 +632,7 @@ export default function StockAdjustmentModal({
 
           <div>
 
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Reason
             </label>
 
@@ -645,7 +645,7 @@ export default function StockAdjustmentModal({
               disabled={saving}
               maxLength={255}
               placeholder="e.g. Opening stock, damaged item..."
-              className="h-11 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+              className="h-11 w-full rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
             />
 
           </div>
@@ -656,7 +656,7 @@ export default function StockAdjustmentModal({
 
           <div>
 
-            <label className="mb-2 block text-sm font-medium text-slate-700">
+            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
               Note
             </label>
 
@@ -669,7 +669,7 @@ export default function StockAdjustmentModal({
               maxLength={255}
               rows={3}
               placeholder="Additional note..."
-              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400"
+              className="w-full resize-none rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/40 px-3 py-2.5 text-sm text-slate-900 dark:text-foreground outline-none transition focus:border-slate-400"
             />
 
           </div>
@@ -679,7 +679,7 @@ export default function StockAdjustmentModal({
           {/* ================================================ */}
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
               {error}
             </div>
           )}
@@ -688,13 +688,13 @@ export default function StockAdjustmentModal({
           {/* FOOTER BUTTONS */}
           {/* ================================================ */}
 
-          <div className="flex justify-end gap-3 border-t border-slate-200 pt-5">
+          <div className="flex justify-end gap-3 border-t border-slate-200 dark:border-border pt-5">
 
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed"
+              className="h-10 rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-muted/30 px-5 text-sm font-medium text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-muted disabled:cursor-not-allowed"
             >
               Cancel
             </button>
