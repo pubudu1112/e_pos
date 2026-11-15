@@ -299,6 +299,9 @@ export default function POSClient() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null
   );
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] =
+    useState(false);
 
   // Discount
   const [discountInput, setDiscountInput] = useState("");
@@ -391,6 +394,30 @@ export default function POSClient() {
       console.error("LOAD CUSTOMERS ERROR:", err);
     }
   }, []);
+
+  const filteredCustomers = useMemo(() => {
+    const keyword = customerSearch.trim().toLowerCase();
+
+    if (!keyword) return customers;
+
+    return customers.filter((customer) =>
+      [
+        customer.name,
+        customer.phone || "",
+        customer.code || "",
+      ].some((value) => value.toLowerCase().includes(keyword))
+    );
+  }, [customers, customerSearch]);
+
+  const selectedCustomerName =
+    customers.find((customer) => customer.id === selectedCustomerId)?.name ||
+    "Walk-in Customer";
+
+  function handleCustomerSelect(customerId: number | null) {
+    setSelectedCustomerId(customerId);
+    setCustomerSearch("");
+    setIsCustomerDropdownOpen(false);
+  }
 
   useEffect(() => {
     let active = true;
@@ -2187,25 +2214,95 @@ export default function POSClient() {
 
           {/* Customer Selection Bar */}
           <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 dark:border-border/60 bg-slate-50/60 dark:bg-muted/30 p-3">
-            <div className="relative flex-1">
-              <UserRound className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
-              <select
-                value={selectedCustomerId ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setSelectedCustomerId(val ? Number(val) : null);
-                }}
-                className="h-9 w-full appearance-none rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card pl-8 pr-7 text-xs font-semibold text-slate-700 dark:text-slate-200 transition focus:border-emerald-500 focus:outline-none"
-              >
-                <option value="">Walk-in Customer</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} {c.phone ? `(${c.phone})` : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div
+              className="relative flex-1"
+              onBlur={(event) => {
+                if (
+                  !event.currentTarget.contains(
+                    event.relatedTarget as Node | null
+                  )
+                ) {
+                  setIsCustomerDropdownOpen(false);
+                  setCustomerSearch("");
+                }
+              }}
+            >
+              <UserRound className="absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
 
+              <input
+                type="text"
+                value={customerSearch}
+                onChange={(e) => {
+                  setCustomerSearch(e.target.value);
+                  setIsCustomerDropdownOpen(true);
+                }}
+                onFocus={() => setIsCustomerDropdownOpen(true)}
+                placeholder={selectedCustomerName}
+                autoComplete="off"
+                className="h-9 w-full rounded-xl border border-slate-200 dark:border-border bg-white dark:bg-card pl-8 pr-8 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none transition placeholder:text-slate-700 dark:placeholder:text-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40"
+              />
+
+              {customerSearch ? (
+                <button
+                  type="button"
+                  onClick={() => setCustomerSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-muted-foreground hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <Search className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-muted-foreground" />
+              )}
+
+              {isCustomerDropdownOpen && (
+                <div className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 dark:border-border bg-white dark:bg-card py-1 shadow-xl">
+
+                  {/* Walk-in Customer */}
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleCustomerSelect(null)}
+                    className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-emerald-950/30 ${selectedCustomerId === null
+                        ? "bg-emerald-50 dark:bg-emerald-950/40 font-bold text-emerald-700 dark:text-emerald-300"
+                        : "text-slate-700 dark:text-slate-200"
+                      }`}
+                  >
+                    Walk-in Customer
+                  </button>
+
+                  <div className="my-1 border-t border-slate-100 dark:border-border" />
+
+                  {/* Filtered Customers */}
+                  {filteredCustomers.length > 0 ? (
+                    filteredCustomers.map((customer) => (
+                      <button
+                        key={customer.id}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => handleCustomerSelect(customer.id)}
+                        className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-emerald-950/30 ${selectedCustomerId === customer.id
+                            ? "bg-emerald-50 dark:bg-emerald-950/40 font-bold text-emerald-700 dark:text-emerald-300"
+                            : "text-slate-700 dark:text-slate-200"
+                          }`}
+                      >
+                        <span className="block font-semibold">
+                          {customer.name}
+                        </span>
+
+                        <span className="mt-0.5 block text-[10px] text-slate-400 dark:text-muted-foreground">
+                          {customer.code}
+                          {customer.phone ? ` • ${customer.phone}` : ""}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="px-3 py-4 text-center text-xs text-slate-400 dark:text-muted-foreground">
+                      No customers found
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               type="button"
               onClick={() => setIsNewCustomerModalOpen(true)}
@@ -2213,7 +2310,7 @@ export default function POSClient() {
               title="Add New Customer"
             >
               <UserPlus className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">New</span>
+              <span>New</span>
             </button>
           </div>
 

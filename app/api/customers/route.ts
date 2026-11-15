@@ -4,17 +4,26 @@ import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
 
 // GET - List customers with search, stats & pagination
+
+
+
 export async function GET(request: Request) {
   try {
     const session = await getSession();
+
     if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
+
     const search = searchParams.get("search")?.trim() || "";
     const status = searchParams.get("status") || "all";
 
+    // Build database filters
     const where: any = {};
 
     if (status === "active") {
@@ -32,7 +41,15 @@ export async function GET(request: Request) {
       ];
     }
 
-    const [customers, totalCount, activeCount] = await Promise.all([
+    // Fetch customers and global statistics
+    const [
+      customers,
+      totalCount,
+      activeCount,
+      receivableAggregate,
+      outstandingSalesByCustomer,
+      totalOutstandingSales,
+    ] = await Promise.all([
       prisma.customer.findMany({
         where,
         orderBy: { name: "asc" },
@@ -45,33 +62,118 @@ export async function GET(request: Request) {
           },
         },
       }),
+
+      // Global customer count
       prisma.customer.count(),
-      prisma.customer.count({ where: { isActive: true } }),
+
+      // Global active customer count
+      prisma.customer.count({
+        where: { isActive: true },
+      }),
+
+      // Total opening balances
+      prisma.customer.aggregate({
+        _sum: {
+          openingBalance: true,
+        },
+      }),
+
+      // Outstanding completed sales grouped by customer
+      prisma.sale.groupBy({
+        by: ["customerId"],
+        where: {
+          status: "COMPLETED",
+          balanceAmount: {
+            gt: 0,
+          },
+          customerId: {
+            not: null,
+          },
+        },
+        _sum: {
+          balanceAmount: true,
+        },
+      }),
+
+      // Total outstanding sales for all customers
+      prisma.sale.aggregate({
+        where: {
+          status: "COMPLETED",
+          balanceAmount: {
+            gt: 0,
+          },
+          customerId: {
+            not: null,
+          },
+        },
+        _sum: {
+          balanceAmount: true,
+        },
+      }),
     ]);
 
-    // Calculate total receivables / opening balance from customers
-    const totalReceivables = customers.reduce(
-      (sum, c) => sum + Number(c.openingBalance || 0),
-      0
+    // Create customer-wise outstanding balance map
+    const outstandingMap = new Map<number, number>();
+
+    outstandingSalesByCustomer.forEach((sale) => {
+      if (sale.customerId !== null) {
+        outstandingMap.set(
+          sale.customerId,
+          Number(sale._sum.balanceAmount || 0)
+        );
+      }
+    });
+
+    // Calculate global receivables
+    const totalOpeningBalance = Number(
+      receivableAggregate._sum.openingBalance || 0
     );
+
+    const totalOutstanding = Number(
+      totalOutstandingSales._sum.balanceAmount || 0
+    );
+
+    const totalReceivables =
+      totalOpeningBalance + totalOutstanding;
 
     return NextResponse.json({
       success: true,
-      data: customers.map((c) => ({
-        id: c.id,
-        code: c.code,
-        name: c.name,
-        phone: c.phone || "",
-        email: c.email || "",
-        address: c.address || "",
-        creditLimit: Number(c.creditLimit),
-        openingBalance: Number(c.openingBalance),
-        isActive: c.isActive,
-        createdAt: c.createdAt,
-        updatedAt: c.updatedAt,
-        salesCount: c._count.sale,
-        jobsCount: c._count.job,
-      })),
+
+      data: customers.map((c) => {
+        const openingBalance = Number(c.openingBalance || 0);
+
+        const outstandingSales =
+          outstandingMap.get(c.id) || 0;
+
+        const balanceDue =
+          openingBalance + outstandingSales;
+
+        return {
+          id: c.id,
+          code: c.code,
+          name: c.name,
+          phone: c.phone || "",
+          email: c.email || "",
+          address: c.address || "",
+
+          creditLimit: Number(c.creditLimit || 0),
+          openingBalance,
+          outstandingSales,
+          balanceDue,
+
+          isActive: c.isActive,
+
+          createdAt:
+            c.createdAt instanceof Date &&
+            !Number.isNaN(c.createdAt.getTime())
+              ? c.createdAt.toISOString()
+              : "",
+
+          salesCount: c._count.sale,
+          jobsCount: c._count.job,
+        };
+      }),
+
       stats: {
         totalCustomers: totalCount,
         activeCustomers: activeCount,
@@ -80,13 +182,24 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("GET CUSTOMERS ERROR:", error);
+    console.error("CUSTOMER API DEBUG ERROR:", error);
+
     return NextResponse.json(
-      { success: false, message: "Failed to fetch customers" },
+      {
+        success: false,
+        message: "Failed to fetch customers",
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      },
       { status: 500 }
     );
   }
 }
+
+
+
 
 // POST - Create a new customer
 export async function POST(request: Request) {

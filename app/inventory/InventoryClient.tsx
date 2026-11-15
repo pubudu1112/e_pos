@@ -58,6 +58,7 @@ type AdjustmentProduct = {
 type SortColumn =
   | "name"
   | "category"
+  | "brand"
   | "unit"
   | "quantity"
   | "reservedQuantity"
@@ -312,6 +313,16 @@ export default function InventoryClient() {
           );
           break;
 
+        case "brand":
+          comparison = (
+            a.product.brand || ""
+          ).localeCompare(
+            b.product.brand || "",
+            undefined,
+            { sensitivity: "base" }
+          );
+          break;
+
         case "unit":
           comparison = (
             a.product.unit || ""
@@ -508,15 +519,14 @@ export default function InventoryClient() {
     return (
       <th
         className={`px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${align === "right"
-            ? "text-right"
-            : align === "center"
-              ? "text-center"
-              : "text-left"
+          ? "text-right"
+          : align === "center"
+            ? "text-center"
+            : "text-left"
           }`}
       >
         <button
           type="button"
-          onClick={() => handleSort(column)}
           className={`inline-flex items-center gap-2 whitespace-nowrap transition hover:text-slate-900 dark:hover:text-foreground ${align === "right"
               ? "ml-auto"
               : align === "center"
@@ -777,6 +787,10 @@ export default function InventoryClient() {
                       Category
                     </SortHeader>
 
+                    <SortHeader column="brand">
+                      Brand
+                    </SortHeader>
+
                     <SortHeader column="unit">
                       Unit
                     </SortHeader>
@@ -834,7 +848,7 @@ export default function InventoryClient() {
                     <tr>
 
                       <td
-                        colSpan={9}
+                        colSpan={10}
                         className="px-4 py-16 text-center"
                       >
 
@@ -889,6 +903,11 @@ export default function InventoryClient() {
                         {/* Category */}
                         <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-300">
                           {item.product.category || "-"}
+                        </td>
+
+                        {/* Brand */}
+                        <td className="px-4 py-4 text-sm text-slate-600">
+                          {item.product.brand || "-"}
                         </td>
 
                         {/* Unit */}
