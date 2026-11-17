@@ -25,6 +25,7 @@ import {
   Printer,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 // ============================================================
 // TYPES
@@ -247,6 +248,8 @@ export default function WarrantyClient() {
     return warranties;
   }, [warranties]);
 
+  const pagination = usePagination(filteredWarranties, 25);
+
   return (
     <div className="flex-1 space-y-5 p-4 sm:p-6 lg:p-8">
       {/* HEADER SECTION */}
@@ -433,7 +436,7 @@ export default function WarrantyClient() {
                   </td>
                 </tr>
               ) : (
-                filteredWarranties.map((w) => {
+                pagination.paginatedItems.map((w) => {
                   const hasClaims = w.claims.length > 0;
 
                   return (
@@ -581,6 +584,18 @@ export default function WarrantyClient() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalRecords={pagination.totalRecords}
+          pageSize={pagination.pageSize}
+          onPageChange={pagination.handlePageChange}
+          onPageSizeChange={pagination.handlePageSizeChange}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          recordLabel="warranties"
+        />
       </div>
 
       {/* ============================================================

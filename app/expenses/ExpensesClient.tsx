@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type ExpenseCategory = {
   id: number;
@@ -88,6 +89,8 @@ export default function ExpensesClient() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const pagination = usePagination(expenses, 25);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   // Form State
@@ -509,7 +512,7 @@ export default function ExpensesClient() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {expenses.map((exp) => (
+                  {pagination.paginatedItems.map((exp) => (
                     <tr key={exp.id} className="transition-colors hover:bg-slate-50/50">
                       <td className="whitespace-nowrap px-5 py-4 font-mono text-xs font-semibold text-slate-900">
                         {exp.expenseNo}
@@ -575,6 +578,18 @@ export default function ExpensesClient() {
               </table>
             </div>
           )}
+
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalRecords={pagination.totalRecords}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.handlePageChange}
+            onPageSizeChange={pagination.handlePageSizeChange}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            recordLabel="expenses"
+          />
         </div>
       </div>
 

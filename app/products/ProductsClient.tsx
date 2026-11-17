@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type Category = {
   id: number;
@@ -906,6 +907,8 @@ export default function ProductsClient() {
     });
   }, [products, search, sortConfig]);
 
+  const pagination = usePagination(filteredProducts, 25);
+
   function formatPrice(
     value: number | string | null
   ) {
@@ -1017,14 +1020,14 @@ export default function ProductsClient() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map(
+                  pagination.paginatedItems.map(
                     (product, index) => (
                       <tr
                         key={product.id}
                         className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
                       >
                         <td className="px-5 py-4 text-slate-500">
-                          {index + 1}
+                          {pagination.startIndex + index + 1}
                         </td>
 
                         <td className="px-5 py-4">
@@ -1156,19 +1159,18 @@ export default function ProductsClient() {
               </tbody>
             </table>
           </div>
-        </div>
 
-        {/* Summary */}
-        <div className="mt-4 text-sm text-slate-500">
-          Showing{" "}
-          <span className="font-semibold text-slate-700">
-            {filteredProducts.length}
-          </span>{" "}
-          of{" "}
-          <span className="font-semibold text-slate-700">
-            {products.length}
-          </span>{" "}
-          products
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalRecords={pagination.totalRecords}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.handlePageChange}
+            onPageSizeChange={pagination.handlePageSizeChange}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            recordLabel="products"
+          />
         </div>
       </div>
 

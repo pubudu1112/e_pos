@@ -9,6 +9,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type MovementType =
   | "PURCHASE"
@@ -150,6 +151,8 @@ export default function MovementHistoryClient() {
   const filteredMovements = useMemo(() => {
     return movements;
   }, [movements]);
+
+  const pagination = usePagination(filteredMovements, 25);
 
   // ---------------------------------------------------------
   // Helpers
@@ -477,7 +480,7 @@ export default function MovementHistoryClient() {
                     </td>
                   </tr>
                 ) : (
-                  filteredMovements.map(
+                  pagination.paginatedItems.map(
                     (movement) => (
                       <tr
                         key={movement.id}
@@ -577,18 +580,18 @@ export default function MovementHistoryClient() {
             </table>
           </div>
 
-          {/* Footer */}
-          {!loading &&
-            filteredMovements.length > 0 && (
-              <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-                <p className="text-xs text-slate-500">
-                  Showing {filteredMovements.length} movement
-                  {filteredMovements.length !== 1
-                    ? "s"
-                    : ""}
-                </p>
-              </div>
-            )}
+          {/* Pagination */}
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalRecords={pagination.totalRecords}
+            pageSize={pagination.pageSize}
+            onPageChange={pagination.handlePageChange}
+            onPageSizeChange={pagination.handlePageSizeChange}
+            startIndex={pagination.startIndex}
+            endIndex={pagination.endIndex}
+            recordLabel="movements"
+          />
         </div>
       </div>
     </div>

@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type Customer = {
   id: number;
@@ -108,6 +109,8 @@ export default function CustomersClient() {
     inactiveCustomers: 0,
     totalReceivables: 0,
   });
+
+  const pagination = usePagination(customers, 25);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -467,7 +470,7 @@ export default function CustomersClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                {customers.map((c) => (
+                {pagination.paginatedItems.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/60 transition">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
@@ -593,6 +596,18 @@ export default function CustomersClient() {
             </table>
           </div>
         )}
+
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalRecords={pagination.totalRecords}
+          pageSize={pagination.pageSize}
+          onPageChange={pagination.handlePageChange}
+          onPageSizeChange={pagination.handlePageSizeChange}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          recordLabel="customers"
+        />
       </div>
 
       {/* Add / Edit Customer Modal */}

@@ -120,6 +120,14 @@ export async function GET(request: Request) {
     }
 
     // -------------------------------------------------------
+    // PAGINATION PARAMS
+    // -------------------------------------------------------
+    const pageParam = searchParams.get("page");
+    const pageSizeParam = searchParams.get("pageSize");
+    const page = pageParam ? Math.max(1, parseInt(pageParam, 10)) : 1;
+    const pageSize = pageSizeParam ? Math.max(1, parseInt(pageSizeParam, 10)) : 25;
+
+    // -------------------------------------------------------
     // SALES
     // -------------------------------------------------------
 
@@ -131,7 +139,8 @@ export async function GET(request: Request) {
           saleDate: "desc",
         },
 
-        take: 100,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
 
         include: {
           customer: {
@@ -320,6 +329,13 @@ export async function GET(request: Request) {
       success: true,
 
       data,
+
+      pagination: {
+        page,
+        pageSize,
+        total: summary.orderCount,
+        totalPages: Math.max(1, Math.ceil(summary.orderCount / pageSize)),
+      },
 
       summary: {
         totalSales:

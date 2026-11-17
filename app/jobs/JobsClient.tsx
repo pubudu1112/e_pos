@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type JobStatus =
   | "NEW"
@@ -126,6 +127,8 @@ export default function JobsClient() {
     customers: [],
     services: [],
   });
+
+  const pagination = usePagination(jobs, 25);
 
   // Modal states
   const [isNewJobModalOpen, setIsNewJobModalOpen] = useState(false);
@@ -587,7 +590,7 @@ export default function JobsClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                {jobs.map((j) => {
+                {pagination.paginatedItems.map((j) => {
                   const statusInfo = STATUS_CONFIG[j.status] || STATUS_CONFIG.NEW;
                   const priorityInfo = PRIORITY_CONFIG[j.priority] || PRIORITY_CONFIG.NORMAL;
                   return (
@@ -721,6 +724,18 @@ export default function JobsClient() {
             </table>
           </div>
         )}
+
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalRecords={pagination.totalRecords}
+          pageSize={pagination.pageSize}
+          onPageChange={pagination.handlePageChange}
+          onPageSizeChange={pagination.handlePageSizeChange}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          recordLabel="jobs"
+        />
       </div>
 
       {/* New Work Order Modal */}

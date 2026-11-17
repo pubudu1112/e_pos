@@ -9,6 +9,7 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Pagination from "@/components/Pagination";
 
 type SaleItem = {
   id: number;
@@ -134,18 +135,25 @@ export default function SalesPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [selectedSale, setSelectedSale] =
     useState<Sale | null>(null);
 
-  async function loadSales() {
+  async function loadSales(pageToLoad = currentPage, sizeToLoad = pageSize) {
     try {
       setLoading(true);
       setError("");
 
       const params = new URLSearchParams();
+      params.set("page", String(pageToLoad));
+      params.set("pageSize", String(sizeToLoad));
 
       if (search.trim()) {
         params.set("search", search.trim());
@@ -170,9 +178,7 @@ export default function SalesPage() {
       const queryString = params.toString();
 
       const response = await fetch(
-        queryString
-          ? `/api/sales?${queryString}`
-          : "/api/sales",
+        `/api/sales?${queryString}`,
         {
           cache: "no-store",
         }
@@ -187,6 +193,18 @@ export default function SalesPage() {
       }
 
       setSales(result.data || []);
+
+      if (result.pagination) {
+        setCurrentPage(result.pagination.page);
+        setPageSize(result.pagination.pageSize);
+        setTotalPages(result.pagination.totalPages);
+        setTotalRecords(result.pagination.total);
+      } else {
+        setTotalRecords(result.summary?.orderCount ?? (result.data?.length || 0));
+        setTotalPages(
+          Math.max(1, Math.ceil((result.summary?.orderCount || 0) / sizeToLoad))
+        );
+      }
 
       setSummary(
         result.summary || {
@@ -211,10 +229,26 @@ export default function SalesPage() {
   }
 
   useEffect(() => {
-    loadSales();
+    loadSales(1, pageSize);
   }, []);
 
   const visibleSales = useMemo(() => sales, [sales]);
+
+  function handlePageChange(newPage: number) {
+    setCurrentPage(newPage);
+    loadSales(newPage, pageSize);
+  }
+
+  function handlePageSizeChange(newSize: number) {
+    setPageSize(newSize);
+    setCurrentPage(1);
+    loadSales(1, newSize);
+  }
+
+  function handleFilterSubmit() {
+    setCurrentPage(1);
+    loadSales(1, pageSize);
+  }
 
   function clearFilters() {
     setSearch("");
@@ -222,9 +256,10 @@ export default function SalesPage() {
     setStatus("");
     setDateFrom("");
     setDateTo("");
+    setCurrentPage(1);
 
     setTimeout(() => {
-      loadSales();
+      loadSales(1, pageSize);
     }, 0);
   }
 
@@ -795,7 +830,7 @@ export default function SalesPage() {
 
             <button
               type="button"
-              onClick={loadSales}
+              onClick={() => void loadSales()}
               disabled={loading}
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -1028,7 +1063,7 @@ export default function SalesPage() {
 
             <button
               type="button"
-              onClick={loadSales}
+              onClick={handleFilterSubmit}
               className="h-11 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground shadow-sm transition hover:opacity-90"
             >
               Search
@@ -1340,6 +1375,17 @@ export default function SalesPage() {
             </div>
 
           )}
+
+          {/* PAGINATION */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            recordLabel="sales"
+          />
 
         </div>
 

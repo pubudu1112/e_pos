@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type Supplier = {
   id: number;
@@ -261,6 +262,8 @@ export default function SupplierClient() {
       ),
     [filteredPayments]
   );
+
+  const paymentPagination = usePagination(filteredPayments, 25);
 
   async function loadPayments() {
     try {
@@ -562,6 +565,9 @@ export default function SupplierClient() {
     );
   }, [outstanding, search]);
 
+  const supplierPagination = usePagination(filteredSuppliers, 25);
+  const outstandingPagination = usePagination(filteredOutstanding, 25);
+
   const totalOutstanding = outstanding.reduce(
     (sum, item) => sum + Math.max(item.outstanding, 0),
     0
@@ -762,7 +768,8 @@ export default function SupplierClient() {
               Loading suppliers...
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              <div className="overflow-x-auto">
               <table className="w-full min-w-[1000px]">
                 <thead className="bg-slate-50">
                   <tr className="text-left text-xs font-bold uppercase tracking-wide text-slate-500">
@@ -782,7 +789,7 @@ export default function SupplierClient() {
                 </thead>
 
                 <tbody className="divide-y divide-slate-100">
-                  {filteredSuppliers.map((supplier) => (
+                  {supplierPagination.paginatedItems.map((supplier) => (
                     <tr
                       key={supplier.id}
                       className="hover:bg-slate-50"
@@ -886,7 +893,20 @@ export default function SupplierClient() {
                 </tbody>
               </table>
             </div>
-          )}
+
+            <Pagination
+              currentPage={supplierPagination.currentPage}
+              totalPages={supplierPagination.totalPages}
+              totalRecords={supplierPagination.totalRecords}
+              pageSize={supplierPagination.pageSize}
+              onPageChange={supplierPagination.handlePageChange}
+              onPageSizeChange={supplierPagination.handlePageSizeChange}
+              startIndex={supplierPagination.startIndex}
+              endIndex={supplierPagination.endIndex}
+              recordLabel="suppliers"
+            />
+          </>
+        )}
         </div>
       )}
 
@@ -927,7 +947,7 @@ export default function SupplierClient() {
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {filteredOutstanding.map((item) => (
+                {outstandingPagination.paginatedItems.map((item) => (
                   <tr
                     key={item.id}
                     className="hover:bg-slate-50"
@@ -987,6 +1007,18 @@ export default function SupplierClient() {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={outstandingPagination.currentPage}
+            totalPages={outstandingPagination.totalPages}
+            totalRecords={outstandingPagination.totalRecords}
+            pageSize={outstandingPagination.pageSize}
+            onPageChange={outstandingPagination.handlePageChange}
+            onPageSizeChange={outstandingPagination.handlePageSizeChange}
+            startIndex={outstandingPagination.startIndex}
+            endIndex={outstandingPagination.endIndex}
+            recordLabel="outstanding records"
+          />
         </div>
       )}
 
@@ -1497,7 +1529,7 @@ export default function SupplierClient() {
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {filteredPayments.map((payment) => (
+                {paymentPagination.paginatedItems.map((payment) => (
                   <tr key={payment.id} className="hover:bg-slate-50">
                     <td className="px-5 py-4 font-semibold">
                       <div>{payment.supplierName}</div>
@@ -1545,6 +1577,18 @@ export default function SupplierClient() {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={paymentPagination.currentPage}
+            totalPages={paymentPagination.totalPages}
+            totalRecords={paymentPagination.totalRecords}
+            pageSize={paymentPagination.pageSize}
+            onPageChange={paymentPagination.handlePageChange}
+            onPageSizeChange={paymentPagination.handlePageSizeChange}
+            startIndex={paymentPagination.startIndex}
+            endIndex={paymentPagination.endIndex}
+            recordLabel="payments"
+          />
         </div>
       )}
 

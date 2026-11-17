@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type Supplier = {
     id: number;
@@ -378,6 +379,8 @@ export default function PurchaseClient() {
             );
         });
     }, [purchases, purchaseSearch]);
+
+    const pagination = usePagination(filteredPurchases, 25);
 
     function formatMoney(value: number) {
         return value.toLocaleString("en-LK", {
@@ -1189,7 +1192,7 @@ export default function PurchaseClient() {
                             </thead>
 
                             <tbody className="divide-y divide-slate-100">
-                                {filteredPurchases.map((purchase) => (
+                                {pagination.paginatedItems.map((purchase) => (
                                     <tr
                                         key={purchase.id}
                                         className="transition hover:bg-slate-50"
@@ -1265,6 +1268,18 @@ export default function PurchaseClient() {
                         </table>
                     </div>
                 )}
+
+                <Pagination
+                    currentPage={pagination.currentPage}
+                    totalPages={pagination.totalPages}
+                    totalRecords={pagination.totalRecords}
+                    pageSize={pagination.pageSize}
+                    onPageChange={pagination.handlePageChange}
+                    onPageSizeChange={pagination.handlePageSizeChange}
+                    startIndex={pagination.startIndex}
+                    endIndex={pagination.endIndex}
+                    recordLabel="purchases"
+                />
             </div>
 
             {/* Purchase Details Modal */}

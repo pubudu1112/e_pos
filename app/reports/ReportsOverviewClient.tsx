@@ -10,6 +10,9 @@ import {
   FileSpreadsheet,
   Users,
   FolderTree,
+  Boxes,
+  Truck,
+  WalletCards,
 } from "lucide-react";
 
 const reportCards = [
@@ -39,6 +42,33 @@ const reportCards = [
     icon: FolderTree,
     color: "bg-indigo-500/10 text-indigo-600",
     badge: "Category & Product",
+  },
+  {
+    title: "Stock Valuation & Movement Report",
+    description:
+      "Total inventory cost & retail value, low stock / reorder alerts, and fast, slow, or dead stock analysis.",
+    href: "/reports/stock",
+    icon: Boxes,
+    color: "bg-amber-500/10 text-amber-600",
+    badge: "Valuation & Low Stock",
+  },
+  {
+    title: "Supplier & Purchase Report",
+    description:
+      "Supplier-wise purchased items, unit cost variations, purchase orders (GRN), paid amounts, and payable balances.",
+    href: "/reports/purchases",
+    icon: Truck,
+    color: "bg-teal-500/10 text-teal-600",
+    badge: "Suppliers & GRN",
+  },
+  {
+    title: "Expense Analysis Report",
+    description:
+      "Category-wise expense breakdown, payment method shares, daily expense trends, and detailed voucher logs.",
+    href: "/reports/expenses",
+    icon: WalletCards,
+    color: "bg-rose-500/10 text-rose-600",
+    badge: "Expense & Cash Out",
   },
   {
     title: "Financial Reports",

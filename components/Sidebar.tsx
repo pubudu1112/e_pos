@@ -229,6 +229,24 @@ const reportMenu: MenuGroup = {
       permission: "REPORT_SALES_VIEW",
     },
     {
+      label: "Stock Valuation",
+      href: "/reports/stock",
+      icon: Boxes,
+      permission: "REPORT_SALES_VIEW",
+    },
+    {
+      label: "Supplier & Purchases",
+      href: "/reports/purchases",
+      icon: Truck,
+      permission: "REPORT_SALES_VIEW",
+    },
+    {
+      label: "Expense Report",
+      href: "/reports/expenses",
+      icon: WalletCards,
+      permission: "REPORT_SALES_VIEW",
+    },
+    {
       label: "Financial Reports",
       href: "/reports/financial",
       icon: DollarSign,

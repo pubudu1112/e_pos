@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type ReportData = {
   from: string;
@@ -76,6 +77,9 @@ export default function SalesReportClient() {
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
+
+  const salesList = useMemo(() => data?.sales ?? [], [data]);
+  const salesPagination = usePagination(salesList, 25);
 
   async function loadReport() {
     try {
@@ -425,7 +429,7 @@ export default function SalesReportClient() {
                     </tr>
                   </thead>
                   <tbody className="divide-y">
-                    {data.sales.map((sale) => (
+                    {salesPagination.paginatedItems.map((sale) => (
                       <tr key={sale.invoiceNo}>
                         <td className="px-4 py-3 font-bold">{sale.invoiceNo}</td>
                         <td className="px-4 py-3">
@@ -447,6 +451,18 @@ export default function SalesReportClient() {
                   </tbody>
                 </table>
               </div>
+
+              <Pagination
+                currentPage={salesPagination.currentPage}
+                totalPages={salesPagination.totalPages}
+                totalRecords={salesPagination.totalRecords}
+                pageSize={salesPagination.pageSize}
+                onPageChange={salesPagination.handlePageChange}
+                onPageSizeChange={salesPagination.handlePageSizeChange}
+                startIndex={salesPagination.startIndex}
+                endIndex={salesPagination.endIndex}
+                recordLabel="invoices"
+              />
             </section>
           </>
         )}

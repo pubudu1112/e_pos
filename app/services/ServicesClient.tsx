@@ -21,6 +21,7 @@ import {
   Package,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 import {
   AlertDialog,
@@ -518,6 +519,8 @@ export default function ServicesClient() {
       );
     });
   }, [services, selectedCategoryFilter, search]);
+
+  const pagination = usePagination(filteredServices, 25);
 
   /* ============================================================
      PHOTOCOPY, PRINTING & BINDING SERVICE KPI METRICS
@@ -1467,7 +1470,7 @@ export default function ServicesClient() {
                   </td>
                 </tr>
               ) : (
-                filteredServices.map(
+                pagination.paginatedItems.map(
                   (
                     service,
                     index
@@ -1510,7 +1513,7 @@ export default function ServicesClient() {
                         className="border-b last:border-b-0 hover:bg-muted/30"
                       >
                         <td className="px-4 py-3">
-                          {index + 1}
+                          {pagination.startIndex + index + 1}
                         </td>
 
                         <td className="px-4 py-3 font-medium">
@@ -1674,6 +1677,18 @@ export default function ServicesClient() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalRecords={pagination.totalRecords}
+          pageSize={pagination.pageSize}
+          onPageChange={pagination.handlePageChange}
+          onPageSizeChange={pagination.handlePageSizeChange}
+          startIndex={pagination.startIndex}
+          endIndex={pagination.endIndex}
+          recordLabel="services"
+        />
       </div>
 
       {/* ADD / EDIT MODAL */}

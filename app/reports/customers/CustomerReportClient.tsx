@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type CustomerOption = {
   id: number;
@@ -219,6 +220,8 @@ export default function CustomerReportClient() {
       balanceAmount,
     };
   }, [filteredCustomers]);
+
+  const pagination = usePagination(filteredCustomers, 10);
 
   function toggleCustomer(key: string) {
     setExpandedKeys((prev) => ({
@@ -529,7 +532,7 @@ export default function CustomerReportClient() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredCustomers.map((cust) => {
+                {pagination.paginatedItems.map((cust) => {
                   const isExpanded = Boolean(expandedKeys[cust.customerKey]);
 
                   return (
@@ -789,6 +792,19 @@ export default function CustomerReportClient() {
                     </div>
                   );
                 })}
+
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  totalRecords={pagination.totalRecords}
+                  pageSize={pagination.pageSize}
+                  onPageChange={pagination.handlePageChange}
+                  onPageSizeChange={pagination.handlePageSizeChange}
+                  startIndex={pagination.startIndex}
+                  endIndex={pagination.endIndex}
+                  recordLabel="customers"
+                  className="rounded-2xl border"
+                />
               </div>
             )}
           </>

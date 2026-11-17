@@ -15,6 +15,7 @@ import {
   Tags,
 } from "lucide-react";
 import { toast } from "sonner";
+import Pagination, { usePagination } from "@/components/Pagination";
 
 type CategoryOption = {
   categoryKey: string;
@@ -275,6 +276,8 @@ export default function CategoryProductReportClient() {
       profitMargin,
     };
   }, [filteredProducts, filteredCategories]);
+
+  const productPagination = usePagination(filteredProducts, 25);
 
   function toggleCategory(key: string) {
     setExpandedCategories((prev) => ({
@@ -910,7 +913,7 @@ export default function CategoryProductReportClient() {
                           </td>
                         </tr>
                       ) : (
-                        filteredProducts.map((p) => (
+                        productPagination.paginatedItems.map((p) => (
                           <tr
                             key={p.itemKey}
                             className="hover:bg-slate-50/80"
@@ -999,6 +1002,18 @@ export default function CategoryProductReportClient() {
                     )}
                   </table>
                 </div>
+
+                <Pagination
+                  currentPage={productPagination.currentPage}
+                  totalPages={productPagination.totalPages}
+                  totalRecords={productPagination.totalRecords}
+                  pageSize={productPagination.pageSize}
+                  onPageChange={productPagination.handlePageChange}
+                  onPageSizeChange={productPagination.handlePageSizeChange}
+                  startIndex={productPagination.startIndex}
+                  endIndex={productPagination.endIndex}
+                  recordLabel="products"
+                />
               </section>
             )}
           </>
