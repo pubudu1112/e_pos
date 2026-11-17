@@ -51,46 +51,34 @@ export async function POST(
     const session =
       await getSession();
 
-    let createdById: number;
-
-    if (session) {
-      const canCreateSale =
-        await hasPermission(
-          "POS_CREATE_SALE"
-        );
-
-      if (!canCreateSale) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "You do not have permission to create sales.",
-          },
-          { status: 403 }
-        );
-      }
-
-      createdById = session.user.id;
-    } else {
-      // In store terminal or direct POS access, fallback to active admin user
-      const activeUser = await prisma.user.findFirst({
-        where: { status: "ACTIVE" },
-        orderBy: { id: "asc" },
-      });
-
-      if (!activeUser) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "No active cashier or admin user found to record the sale.",
-          },
-          { status: 401 }
-        );
-      }
-
-      createdById = activeUser.id;
+    if (!session) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "You must be logged in to create a sale.",
+        },
+        { status: 401 }
+      );
     }
+
+    const canCreateSale =
+      await hasPermission(
+        "POS_CREATE_SALE"
+      );
+
+    if (!canCreateSale && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "You do not have permission to create sales.",
+        },
+        { status: 403 }
+      );
+    }
+
+    const createdById = session.user.id;
 
     // ========================================================
     // Settings & Price Editing Permission Check
@@ -252,6 +240,17 @@ export async function POST(
     // ========================================================
     // Validate Customer
     // ========================================================
+
+    if (paymentMethodType === "CREDIT" && !customerId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "A registered customer must be selected for Credit sales.",
+        },
+        { status: 400 }
+      );
+    }
 
     if (customerId !== null) {
       if (
@@ -730,14 +729,32 @@ export async function POST(
             );
 
           // --------------------------------------------------
-          // Current POS = full payment
+          // Payment amounts & status (Supports Full, Credit, & Partial Payment)
           // --------------------------------------------------
 
-          const paidAmount =
-            total;
+          const isCreditSale = paymentMethodType === "CREDIT";
+          const requestedPaid =
+            body.paidAmount !== undefined && body.paidAmount !== null
+              ? Math.max(0, Number(body.paidAmount) || 0)
+              : isCreditSale
+                ? Math.max(0, cashTendered)
+                : cashTendered > 0 || body.cashTendered !== undefined
+                  ? Math.max(0, cashTendered)
+                  : total;
 
-          const balanceAmount =
-            0;
+          const paidAmount = roundMoney(Math.min(requestedPaid, total));
+          const balanceAmount = roundMoney(Math.max(0, total - paidAmount));
+
+          if (balanceAmount > 0 && customerId === null) {
+            throw new Error("CUSTOMER_REQUIRED_FOR_BALANCE");
+          }
+
+          const paymentStatus: "PAID" | "PARTIAL" | "PENDING" =
+            balanceAmount <= 0
+              ? "PAID"
+              : paidAmount > 0
+                ? "PARTIAL"
+                : "PENDING";
 
           // ==================================================
           // Generate Unique Invoice Number
@@ -804,7 +821,7 @@ export async function POST(
               }
             );
 
-          if (!paymentMethod) {
+          if (!paymentMethod && !isCreditSale) {
             throw new Error(
               `PAYMENT_METHOD_NOT_FOUND:${paymentMethodType}`
             );
@@ -856,8 +873,7 @@ export async function POST(
                 status:
                   "COMPLETED",
 
-                paymentStatus:
-                  "PAID",
+                paymentStatus,
 
                 updatedAt:
                   new Date(),
@@ -1280,35 +1296,39 @@ export async function POST(
           }
 
           // ==================================================
-          // Create Payment
+          // Create Payment (Only when money is paid)
           // ==================================================
 
           const generatedNote =
             paymentNote ||
             (cashTendered > 0
               ? `Tendered: Rs. ${cashTendered.toFixed(2)}, Change: Rs. ${changeAmount.toFixed(2)}`
-              : "POS Payment");
+              : isCreditSale
+                ? "Credit Sale"
+                : "POS Payment");
 
-          await tx.payment.create({
-            data: {
-              saleId:
-                sale.id,
+          if (paidAmount > 0 && paymentMethod) {
+            await tx.payment.create({
+              data: {
+                saleId:
+                  sale.id,
 
-              paymentMethodId:
-                paymentMethod.id,
+                paymentMethodId:
+                  paymentMethod.id,
 
-              amount:
-                roundMoney(
-                  paidAmount
-                ),
+                amount:
+                  roundMoney(
+                    paidAmount
+                  ),
 
-              reference:
-                paymentReference || invoiceNo,
+                reference:
+                  paymentReference || invoiceNo,
 
-              note:
-                generatedNote,
-            },
-          });
+                note:
+                  generatedNote,
+              },
+            });
+          }
 
           // ==================================================
           // Customer Transaction
@@ -1317,6 +1337,7 @@ export async function POST(
           if (
             customerId !== null
           ) {
+            // 1. Record the invoice debit
             await tx.customertransaction.create(
               {
                 data: {
@@ -1337,6 +1358,30 @@ export async function POST(
                 },
               }
             );
+
+            // 2. If paid at counter (CASH, CARD, etc.), record payment credit
+            if (paidAmount > 0) {
+              await tx.customertransaction.create(
+                {
+                  data: {
+                    customerId,
+
+                    saleId:
+                      sale.id,
+
+                    description:
+                      `Payment for ${invoiceNo}`,
+
+                    debit: 0,
+
+                    credit:
+                      roundMoney(
+                        paidAmount
+                      ),
+                  },
+                }
+              );
+            }
           }
 
           // ==================================================
@@ -1389,7 +1434,7 @@ export async function POST(
               paymentReference || invoiceNo,
 
             paymentMethod:
-              paymentMethod.name,
+              paymentMethod?.name || (isCreditSale ? "Credit" : paymentMethodType),
 
             itemCount:
               saleItems.length,
@@ -1552,6 +1597,22 @@ export async function POST(
       // ======================================================
       // Payment
       // ======================================================
+
+      if (
+        error.message ===
+        "CUSTOMER_REQUIRED_FOR_BALANCE"
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Please select a registered customer for Credit or Partial payment sales.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
 
       if (
         error.message.startsWith(

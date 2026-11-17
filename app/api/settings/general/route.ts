@@ -4,6 +4,7 @@ import fs from "fs/promises";
 import path from "path";
 
 import { getSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 import { getStoredSettings } from "@/lib/settings";
 
 const SETTINGS_FILE = path.join(
@@ -50,6 +51,14 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 }
+      );
+    }
+
+    const allowed = await hasPermission("SETTINGS_VIEW");
+    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        { success: false, message: "Permission denied" },
+        { status: 403 }
       );
     }
 

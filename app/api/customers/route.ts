@@ -229,11 +229,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate next customer code if not provided
+    // Generate next customer code safely if not provided
     let code = typeof body.code === "string" ? body.code.trim().toUpperCase() : "";
     if (!code) {
-      const count = await prisma.customer.count();
-      code = `CUST-${String(count + 1).padStart(4, "0")}`;
+      const existingCustomers = await prisma.customer.findMany({
+        select: { code: true },
+      });
+
+      const lastNumber = existingCustomers.reduce((max, customer) => {
+        const match = /^CUST-(\d+)$/i.exec(customer.code);
+        if (!match) return max;
+        return Math.max(max, Number(match[1]));
+      }, 0);
+
+      code = `CUST-${String(lastNumber + 1).padStart(4, "0")}`;
     }
 
     // Check duplicate code

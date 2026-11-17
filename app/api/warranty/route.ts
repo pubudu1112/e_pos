@@ -35,6 +35,19 @@ export async function GET(request: Request) {
     const search = searchParams.get("search")?.trim() || "";
     const statusFilter = searchParams.get("status")?.trim().toUpperCase() || "ALL";
 
+    const now = new Date();
+
+    // Auto-sync expired status in database for active warranties past expiryDate
+    await prisma.warranty.updateMany({
+      where: {
+        status: "ACTIVE",
+        expiryDate: { lt: now },
+      },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
     // Build Prisma search condition
     const searchWhere = search
       ? {
@@ -114,8 +127,6 @@ export async function GET(request: Request) {
         createdAt: "desc",
       },
     });
-
-    const now = new Date();
 
     // Auto-sync expired status and compute days remaining
     const enriched = warranties.map((w) => {

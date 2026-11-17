@@ -8,6 +8,8 @@ import {
   ChevronRight,
   TrendingUp,
   FileSpreadsheet,
+  Users,
+  FolderTree,
 } from "lucide-react";
 
 const reportCards = [
@@ -19,6 +21,24 @@ const reportCards = [
     icon: BarChart3,
     color: "bg-blue-500/10 text-blue-600",
     badge: "Daily & Cashier",
+  },
+  {
+    title: "Customer Items & Value Report",
+    description:
+      "Customer-wise breakdown of all purchased items, quantities, invoice history, paid amounts, and total values.",
+    href: "/reports/customers",
+    icon: Users,
+    color: "bg-cyan-500/10 text-cyan-600",
+    badge: "Customer & Items",
+  },
+  {
+    title: "Category & Product Report",
+    description:
+      "Category-wise and product-wise sales quantities, revenue share, cost of goods sold, and gross profit margins.",
+    href: "/reports/category-products",
+    icon: FolderTree,
+    color: "bg-indigo-500/10 text-indigo-600",
+    badge: "Category & Product",
   },
   {
     title: "Financial Reports",

@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Banknote,
   BriefcaseBusiness,
   CheckCircle2,
+  CreditCard,
   Edit2,
   Eye,
   Loader2,
@@ -126,6 +128,71 @@ export default function CustomersClient() {
     isActive: true,
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Due Payment Modal state
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentCustomer, setPaymentCustomer] = useState<{ id: number; name: string; code: string; balanceDue: number } | null>(null);
+  const [paymentSale, setPaymentSale] = useState<{ id: number; invoiceNo: string; balanceAmount: number } | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"CASH" | "CARD" | "BANK_TRANSFER" | "ONLINE">("CASH");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
+  const [submittingPayment, setSubmittingPayment] = useState(false);
+
+  const openPaymentModal = (
+    customer: { id: number; name: string; code: string; balanceDue: number },
+    sale?: { id: number; invoiceNo: string; balanceAmount: number }
+  ) => {
+    setPaymentCustomer(customer);
+    setPaymentSale(sale || null);
+    setPaymentAmount(sale ? String(sale.balanceAmount) : String(Math.max(0, customer.balanceDue)));
+    setPaymentMethod("CASH");
+    setPaymentReference("");
+    setPaymentNote(sale ? `Payment for invoice ${sale.invoiceNo}` : "Settlement of customer due balance");
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleRecordPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!paymentCustomer) return;
+
+    const parsedAmount = parseFloat(paymentAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error("Please enter a valid payment amount greater than 0");
+      return;
+    }
+
+    try {
+      setSubmittingPayment(true);
+      const res = await fetch(`/api/customers/${paymentCustomer.id}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parsedAmount,
+          paymentMethod,
+          reference: paymentReference.trim() || undefined,
+          note: paymentNote.trim() || undefined,
+          saleId: paymentSale?.id || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to record payment");
+      }
+
+      toast.success(data.message || "Payment recorded successfully!");
+      setIsPaymentModalOpen(false);
+      loadCustomers();
+      if (viewingCustomerId === paymentCustomer.id) {
+        openCustomerDetail(paymentCustomer.id);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to record payment");
+    } finally {
+      setSubmittingPayment(false);
+    }
+  };
 
   // Fetch customers
   const loadCustomers = useCallback(async () => {
@@ -484,6 +551,16 @@ export default function CustomersClient() {
 
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {c.balanceDue > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => openPaymentModal(c)}
+                            className="rounded-lg p-1.5 text-emerald-600 hover:bg-emerald-50 transition"
+                            title="Pay / Settle Due Balance"
+                          >
+                            <Banknote className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => openCustomerDetail(c.id)}
@@ -703,14 +780,27 @@ export default function CustomersClient() {
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 
                       {/* Balance Due */}
-                      <div className="rounded-xl border border-rose-100 bg-rose-50/60 p-3">
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
-                          Balance Due
-                        </p>
+                      <div className="rounded-xl border border-rose-100 bg-rose-50/60 p-3 flex flex-col justify-between">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wide text-rose-500">
+                            Balance Due
+                          </p>
 
-                        <p className="mt-1 text-base font-black text-rose-600">
-                          {formatRs(customerDetail.balanceDue)}
-                        </p>
+                          <p className="mt-1 text-base font-black text-rose-600">
+                            {formatRs(customerDetail.balanceDue)}
+                          </p>
+                        </div>
+
+                        {customerDetail.balanceDue > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => openPaymentModal(customerDetail)}
+                            className="mt-2 inline-flex items-center justify-center gap-1 rounded-lg bg-rose-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-rose-700 transition shadow-sm"
+                          >
+                            <Banknote className="h-3.5 w-3.5" />
+                            <span>Pay Due</span>
+                          </button>
+                        )}
                       </div>
 
                       {/* Credit Limit */}
@@ -882,9 +972,25 @@ export default function CustomersClient() {
                                   {formatRs(s.balanceAmount)}
                                 </td>
                                 <td className="p-2.5 text-center">
-                                  <span className="rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                                    {s.paymentStatus}
-                                  </span>
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${
+                                      s.paymentStatus === "PAID"
+                                        ? "bg-emerald-50 text-emerald-700"
+                                        : "bg-amber-50 text-amber-700"
+                                    }`}>
+                                      {s.paymentStatus}
+                                    </span>
+                                    {s.balanceAmount > 0 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => openPaymentModal(customerDetail, s)}
+                                        className="rounded bg-rose-50 border border-rose-200 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition shadow-xs"
+                                        title={`Pay Rs. ${s.balanceAmount} due on ${s.invoiceNo}`}
+                                      >
+                                        Pay
+                                      </button>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -954,6 +1060,163 @@ export default function CustomersClient() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Receive Due Payment Modal */}
+      {isPaymentModalOpen && paymentCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/80">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
+                  <Banknote className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">
+                    Receive Customer Payment
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {paymentCustomer.name} ({paymentCustomer.code})
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPaymentModalOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 transition"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRecordPayment} className="p-6 space-y-4">
+              {/* Due Info Card */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500 font-medium">Customer Total Due:</span>
+                  <span className="font-bold text-rose-600">{formatRs(paymentCustomer.balanceDue)}</span>
+                </div>
+                {paymentSale && (
+                  <div className="flex justify-between items-center text-xs border-t border-slate-200 pt-2">
+                    <span className="text-slate-500 font-medium">Specific Invoice ({paymentSale.invoiceNo}):</span>
+                    <span className="font-bold text-slate-900">{formatRs(paymentSale.balanceAmount)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Amount */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">Payment Amount (Rs.) *</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (paymentSale) {
+                        setPaymentAmount(String(paymentSale.balanceAmount));
+                      } else {
+                        setPaymentAmount(String(Math.max(0, paymentCustomer.balanceDue)));
+                      }
+                    }}
+                    className="text-[11px] font-bold text-blue-600 hover:underline"
+                  >
+                    Pay Full Due
+                  </button>
+                </div>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  min="0.01"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-base font-bold text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">Payment Method *</label>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {(
+                    [
+                      { id: "CASH", label: "Cash" },
+                      { id: "CARD", label: "Card" },
+                      { id: "BANK_TRANSFER", label: "Bank" },
+                      { id: "ONLINE", label: "QR / Online" },
+                    ] as const
+                  ).map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`rounded-xl border py-2 px-1 text-xs font-bold text-center transition ${
+                        paymentMethod === m.id
+                          ? "border-emerald-600 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600"
+                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reference */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Transaction Reference / Slip No (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={paymentReference}
+                  onChange={(e) => setPaymentReference(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  placeholder="e.g. Bank slip, Cheque no, Card ref"
+                />
+              </div>
+
+              {/* Note */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Payment Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={paymentNote}
+                  onChange={(e) => setPaymentNote(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  placeholder="e.g. Settle credit balance"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentModalOpen(false)}
+                  className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingPayment}
+                  className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white hover:bg-emerald-700 transition disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-sm"
+                >
+                  {submittingPayment ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Confirm Payment</span>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -65,7 +65,7 @@ model customer {
   openingBalance      Decimal               @default(0.00) @db.Decimal(12, 2)
   isActive            Boolean               @default(true)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @updatedAt
   customertransaction customertransaction[]
   job                 job[]
   sale                sale[]
@@ -105,7 +105,7 @@ model expense {
   paymentMethodId Int?
   status          expense_status  @default(ACTIVE)
   createdAt       DateTime        @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime        @updatedAt
   expensecategory expensecategory @relation(fields: [categoryId], references: [id], map: "Expense_categoryId_fkey")
   user            User            @relation(fields: [createdById], references: [id], map: "Expense_createdById_fkey")
   paymentmethod   paymentmethod?  @relation(fields: [paymentMethodId], references: [id], map: "Expense_paymentMethodId_fkey")
@@ -124,7 +124,7 @@ model expensecategory {
   description String?   @db.VarChar(255)
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime  @updatedAt
   expense     expense[]
 
   @@map("ExpenseCategory")
@@ -153,7 +153,7 @@ model job {
   createdById                 Int
   assignedToId                Int?
   createdAt                   DateTime           @default(now())
-  updatedAt                   DateTime
+  updatedAt                   DateTime           @updatedAt
   user_job_assignedToIdTouser User?              @relation("job_assignedToIdTouser", fields: [assignedToId], references: [id], map: "Job_assignedToId_fkey")
   user_job_createdByIdTouser  User               @relation("job_createdByIdTouser", fields: [createdById], references: [id], map: "Job_createdById_fkey")
   customer                    customer?          @relation(fields: [customerId], references: [id], map: "Job_customerId_fkey")
@@ -240,7 +240,7 @@ model paymentmethod {
   type            paymentmethod_type
   isActive        Boolean            @default(true)
   createdAt       DateTime           @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime           @updatedAt
   expense         expense[]
   payment         payment[]
   purchasepayment purchasepayment[]
@@ -277,7 +277,7 @@ model product {
   warrantyMonths        Int?                   @default(0)
   status                product_status         @default(ACTIVE)
   createdAt             DateTime               @default(now())
-  updatedAt             DateTime
+  updatedAt             DateTime               @updatedAt
   brand                 brand?                 @relation(fields: [brandId], references: [id], map: "Product_brandId_fkey")
   category              category               @relation(fields: [categoryId], references: [id], map: "Product_categoryId_fkey")
   tax                   tax?                   @relation(fields: [taxId], references: [id], map: "Product_taxId_fkey")
@@ -312,7 +312,7 @@ model purchase {
   balanceAmount       Decimal               @default(0.00) @db.Decimal(12, 2)
   status              purchase_status       @default(PENDING)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @updatedAt
   user                User                  @relation(fields: [createdById], references: [id], map: "Purchase_createdById_fkey")
   supplier            supplier              @relation(fields: [supplierId], references: [id], map: "Purchase_supplierId_fkey")
   purchaseitem        purchaseitem[]
@@ -364,7 +364,7 @@ model role {
   description    String?          @db.VarChar(255)
   isActive       Boolean          @default(true)
   createdAt      DateTime         @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime         @updatedAt
   rolepermission rolepermission[]
   user           User[]
 
@@ -400,7 +400,7 @@ model sale {
   status              sale_status           @default(COMPLETED)
   paymentStatus       sale_paymentStatus    @default(PAID)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @updatedAt
   customertransaction customertransaction[]
   job                 job[]
   payment             payment[]
@@ -453,7 +453,7 @@ model service {
 
   status    service_status @default(ACTIVE)
   createdAt DateTime       @default(now())
-  updatedAt DateTime
+  updatedAt DateTime       @updatedAt
 
   jobitem         jobitem[]
   saleitem        saleitem[]
@@ -500,7 +500,7 @@ model servicecategory {
   description String?   @db.VarChar(255)
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime
+  updatedAt   DateTime  @updatedAt
   service     service[]
 
   @@map("ServiceCategory")
@@ -525,7 +525,7 @@ model stock {
   productId        Int      @unique(map: "Stock_productId_key")
   quantity         Decimal  @default(0.000) @db.Decimal(12, 3)
   reservedQuantity Decimal  @default(0.000) @db.Decimal(12, 3)
-  updatedAt        DateTime
+  updatedAt        DateTime @updatedAt
   product          product  @relation(fields: [productId], references: [id], onDelete: Cascade, map: "Stock_productId_fkey")
 
   @@map("Stock")
@@ -582,7 +582,7 @@ model supplier {
   openingBalance      Decimal               @default(0.00) @db.Decimal(12, 2)
   isActive            Boolean               @default(true)
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime
+  updatedAt           DateTime              @updatedAt
   purchase            purchase[]
   job                 job[]
   suppliertransaction suppliertransaction[]
@@ -646,7 +646,7 @@ model User {
   roleId                     Int
   lastLoginAt                DateTime?
   createdAt                  DateTime        @default(now())
-  updatedAt                  DateTime
+  updatedAt                  DateTime        @updatedAt
   auditLogs                  AuditLog[]
   notifications              Notification[]
   expense                    expense[]

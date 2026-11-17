@@ -217,6 +217,18 @@ const reportMenu: MenuGroup = {
       permission: "REPORT_SALES_VIEW",
     },
     {
+      label: "Customer Report",
+      href: "/reports/customers",
+      icon: Users,
+      permission: "REPORT_SALES_VIEW",
+    },
+    {
+      label: "Category & Products",
+      href: "/reports/category-products",
+      icon: FolderTree,
+      permission: "REPORT_SALES_VIEW",
+    },
+    {
       label: "Financial Reports",
       href: "/reports/financial",
       icon: DollarSign,

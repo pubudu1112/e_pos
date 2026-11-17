@@ -75,7 +75,7 @@ export async function POST(request: Request) {
 
     await createSession(user.id);
 
-    prisma.auditLog.create({
+    await prisma.auditLog.create({
       data: {
         userId: user.id,
         action: "LOGIN",

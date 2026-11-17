@@ -73,7 +73,7 @@ ${JSON.stringify(reportData)}
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_REPORT_MODEL || "gpt-5.6-luna",
+        model: process.env.OPENAI_REPORT_MODEL || "gpt-4o-mini",
         input: prompt,
         max_output_tokens: 1200,
       }),

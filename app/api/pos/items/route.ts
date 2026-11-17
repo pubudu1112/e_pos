@@ -208,8 +208,7 @@ export async function GET(request: Request) {
       },
     });
     
-  }
-   catch (error) {
+  } catch (error) {
     console.error("GET POS ITEMS ERROR:", error);
 
     return NextResponse.json(
@@ -219,13 +218,5 @@ export async function GET(request: Request) {
       },
       { status: 500 }
     );
-
-    const dbInfo = await prisma.$queryRaw<
-  Array<{ databaseName: string }>
->`SELECT DATABASE() AS databaseName`;
-
-console.log("POS CONNECTED DATABASE:", dbInfo);
   }
-  
-  
 }

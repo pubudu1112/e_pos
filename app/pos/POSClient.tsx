@@ -44,6 +44,7 @@ import React from "react";
 import PDFCounterModal, {
   type PDFCounterCartEntry,
 } from "@/components/pos/PDFCounterModal";
+import ThemeToggle from "@/components/ThemeToggle";
 
 // =========================================================
 // TYPES
@@ -144,6 +145,8 @@ type CompletedSaleBill = {
   tax: number;
   discount: number;
   total: number;
+  paidAmount: number;
+  balanceAmount: number;
   cashTendered: number;
   changeAmount: number;
   reference?: string;
@@ -175,13 +178,13 @@ function formatRs(amount: number): string {
 // =========================================================
 
 const DEFAULT_CATEGORY_STYLE = {
-  bg: "bg-slate-50",
-  text: "text-slate-700",
-  border: "border-slate-200",
-  badgeBg: "bg-slate-100 text-slate-700",
-  activeBg: "bg-slate-900",
+  bg: "bg-slate-50 dark:bg-slate-800/60",
+  text: "text-slate-700 dark:text-slate-200",
+  border: "border-slate-200 dark:border-slate-700",
+  badgeBg: "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200",
+  activeBg: "bg-slate-900 dark:bg-slate-800",
   activeText: "text-white",
-  activeRing: "ring-slate-900",
+  activeRing: "ring-slate-900 dark:ring-slate-800",
 };
 
 function renderCategoryIcon(
@@ -929,15 +932,23 @@ export default function POSClient() {
       toast.warning("Cart is empty. Add products to order first.");
       return;
     }
-    // Pre-fill cash tendered with exact total
-    setCashTenderedInput(total.toString());
+    // Pre-fill cash tendered with exact total (or 0 if Credit is already selected)
+    setCashTenderedInput(paymentMethod === "CREDIT" ? "0" : total.toString());
     setIsMobileCartOpen(false);
     setIsPaymentModalOpen(true);
   };
 
   const cashTendered = useMemo(() => {
-    return Number(cashTenderedInput) || 0;
+    return Math.max(0, Number(cashTenderedInput) || 0);
   }, [cashTenderedInput]);
+
+  const paidNowAmount = useMemo(() => {
+    return Math.min(cashTendered, total);
+  }, [cashTendered, total]);
+
+  const remainingBalanceAmount = useMemo(() => {
+    return Math.max(0, total - paidNowAmount);
+  }, [total, paidNowAmount]);
 
   const changeAmount = useMemo(() => {
     if (paymentMethod !== "CASH") return 0;
@@ -950,9 +961,9 @@ export default function POSClient() {
       return;
     }
 
-    if (paymentMethod === "CASH" && cashTendered < total) {
+    if (remainingBalanceAmount > 0 && !selectedCustomerId) {
       toast.error(
-        `Cash tendered (${formatRs(cashTendered)}) is less than total amount (${formatRs(total)}).`
+        "Please select a registered customer to put the remaining balance on credit."
       );
       return;
     }
@@ -964,8 +975,9 @@ export default function POSClient() {
         customerId: selectedCustomerId,
         paymentMethod,
         discount: discountAmount,
-        cashTendered: paymentMethod === "CASH" ? cashTendered : total,
-        changeAmount: paymentMethod === "CASH" ? changeAmount : 0,
+        paidAmount: paidNowAmount,
+        cashTendered,
+        changeAmount,
         paymentReference: paymentReference.trim(),
         paymentNote: paymentNote.trim(),
         items: cart.map((i) => ({
@@ -1029,8 +1041,10 @@ export default function POSClient() {
         tax: Number(result.data?.tax ?? taxTotal),
         discount: Number(result.data?.discount ?? discountAmount),
         total: Number(result.data?.total ?? total),
-        cashTendered: paymentMethod === "CASH" ? cashTendered : total,
-        changeAmount: paymentMethod === "CASH" ? changeAmount : 0,
+        paidAmount: Number(result.data?.paidAmount ?? paidNowAmount),
+        balanceAmount: Number(result.data?.balanceAmount ?? remainingBalanceAmount),
+        cashTendered,
+        changeAmount,
         reference: paymentReference || undefined,
         note: paymentNote || undefined,
         warranties: Array.isArray(result.warranties)
@@ -1346,8 +1360,19 @@ export default function POSClient() {
               <span>NET TOTAL</span>
               <span>${formatRs(bill.total)}</span>
             </div>
-            ${bill.paymentMethod === "CASH"
+            ${bill.balanceAmount > 0
           ? `
+                <div class="summary-row" style="margin-top: 4px;">
+                  <span>Paid Amount</span>
+                  <span>${formatRs(bill.paidAmount)}</span>
+                </div>
+                <div class="summary-row" style="color: #c00; font-weight: bold;">
+                  <span>Balance Due (Credit)</span>
+                  <span>${formatRs(bill.balanceAmount)}</span>
+                </div>
+              `
+          : bill.paymentMethod === "CASH"
+            ? `
                 <div class="summary-row" style="margin-top: 4px;">
                   <span>Cash Tendered</span>
                   <span>${formatRs(bill.cashTendered)}</span>
@@ -1357,7 +1382,7 @@ export default function POSClient() {
                   <span><strong>${formatRs(bill.changeAmount)}</strong></span>
                 </div>
               `
-          : ""
+            : ""
         }
           </div>
 
@@ -1648,11 +1673,11 @@ export default function POSClient() {
   // =======================================================
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-100 font-sans text-slate-800 antialiased">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased">
       {/* ================================================= */}
       {/* 1. TOP NAVIGATION / HEADER (RESPONSIVE) */}
       {/* ================================================= */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 sm:px-4 lg:px-6 shadow-sm gap-2">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 sm:px-4 lg:px-6 shadow-sm gap-2">
         {/* Left: Brand & POS Title */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20">
@@ -1660,14 +1685,14 @@ export default function POSClient() {
           </div>
           <div className="hidden xs:block">
             <div className="flex items-center gap-1.5">
-              <h1 className="text-xs sm:text-base font-black tracking-tight text-slate-900">
+              <h1 className="text-xs sm:text-base font-black tracking-tight text-slate-900 dark:text-white">
                 Pubudu Hub
               </h1>
-              <span className="rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-emerald-800">
+              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
                 POS
               </span>
             </div>
-            <p className="hidden md:block text-[11px] font-medium text-slate-500">
+            <p className="hidden md:block text-[11px] font-medium text-slate-500 dark:text-slate-400">
               Sri Lankan Currency (Rs.) • Fast Billing Terminal
             </p>
           </div>
@@ -1676,7 +1701,7 @@ export default function POSClient() {
         {/* Center: Search & Barcode Input */}
         <div className="mx-1 sm:mx-4 max-w-xl flex-1 min-w-0">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               ref={searchInputRef}
               type="text"
@@ -1684,13 +1709,13 @@ export default function POSClient() {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleSearchKeyDown}
               placeholder="Search product, barcode or code..."
-              className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 sm:pl-10 pr-8 text-xs font-medium text-slate-900 transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 pl-8 sm:pl-10 pr-8 text-xs font-medium text-slate-900 dark:text-white transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1703,7 +1728,7 @@ export default function POSClient() {
             <button
               type="button"
               onClick={() => setIsBillModalOpen(true)}
-              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-sm transition hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
               title="View or print the last completed bill"
             >
               <Receipt className="h-4 w-4" />
@@ -1715,7 +1740,7 @@ export default function POSClient() {
           <button
             type="button"
             onClick={() => setIsCalculatorOpen(true)}
-            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100"
+            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-sm transition hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
             title="Open Calculator"
           >
             <Calculator className="h-4 w-4" />
@@ -1726,18 +1751,21 @@ export default function POSClient() {
             <button
               type="button"
               onClick={() => setIsPDFCounterOpen(true)}
-              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-2.5 sm:px-3.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100"
+              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-blue-700 dark:text-blue-300 shadow-sm transition hover:bg-blue-100 dark:hover:bg-blue-900/40"
             >
               <FileText className="h-4 w-4" />
               <span>PDF Counter</span>
             </button>
           )}
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           <button
             type="button"
             onClick={loadItems}
             disabled={loading}
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-700"
             title="Refresh Catalog"
           >
             <RefreshCw
@@ -1748,7 +1776,7 @@ export default function POSClient() {
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
-            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl bg-slate-900 px-3 sm:px-4 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
+            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl bg-slate-900 dark:bg-slate-800 dark:border dark:border-slate-700 px-3 sm:px-4 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800 dark:hover:bg-slate-700"
           >
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -1763,12 +1791,12 @@ export default function POSClient() {
         {/* ================================================= */}
         {/* LEFT COLUMN: CATEGORIES RESOURCE SELECTOR */}
         {/* ================================================= */}
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white md:flex">
-          <div className="border-b border-slate-100 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 md:flex">
+          <div className="border-b border-slate-100 dark:border-slate-800 p-4">
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
               Resource Categories
             </p>
-            <h2 className="mt-0.5 text-xs font-bold text-slate-800">
+            <h2 className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200">
               Pubudu Creative Services
             </h2>
           </div>
@@ -1779,15 +1807,15 @@ export default function POSClient() {
               type="button"
               onClick={() => setSelectedCategory("All")}
               className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${selectedCategory === "All"
-                ? "bg-slate-900 text-white shadow-md shadow-slate-900/10"
-                : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                ? "bg-slate-900 dark:bg-slate-800 text-white shadow-md shadow-slate-900/10"
+                : "bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
                 }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${selectedCategory === "All"
                     ? "bg-white/20 text-white"
-                    : "bg-white text-slate-700 shadow-sm"
+                    : "bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm"
                     }`}
                 >
                   <Layers className="h-4 w-4" />
@@ -1797,7 +1825,7 @@ export default function POSClient() {
                   <p
                     className={`truncate text-[10px] ${selectedCategory === "All"
                       ? "text-slate-300"
-                      : "text-slate-400"
+                      : "text-slate-400 dark:text-slate-500"
                       }`}
                   >
                     Entire Catalog
@@ -1807,14 +1835,14 @@ export default function POSClient() {
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${selectedCategory === "All"
                   ? "bg-white/20 text-white"
-                  : "bg-white text-slate-700 shadow-sm"
+                  : "bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm"
                   }`}
               >
                 {items.length}
               </span>
             </button>
 
-            {/* The 7 Categories */}
+            {/* The Categories */}
             {categoryList.map((cat) => {
               const isSelected = selectedCategory === cat.key;
               return (
@@ -1824,7 +1852,7 @@ export default function POSClient() {
                   onClick={() => setSelectedCategory(cat.key)}
                   className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${isSelected
                     ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/15"
-                    : "border border-slate-100 bg-white text-slate-700 hover:border-slate-200 hover:bg-slate-50"
+                    : "border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                     }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -1839,7 +1867,7 @@ export default function POSClient() {
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold">{cat.name}</p>
                       <p
-                        className={`truncate text-[10px] ${isSelected ? "text-emerald-100" : "text-slate-400"
+                        className={`truncate text-[10px] ${isSelected ? "text-emerald-100" : "text-slate-400 dark:text-slate-500"
                           }`}
                       >
                         {cat.description}
@@ -1859,8 +1887,8 @@ export default function POSClient() {
             })}
           </div>
 
-          <div className="border-t border-slate-100 bg-slate-50/70 p-3 text-center">
-            <p className="text-[10px] font-medium text-slate-400">
+          <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 p-3 text-center">
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
               Sri Lankan POS Currency • LKR (Rs.)
             </p>
           </div>
@@ -1869,11 +1897,11 @@ export default function POSClient() {
         {/* ================================================= */}
         {/* CENTER COLUMN: PRODUCT CATALOG */}
         {/* ================================================= */}
-        <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-slate-50/50 pb-24 lg:pb-0">
+        <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/60 pb-24 lg:pb-0">
           {/* Catalog Header Bar */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/70 px-4 py-3 backdrop-blur-sm lg:px-6">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm lg:px-6">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 {selectedCategory === "All"
                   ? <Layers className="h-4 w-4" />
                   : renderCategoryIcon(
@@ -1881,30 +1909,30 @@ export default function POSClient() {
                     "h-4 w-4"
                   )}
               </span>
-              <span className="text-sm font-black text-slate-800">
+              <span className="text-sm font-black text-slate-800 dark:text-slate-100">
                 {selectedCategory === "All"
                   ? "All Products & Services"
                   : categoryList.find((cat) => cat.key === selectedCategory)?.name || "Category"}
               </span>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                 {filteredItems.length} items available
               </span>
             </div>
             {search && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Filtering by &quot;{search}&quot;
               </p>
             )}
           </div>
 
           {/* Mobile Horizontal Category Pills (Visible on Mobile & Tablet) */}
-          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 scrollbar-none">
+          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 scrollbar-none">
             <button
               type="button"
               onClick={() => setSelectedCategory("All")}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${selectedCategory === "All"
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                ? "bg-slate-900 dark:bg-slate-800 text-white shadow-sm"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
             >
               <Layers className="h-3 w-3" />
@@ -1919,7 +1947,7 @@ export default function POSClient() {
                   onClick={() => setSelectedCategory(cat.key)}
                   className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${isSelected
                     ? "bg-emerald-600 text-white shadow-sm"
-                    : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 hover:opacity-90`
+                    : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 dark:border-slate-700 hover:opacity-90`
                     }`}
                 >
                   {renderCategoryIcon(cat.type, "h-3 w-3")}
@@ -1933,21 +1961,21 @@ export default function POSClient() {
           {/* Product Grid Area */}
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
             {loading ? (
-              <div className="flex h-96 flex-col items-center justify-center text-slate-400">
+              <div className="flex h-96 flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                 <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
-                <p className="mt-3 text-xs font-bold text-slate-600">
+                <p className="mt-3 text-xs font-bold text-slate-600 dark:text-slate-400">
                   Loading POS items from database...
                 </p>
               </div>
             ) : filteredItems.length === 0 ? (
               <div className="flex h-96 flex-col items-center justify-center text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">
                   <Search className="h-8 w-8" />
                 </div>
-                <h3 className="mt-3 text-sm font-bold text-slate-800">
+                <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">
                   No items found
                 </h3>
-                <p className="mt-1 max-w-sm text-xs text-slate-400">
+                <p className="mt-1 max-w-sm text-xs text-slate-400 dark:text-slate-500">
                   Try another keyword, or switch to a different category above.
                 </p>
               </div>
@@ -1984,17 +2012,17 @@ export default function POSClient() {
                       {index === 0 && isFavourite && (
                         <div className="col-span-full flex items-center gap-2 py-1">
                           <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                          <h3 className="text-sm font-bold text-slate-700">
+                          <h3 className="text-sm font-bold text-slate-700 dark:text-slate-200">
                             Favourite Resources
                           </h3>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-slate-400 dark:text-slate-500">
                             ({favouriteKeys.filter((key) =>
                               filteredItems.some(
                                 (i) => `${i.type}-${i.id}` === key
                               )
                             ).length})
                           </span>
-                          <span className="ml-auto text-[10px] font-medium text-emerald-700">
+                          <span className="ml-auto text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
                             Shortcuts: 1–9, 0
                           </span>
                         </div>
@@ -2003,10 +2031,10 @@ export default function POSClient() {
                       {/* All Products Section Heading */}
                       {!isFavourite && previousWasFavourite && (
                         <>
-                          <div className="col-span-full my-2 border-t border-slate-300" />
+                          <div className="col-span-full my-2 border-t border-slate-300 dark:border-slate-800" />
 
                           <div className="col-span-full py-1">
-                            <h3 className="text-sm font-bold text-slate-600">
+                            <h3 className="text-sm font-bold text-slate-600 dark:text-slate-400">
                               All Products & Services
                             </h3>
                           </div>
@@ -2016,11 +2044,11 @@ export default function POSClient() {
                       {/* Product Card */}
                       <div
                         onClick={() => !isOutOfStock && addToCart(item)}
-                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
-                          ? "cursor-not-allowed opacity-60 border-slate-200"
-                          : "cursor-pointer border-slate-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md"
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
+                          ? "cursor-not-allowed opacity-60 border-slate-200 dark:border-slate-800"
+                          : "cursor-pointer border-slate-200 dark:border-slate-800 hover:-translate-y-0.5 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md"
                           } ${inCartQty > 0
-                            ? "ring-2 ring-emerald-500/80 border-emerald-500"
+                            ? "ring-2 ring-emerald-500/80 border-emerald-500 dark:border-emerald-500"
                             : ""
                           }`}
                       >
@@ -2045,8 +2073,8 @@ export default function POSClient() {
                               toggleFavourite(item);
                             }}
                             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition ${isFavourite
-                              ? "border-amber-300 bg-amber-50 text-amber-500"
-                              : "border-slate-200 bg-white text-slate-400 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-500"
+                              ? "border-amber-300 dark:border-amber-600/70 bg-amber-50 dark:bg-amber-950/50 text-amber-500"
+                              : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-400 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-500"
                               }`}
                             title={
                               isFavourite
@@ -2074,7 +2102,7 @@ export default function POSClient() {
                                 addToCart(item);
                               }}
                               disabled={isOutOfStock}
-                              className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50 px-1.5 text-[10px] font-black text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:cursor-not-allowed disabled:opacity-50"
                               title={`Add ${item.name} to cart (keyboard shortcut ${shortcutNumber === 10 ? "0" : shortcutNumber})`}
                               aria-label={`Add ${item.name} to cart using shortcut ${shortcutNumber}`}
                             >
@@ -2093,17 +2121,17 @@ export default function POSClient() {
 
                         {/* Product Name & Code */}
                         <div className="mt-3">
-                          <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 group-hover:text-emerald-700">
+                          <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
                             {item.name}
                           </h4>
 
                           {item.brand?.trim() && (
-                            <p className="mt-1 text-[11px] font-bold text-blue-600">
+                            <p className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
                               {item.brand}
                             </p>
                           )}
 
-                          <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400">
+                          <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400 dark:text-slate-500">
                             <span>{item.code}</span>
                             {item.unit && <span>• {item.unit}</span>}
                           </div>
@@ -2113,15 +2141,15 @@ export default function POSClient() {
                         {item.type === "PRODUCT" && item.stock !== null && (
                           <div className="mt-2 text-[10px]">
                             {isOutOfStock ? (
-                              <span className="font-bold text-rose-600">
+                              <span className="font-bold text-rose-600 dark:text-rose-400">
                                 Out of stock
                               </span>
                             ) : isLowStock ? (
-                              <span className="font-medium text-amber-600">
+                              <span className="font-medium text-amber-600 dark:text-amber-400">
                                 Low stock: {item.stock} {item.unit}
                               </span>
                             ) : (
-                              <span className="text-slate-400">
+                              <span className="text-slate-400 dark:text-slate-500">
                                 Stock: {item.stock} {item.unit}
                               </span>
                             )}
@@ -2129,12 +2157,12 @@ export default function POSClient() {
                         )}
 
                         {/* Price and Add Button */}
-                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5">
+                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-2.5">
                           <div>
-                            <p className="text-xs font-black text-slate-900">
+                            <p className="text-xs font-black text-slate-900 dark:text-slate-100">
                               {formatRs(item.price)}
                             </p>
-                            <p className="text-[9px] text-slate-400">
+                            <p className="text-[9px] text-slate-400 dark:text-slate-500">
                               per {item.unit}
                             </p>
                           </div>
@@ -2147,10 +2175,10 @@ export default function POSClient() {
                                 e.stopPropagation();
                                 openPriceEditModal(item);
                               }}
-                              className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-[10px] font-bold text-slate-700 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-800 disabled:opacity-40"
+                              className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 disabled:opacity-40"
                               title="Edit unit price for this product before selling"
                             >
-                              <Pencil className="h-3 w-3 text-emerald-600" />
+                              <Pencil className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                               <span className="hidden sm:inline">Price</span>
                             </button>
 
@@ -2162,7 +2190,7 @@ export default function POSClient() {
                                 addToCart(item);
                               }}
                               className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
-                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
                                 : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
                                 }`}
                               title="Add to order"
@@ -2184,13 +2212,13 @@ export default function POSClient() {
         {/* ================================================= */}
         {/* RIGHT COLUMN: CURRENT ORDER & BILL SUMMARY */}
         {/* ================================================= */}
-        <aside className="hidden lg:flex w-80 shrink-0 flex-col border-l border-slate-200 bg-white sm:w-96 lg:w-[410px]">
+        <aside className="hidden lg:flex w-80 shrink-0 flex-col border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sm:w-96 lg:w-[410px]">
           {/* Header */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3.5">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-slate-800" />
-              <h2 className="text-sm font-black text-slate-900">Current Order</h2>
-              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800">
+              <ShoppingCart className="h-5 w-5 text-slate-800 dark:text-slate-200" />
+              <h2 className="text-sm font-black text-slate-900 dark:text-slate-100">Current Order</h2>
+              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300">
                 {totalItemsCount} items
               </span>
             </div>
@@ -2199,7 +2227,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={clearCart}
-                className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-700"
+                className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300"
                 title="Clear current cart"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -2209,7 +2237,7 @@ export default function POSClient() {
           </div>
 
           {/* Customer Selection Bar */}
-          <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 bg-slate-50/60 p-3">
+          <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 p-3">
             <div
               className="relative flex-1"
               onBlur={(event) => {
@@ -2223,7 +2251,7 @@ export default function POSClient() {
                 }
               }}
             >
-              <UserRound className="absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <UserRound className="absolute left-3 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
 
               <input
                 type="text"
@@ -2235,38 +2263,38 @@ export default function POSClient() {
                 onFocus={() => setIsCustomerDropdownOpen(true)}
                 placeholder={selectedCustomerName}
                 autoComplete="off"
-                className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-8 pr-8 text-xs font-semibold text-slate-700 outline-none transition placeholder:text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-8 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none transition placeholder:text-slate-700 dark:placeholder:text-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40"
               />
 
               {customerSearch ? (
                 <button
                   type="button"
                   onClick={() => setCustomerSearch("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               ) : (
-                <Search className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Search className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               )}
 
               {isCustomerDropdownOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
+                <div className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-1 shadow-xl">
 
                   {/* Walk-in Customer */}
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleCustomerSelect(null)}
-                    className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 ${selectedCustomerId === null
-                        ? "bg-emerald-50 font-bold text-emerald-700"
-                        : "text-slate-700"
+                    className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-slate-700 ${selectedCustomerId === null
+                        ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
+                        : "text-slate-700 dark:text-slate-200"
                       }`}
                   >
                     Walk-in Customer
                   </button>
 
-                  <div className="my-1 border-t border-slate-100" />
+                  <div className="my-1 border-t border-slate-100 dark:border-slate-700" />
 
                   {/* Filtered Customers */}
                   {filteredCustomers.length > 0 ? (
@@ -2276,23 +2304,23 @@ export default function POSClient() {
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleCustomerSelect(customer.id)}
-                        className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 ${selectedCustomerId === customer.id
-                            ? "bg-emerald-50 font-bold text-emerald-700"
-                            : "text-slate-700"
+                        className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-slate-700 ${selectedCustomerId === customer.id
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
+                            : "text-slate-700 dark:text-slate-200"
                           }`}
                       >
                         <span className="block font-semibold">
                           {customer.name}
                         </span>
 
-                        <span className="mt-0.5 block text-[10px] text-slate-400">
+                        <span className="mt-0.5 block text-[10px] text-slate-400 dark:text-slate-500">
                           {customer.code}
                           {customer.phone ? ` • ${customer.phone}` : ""}
                         </span>
                       </button>
                     ))
                   ) : (
-                    <p className="px-3 py-4 text-center text-xs text-slate-400">
+                    <p className="px-3 py-4 text-center text-xs text-slate-400 dark:text-slate-500">
                       No customers found
                     </p>
                   )}
@@ -2303,7 +2331,7 @@ export default function POSClient() {
             <button
               type="button"
               onClick={() => setIsNewCustomerModalOpen(true)}
-              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-700 hover:text-emerald-700 dark:hover:text-emerald-300"
               title="Add New Customer"
             >
               <UserPlus className="h-3.5 w-3.5" />
@@ -2312,16 +2340,16 @@ export default function POSClient() {
           </div>
 
           {/* Cart Items List */}
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
             {cart.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-300">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600">
                   <ShoppingCart className="h-7 w-7" />
                 </div>
-                <h3 className="mt-3 text-sm font-bold text-slate-700">
+                <h3 className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">
                   Cart is empty
                 </h3>
-                <p className="mt-1 text-xs text-slate-400 max-w-[200px]">
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 max-w-[200px]">
                   Select products from any category to build the customer&apos;s bill.
                 </p>
               </div>
@@ -2331,16 +2359,16 @@ export default function POSClient() {
                 const isEditingThisPrice = editingPriceKey === itemKey;
 
                 return (
-                  <div key={itemKey} className="p-3.5 hover:bg-slate-50/50">
+                  <div key={itemKey} className="p-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="min-w-0">
-                          <p className="truncate text-xs font-bold text-slate-900">
+                          <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
                             {item.name}
                           </p>
 
                           {item.brand?.trim() && (
-                            <p className="mt-0.5 text-[10px] font-semibold text-blue-600">
+                            <p className="mt-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                               Brand: {item.brand}
                             </p>
                           )}
@@ -2348,7 +2376,7 @@ export default function POSClient() {
                         {/* Inline Unit Price Editor */}
                         {isEditingThisPrice ? (
                           <div className="mt-1.5 flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold text-slate-500">Rs.</span>
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Rs.</span>
                             <input
                               type="number"
                               min="0"
@@ -2360,7 +2388,7 @@ export default function POSClient() {
                                 if (e.key === "Enter") handleSavePrice(item);
                                 if (e.key === "Escape") setEditingPriceKey(null);
                               }}
-                              className="h-6 w-20 rounded border border-emerald-400 bg-white px-1.5 text-xs font-bold text-slate-900 focus:outline-none"
+                              className="h-6 w-20 rounded border border-emerald-400 dark:border-emerald-500 bg-white dark:bg-slate-800 px-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
                             />
                             <button
                               type="button"
@@ -2372,7 +2400,7 @@ export default function POSClient() {
                             <button
                               type="button"
                               onClick={() => setEditingPriceKey(null)}
-                              className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-300"
+                              className="rounded bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
                             >
                               Cancel
                             </button>
@@ -2382,20 +2410,20 @@ export default function POSClient() {
                             <button
                               type="button"
                               onClick={() => openPriceEditModal(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-bold text-slate-800 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition shadow-2xs"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition shadow-2xs"
                               title="Click to edit unit price for this product"
                             >
-                              <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 font-black" : ""}>
+                              <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 dark:text-emerald-400 font-black" : ""}>
                                 {formatRs(item.price)}
                               </span>
-                              <span className="text-[10px] text-slate-400 font-normal">/ {item.unit}</span>
-                              <Pencil className="h-2.5 w-2.5 text-emerald-600" />
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">/ {item.unit}</span>
+                              <Pencil className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
                             </button>
 
                             {item.originalPrice !== undefined && item.price !== item.originalPrice ? (
                               <div className="flex items-center gap-1">
-                                <span className="text-[10px] line-through text-slate-400">{formatRs(item.originalPrice)}</span>
-                                <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-black text-amber-800">
+                                <span className="text-[10px] line-through text-slate-400 dark:text-slate-500">{formatRs(item.originalPrice)}</span>
+                                <span className="rounded bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.2 text-[9px] font-black text-amber-800 dark:text-amber-300">
                                   Custom Price
                                 </span>
                               </div>
@@ -2403,7 +2431,7 @@ export default function POSClient() {
                               <button
                                 type="button"
                                 onClick={() => openPriceEditModal(item)}
-                                className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
+                                className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition"
                                 title="Edit unit price"
                               >
                                 Edit Price
@@ -2418,8 +2446,8 @@ export default function POSClient() {
                             <div className="mt-1.5 flex items-center gap-1.5">
                               <ShieldCheck
                                 className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
-                                  ? "text-emerald-600"
-                                  : "text-slate-400"
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  : "text-slate-400 dark:text-slate-500"
                                   }`}
                               />
                               <select
@@ -2428,8 +2456,8 @@ export default function POSClient() {
                                   updateItemWarranty(item, Number(e.target.value))
                                 }
                                 className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
-                                  ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
-                                  : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                                  ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold"
+                                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                                   }`}
                                 title="Set product warranty duration"
                               >
@@ -2450,7 +2478,7 @@ export default function POSClient() {
                       <button
                         type="button"
                         onClick={() => removeItem(item)}
-                        className="text-slate-300 transition hover:text-rose-500"
+                        className="text-slate-300 dark:text-slate-600 transition hover:text-rose-500 dark:hover:text-rose-400"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -2458,11 +2486,11 @@ export default function POSClient() {
 
                     {/* Quantity Stepper & Line Total */}
                     <div className="mt-2.5 flex items-center justify-between">
-                      <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm">
+                      <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
                         <button
                           type="button"
                           onClick={() => decreaseQuantity(item)}
-                          className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                          className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
@@ -2476,19 +2504,19 @@ export default function POSClient() {
                             const val = parseInt(e.target.value, 10);
                             updateQuantity(item, isNaN(val) ? 1 : val);
                           }}
-                          className="h-7 w-12 border-x border-slate-200 text-center text-xs font-black text-slate-800 focus:outline-none"
+                          className="h-7 w-12 border-x border-slate-200 dark:border-slate-700 bg-transparent text-center text-xs font-black text-slate-800 dark:text-slate-100 focus:outline-none"
                         />
 
                         <button
                           type="button"
                           onClick={() => increaseQuantity(item)}
-                          className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                          className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
                       </div>
 
-                      <p className="text-xs font-black text-slate-900">
+                      <p className="text-xs font-black text-slate-900 dark:text-slate-100">
                         {formatRs(item.price * item.quantity)}
                       </p>
                     </div>
@@ -2501,14 +2529,14 @@ export default function POSClient() {
           {/* ================================================= */}
           {/* CART BILL TOTALS & CHECKOUT BUTTON */}
           {/* ================================================= */}
-          <div className="shrink-0 border-t border-slate-200 bg-slate-50/80 p-4">
+          <div className="shrink-0 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/90 p-4">
             {/* Discount Input */}
             <div className="mb-3 flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
                 Discount (Rs.)
               </span>
               <div className="relative w-32">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-slate-500">
                   Rs.
                 </span>
                 <input
@@ -2518,16 +2546,16 @@ export default function POSClient() {
                   value={discountInput}
                   onChange={(e) => setDiscountInput(e.target.value)}
                   placeholder="0.00"
-                  className="h-8 w-full rounded-lg border border-slate-200 bg-white pl-7 pr-2 text-right text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  className="h-8 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-7 pr-2 text-right text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Price Calculations */}
-            <div className="space-y-1.5 text-xs text-slate-600">
+            <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-semibold text-slate-800">
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
                   {formatRs(subtotal)}
                 </span>
               </div>
@@ -2535,26 +2563,26 @@ export default function POSClient() {
               {taxTotal > 0 && (
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span className="font-semibold text-slate-800">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
                     {formatRs(taxTotal)}
                   </span>
                 </div>
               )}
 
               {discountAmount > 0 && (
-                <div className="flex justify-between text-rose-600 font-semibold">
+                <div className="flex justify-between text-rose-600 dark:text-rose-400 font-semibold">
                   <span>Discount</span>
                   <span>- {formatRs(discountAmount)}</span>
                 </div>
               )}
 
-              <div className="border-t border-dashed border-slate-200 pt-2" />
+              <div className="border-t border-dashed border-slate-200 dark:border-slate-800 pt-2" />
 
               <div className="flex items-center justify-between">
-                <span className="text-sm font-black text-slate-900">
+                <span className="text-sm font-black text-slate-900 dark:text-slate-100">
                   Total Payable
                 </span>
-                <span className="text-xl font-black text-slate-900">
+                <span className="text-xl font-black text-slate-900 dark:text-white">
                   {formatRs(total)}
                 </span>
               </div>
@@ -2565,7 +2593,7 @@ export default function POSClient() {
               type="button"
               disabled={cart.length === 0}
               onClick={openPaymentModal}
-              className="mt-4 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+              className="mt-4 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none"
             >
               <div className="flex items-center gap-2">
                 <Banknote className="h-5 w-5" />
@@ -2585,10 +2613,10 @@ export default function POSClient() {
       {/* ================================================= */}
       {/* MOBILE STICKY FLOATING CART BAR (Screens < lg) */}
       {/* ================================================= */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-2xl backdrop-blur-md">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-3 shadow-2xl backdrop-blur-md">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div className="flex items-center gap-2.5">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-sm">
               <ShoppingCart className="h-5 w-5" />
               {totalItemsCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white">
@@ -2597,10 +2625,10 @@ export default function POSClient() {
               )}
             </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {totalItemsCount} item{totalItemsCount === 1 ? "" : "s"}
               </div>
-              <div className="text-sm font-black text-slate-900">
+              <div className="text-sm font-black text-slate-900 dark:text-slate-100">
                 {formatRs(total)}
               </div>
             </div>
@@ -2621,14 +2649,14 @@ export default function POSClient() {
       {/* MOBILE SLIDE-OVER CART DRAWER (Screens < lg) */}
       {/* ================================================= */}
       {isMobileCartOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex justify-end bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
-          <div className="relative flex h-full w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right">
+        <div className="lg:hidden fixed inset-0 z-50 flex justify-end bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm animate-in fade-in">
+          <div className="relative flex h-full w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-right">
             {/* Header */}
-            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3.5">
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3.5">
               <div className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-slate-800" />
-                <h2 className="text-sm font-black text-slate-900">Current Order</h2>
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-800">
+                <ShoppingCart className="h-5 w-5 text-slate-800 dark:text-slate-200" />
+                <h2 className="text-sm font-black text-slate-900 dark:text-slate-100">Current Order</h2>
+                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300">
                   {totalItemsCount} items
                 </span>
               </div>
@@ -2638,7 +2666,7 @@ export default function POSClient() {
                   <button
                     type="button"
                     onClick={clearCart}
-                    className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-700 mr-2"
+                    className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 mr-2"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     <span>Clear</span>
@@ -2647,7 +2675,7 @@ export default function POSClient() {
                 <button
                   type="button"
                   onClick={() => setIsMobileCartOpen(false)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -2655,16 +2683,16 @@ export default function POSClient() {
             </div>
 
             {/* Customer Selection Bar */}
-            <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 bg-slate-50/60 p-3">
+            <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 p-3">
               <div className="relative flex-1">
-                <UserRound className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <UserRound className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <select
                   value={selectedCustomerId ?? ""}
                   onChange={(e) => {
                     const val = e.target.value;
                     setSelectedCustomerId(val ? Number(val) : null);
                   }}
-                  className="h-9 w-full appearance-none rounded-xl border border-slate-200 bg-white pl-8 pr-7 text-xs font-semibold text-slate-700 transition focus:border-emerald-500 focus:outline-none"
+                  className="h-9 w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-7 text-xs font-semibold text-slate-700 dark:text-slate-200 transition focus:border-emerald-500 focus:outline-none"
                 >
                   <option value="">Walk-in Customer</option>
                   {customers.map((c) => (
@@ -2678,7 +2706,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => setIsNewCustomerModalOpen(true)}
-                className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+                className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-700 hover:text-emerald-700 dark:hover:text-emerald-300"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 <span>New</span>
@@ -2686,14 +2714,14 @@ export default function POSClient() {
             </div>
 
             {/* Cart Items List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
               {cart.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-300">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600">
                     <ShoppingCart className="h-7 w-7" />
                   </div>
-                  <h3 className="mt-3 text-sm font-bold text-slate-700">Cart is empty</h3>
-                  <p className="mt-1 text-xs text-slate-400 max-w-[200px]">
+                  <h3 className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">Cart is empty</h3>
+                  <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 max-w-[200px]">
                     Select products from any category to build the customer&apos;s bill.
                   </p>
                 </div>
@@ -2703,16 +2731,16 @@ export default function POSClient() {
                   const isEditingThisPrice = editingPriceKey === itemKey;
 
                   return (
-                    <div key={itemKey} className="p-3.5 hover:bg-slate-50/50">
+                    <div key={itemKey} className="p-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="min-w-0">
-                            <p className="truncate text-xs font-bold text-slate-900">
+                            <p className="truncate text-xs font-bold text-slate-900 dark:text-slate-100">
                               {item.name}
                             </p>
 
                             {item.brand?.trim() && (
-                              <p className="mt-0.5 text-[10px] font-semibold text-blue-600">
+                              <p className="mt-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
                                 Brand: {item.brand}
                               </p>
                             )}
@@ -2721,7 +2749,7 @@ export default function POSClient() {
                           {/* Editable unit price */}
                           {isEditingThisPrice ? (
                             <div className="mt-1.5 flex items-center gap-1.5">
-                              <span className="text-[10px] font-bold text-slate-500">Rs.</span>
+                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Rs.</span>
                               <input
                                 type="number"
                                 min="0"
@@ -2733,7 +2761,7 @@ export default function POSClient() {
                                   if (e.key === "Enter") handleSavePrice(item);
                                   if (e.key === "Escape") setEditingPriceKey(null);
                                 }}
-                                className="h-6 w-20 rounded border border-emerald-400 bg-white px-1.5 text-xs font-bold text-slate-900 focus:outline-none"
+                                className="h-6 w-20 rounded border border-emerald-400 dark:border-emerald-500 bg-white dark:bg-slate-800 px-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
                               />
                               <button
                                 type="button"
@@ -2745,7 +2773,7 @@ export default function POSClient() {
                               <button
                                 type="button"
                                 onClick={() => setEditingPriceKey(null)}
-                                className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-300"
+                                className="rounded bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
                               >
                                 Cancel
                               </button>
@@ -2755,20 +2783,20 @@ export default function POSClient() {
                               <button
                                 type="button"
                                 onClick={() => openPriceEditModal(item)}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-xs font-bold text-slate-800 hover:border-emerald-500 hover:bg-emerald-50 hover:text-emerald-700 transition shadow-2xs"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition shadow-2xs"
                                 title="Click to edit unit price for this product"
                               >
-                                <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 font-black" : ""}>
+                                <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 dark:text-emerald-400 font-black" : ""}>
                                   {formatRs(item.price)}
                                 </span>
-                                <span className="text-[10px] text-slate-400 font-normal">/ {item.unit}</span>
-                                <Pencil className="h-2.5 w-2.5 text-emerald-600" />
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">/ {item.unit}</span>
+                                <Pencil className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
                               </button>
 
                               {item.originalPrice !== undefined && item.price !== item.originalPrice ? (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[10px] line-through text-slate-400">{formatRs(item.originalPrice)}</span>
-                                  <span className="rounded bg-amber-100 px-1.5 py-0.2 text-[9px] font-black text-amber-800">
+                                  <span className="text-[10px] line-through text-slate-400 dark:text-slate-500">{formatRs(item.originalPrice)}</span>
+                                  <span className="rounded bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.2 text-[9px] font-black text-amber-800 dark:text-amber-300">
                                     Custom Price
                                   </span>
                                 </div>
@@ -2776,7 +2804,7 @@ export default function POSClient() {
                                 <button
                                   type="button"
                                   onClick={() => openPriceEditModal(item)}
-                                  className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
+                                  className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition"
                                   title="Edit unit price"
                                 >
                                   Edit Price
@@ -2791,8 +2819,8 @@ export default function POSClient() {
                               <div className="mt-1.5 flex items-center gap-1.5">
                                 <ShieldCheck
                                   className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
-                                    ? "text-emerald-600"
-                                    : "text-slate-400"
+                                    ? "text-emerald-600 dark:text-emerald-400"
+                                    : "text-slate-400 dark:text-slate-500"
                                     }`}
                                 />
                                 <select
@@ -2801,8 +2829,8 @@ export default function POSClient() {
                                     updateItemWarranty(item, Number(e.target.value))
                                   }
                                   className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
-                                    ? "border-emerald-300 bg-emerald-50 text-emerald-800 font-extrabold"
-                                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"
+                                    ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold"
+                                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                                     }`}
                                   title="Set product warranty duration"
                                 >
@@ -2823,7 +2851,7 @@ export default function POSClient() {
                         <button
                           type="button"
                           onClick={() => removeItem(item)}
-                          className="text-slate-300 transition hover:text-rose-500"
+                          className="text-slate-300 dark:text-slate-600 transition hover:text-rose-500 dark:hover:text-rose-400"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -2831,11 +2859,11 @@ export default function POSClient() {
 
                       {/* Quantity Stepper & Line Total */}
                       <div className="mt-2.5 flex items-center justify-between">
-                        <div className="flex items-center rounded-lg border border-slate-200 bg-white shadow-sm">
+                        <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
                           <button
                             type="button"
                             onClick={() => decreaseQuantity(item)}
-                            className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                            className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
@@ -2849,19 +2877,19 @@ export default function POSClient() {
                               const val = parseInt(e.target.value, 10);
                               updateQuantity(item, isNaN(val) ? 1 : val);
                             }}
-                            className="h-7 w-12 border-x border-slate-200 text-center text-xs font-black text-slate-800 focus:outline-none"
+                            className="h-7 w-12 border-x border-slate-200 dark:border-slate-700 bg-transparent text-center text-xs font-black text-slate-800 dark:text-slate-100 focus:outline-none"
                           />
 
                           <button
                             type="button"
                             onClick={() => increaseQuantity(item)}
-                            className="flex h-7 w-7 items-center justify-center text-slate-600 transition hover:bg-slate-100"
+                            className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
 
-                        <p className="text-xs font-black text-slate-900">
+                        <p className="text-xs font-black text-slate-900 dark:text-slate-100">
                           {formatRs(item.price * item.quantity)}
                         </p>
                       </div>
@@ -2872,11 +2900,11 @@ export default function POSClient() {
             </div>
 
             {/* Totals & Checkout Button */}
-            <div className="shrink-0 border-t border-slate-200 bg-slate-50/90 p-4">
+            <div className="shrink-0 border-t border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 p-4">
               <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-600">Discount (Rs.)</span>
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Discount (Rs.)</span>
                 <div className="relative w-32">
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-slate-500">
                     Rs.
                   </span>
                   <input
@@ -2886,32 +2914,32 @@ export default function POSClient() {
                     value={discountInput}
                     onChange={(e) => setDiscountInput(e.target.value)}
                     placeholder="0.00"
-                    className="h-8 w-full rounded-lg border border-slate-200 bg-white pl-7 pr-2 text-right text-xs font-bold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                    className="h-8 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-7 pr-2 text-right text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1 text-xs text-slate-600">
+              <div className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-semibold text-slate-800">{formatRs(subtotal)}</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">{formatRs(subtotal)}</span>
                 </div>
                 {taxTotal > 0 && (
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span className="font-semibold text-slate-800">{formatRs(taxTotal)}</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{formatRs(taxTotal)}</span>
                   </div>
                 )}
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-rose-600 font-semibold">
+                  <div className="flex justify-between text-rose-600 dark:text-rose-400 font-semibold">
                     <span>Discount</span>
                     <span>- {formatRs(discountAmount)}</span>
                   </div>
                 )}
-                <div className="border-t border-dashed border-slate-200 pt-1.5" />
+                <div className="border-t border-dashed border-slate-200 dark:border-slate-800 pt-1.5" />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-black text-slate-900">Total Payable</span>
-                  <span className="text-xl font-black text-slate-900">{formatRs(total)}</span>
+                  <span className="text-sm font-black text-slate-900 dark:text-slate-100">Total Payable</span>
+                  <span className="text-xl font-black text-slate-900 dark:text-white">{formatRs(total)}</span>
                 </div>
               </div>
 
@@ -2919,7 +2947,7 @@ export default function POSClient() {
                 type="button"
                 disabled={cart.length === 0}
                 onClick={openPaymentModal}
-                className="mt-3.5 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="mt-3.5 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
               >
                 <div className="flex items-center gap-2">
                   <Banknote className="h-5 w-5" />
@@ -2941,22 +2969,22 @@ export default function POSClient() {
       {/* 3. PAYMENT MODAL (FULLY RESPONSIVE WITH FIXED FOOTER) */}
       {/* ================================================= */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden my-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/75 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto overscroll-contain border border-slate-100 dark:border-slate-800">
             {/* Modal Fixed Header */}
-            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-white">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3.5 bg-white dark:bg-slate-900">
               <div>
-                <h3 className="text-base font-black text-slate-900">
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
                   Process Payment & Bill
                 </h3>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
                   Select payment method and confirm tender amount
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPaymentModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200 transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -2965,7 +2993,7 @@ export default function POSClient() {
             {/* Modal Scrollable Body */}
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
               {/* Total Display */}
-              <div className="rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 p-4 text-white shadow-inner">
+              <div className="rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 p-4 text-white shadow-inner border border-slate-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -2990,7 +3018,7 @@ export default function POSClient() {
 
               {/* Payment Method Selector */}
               <div className="space-y-2">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Payment Method
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -3007,10 +3035,18 @@ export default function POSClient() {
                       <button
                         key={pm.id}
                         type="button"
-                        onClick={() => setPaymentMethod(pm.id as PaymentMethodType)}
+                        onClick={() => {
+                          const nextMethod = pm.id as PaymentMethodType;
+                          setPaymentMethod(nextMethod);
+                          if (nextMethod === "CREDIT") {
+                            setCashTenderedInput("0");
+                          } else if (paymentMethod === "CREDIT" && cashTendered === 0) {
+                            setCashTenderedInput(total.toString());
+                          }
+                        }}
                         className={`flex items-center gap-2 rounded-xl border p-2 text-xs font-bold transition ${isSelected
-                          ? "border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          ? "border-emerald-600 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20"
+                          : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750"
                           }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
@@ -3021,84 +3057,111 @@ export default function POSClient() {
                 </div>
               </div>
 
-              {/* Cash Tendered & Change Calculation */}
-              {paymentMethod === "CASH" ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-700">
-                      Cash Received (Rs.)
-                    </label>
-                    <span className="text-[10px] text-slate-400">
-                      Amount handed by customer
-                    </span>
-                  </div>
+              {/* Amount Paid Now & Change / Remaining Credit Calculation */}
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {paymentMethod === "CASH"
+                      ? "Cash Received Now (Rs.)"
+                      : paymentMethod === "CREDIT"
+                        ? "Advance / Partial Cash Paid Now (Rs.)"
+                        : "Amount Paid Now (Rs.)"}
+                  </label>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                    {paymentMethod === "CREDIT"
+                      ? "Enter 0 for full credit, or partial amount paid"
+                      : "Enter less than total for partial credit"}
+                  </span>
+                </div>
 
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
-                      Rs.
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={cashTenderedInput}
-                      onChange={(e) => setCashTenderedInput(e.target.value)}
-                      className="h-10 w-full rounded-xl border border-slate-300 bg-white pl-9 pr-3 text-base font-black text-slate-900 focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 dark:text-slate-500">
+                    Rs.
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={cashTenderedInput}
+                    onChange={(e) => setCashTenderedInput(e.target.value)}
+                    className="h-10 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 text-base font-black text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
 
-                  {/* Quick Cash Shortcuts */}
-                  <div className="flex flex-wrap gap-1.5">
+                {/* Quick Amount Shortcuts */}
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setCashTenderedInput(total.toString())}
+                    className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  >
+                    Full (Rs. {total})
+                  </button>
+                  {total > 0 && (
                     <button
                       type="button"
-                      onClick={() => setCashTenderedInput(total.toString())}
-                      className="rounded-lg bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100"
+                      onClick={() => setCashTenderedInput(String(Math.round(total / 2)))}
+                      className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 shadow-sm border border-blue-200 dark:border-blue-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40"
                     >
-                      Exact (Rs. {total})
+                      50% (Rs. {Math.round(total / 2)})
                     </button>
-                    {[100, 500, 1000, 2000, 5000].map((amt) => {
-                      if (amt >= total || total > amt) {
-                        return (
-                          <button
-                            key={amt}
-                            type="button"
-                            onClick={() => setCashTenderedInput(amt.toString())}
-                            className="rounded-lg bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-100"
-                          >
-                            Rs. {amt}
-                          </button>
-                        );
-                      }
-                      return null;
-                    })}
-                  </div>
-
-                  {/* Change or Due Display */}
-                  <div className="border-t border-slate-200 pt-2.5">
-                    {cashTendered >= total ? (
-                      <div className="flex items-center justify-between rounded-xl bg-emerald-100/70 px-3 py-2 text-emerald-900">
-                        <span className="text-xs font-bold">
-                          Change to Return:
-                        </span>
-                        <span className="text-base font-black">
-                          {formatRs(changeAmount)}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between rounded-xl bg-amber-100/70 px-3 py-2 text-amber-900">
-                        <span className="text-xs font-bold">
-                          Remaining Due:
-                        </span>
-                        <span className="text-sm font-black">
-                          {formatRs(total - cashTendered)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setCashTenderedInput("0")}
+                    className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 shadow-sm border border-amber-200 dark:border-amber-800/70 hover:bg-amber-50 dark:hover:bg-amber-950/40"
+                  >
+                    Rs. 0 (Credit)
+                  </button>
+                  {[100, 500, 1000, 2000, 5000].map((amt) => (
+                    <button
+                      key={amt}
+                      type="button"
+                      onClick={() => setCashTenderedInput(amt.toString())}
+                      className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                      Rs. {amt}
+                    </button>
+                  ))}
                 </div>
-              ) : (
+
+                {/* Change or Remaining Credit Due Display */}
+                <div className="border-t border-slate-200 dark:border-slate-700 pt-2.5 space-y-2">
+                  {cashTendered >= total ? (
+                    <div className="flex items-center justify-between rounded-xl bg-emerald-100/70 dark:bg-emerald-950/60 px-3 py-2 text-emerald-900 dark:text-emerald-200">
+                      <span className="text-xs font-bold">
+                        {paymentMethod === "CASH" ? "Change to Return:" : "Full Amount Paid:"}
+                      </span>
+                      <span className="text-base font-black">
+                        {formatRs(paymentMethod === "CASH" ? changeAmount : total)}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-amber-100/80 dark:bg-amber-950/60 px-3 py-2 text-amber-950 dark:text-amber-200 space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold">Paid Now:</span>
+                        <span className="font-bold text-emerald-800 dark:text-emerald-300">{formatRs(paidNowAmount)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs border-t border-amber-200/80 dark:border-amber-800/60 pt-1">
+                        <span className="font-bold">Remaining Due (Customer Credit):</span>
+                        <span className="text-sm font-black text-rose-700 dark:text-rose-400">
+                          {formatRs(remainingBalanceAmount)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {remainingBalanceAmount > 0 && !selectedCustomerId && (
+                    <div className="rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/60 px-3 py-2 text-[11px] font-bold text-rose-700 dark:text-rose-300">
+                      ⚠️ Please select a registered Customer (top right of cart) to record a Credit or Partial payment bill.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {paymentMethod !== "CASH" && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600">
+                  <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
                     Transaction Reference / ID
                   </label>
                   <input
@@ -3106,14 +3169,14 @@ export default function POSClient() {
                     value={paymentReference}
                     onChange={(e) => setPaymentReference(e.target.value)}
                     placeholder="e.g. Card approval code or Bank slip no"
-                    className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:border-emerald-500 focus:outline-none"
+                    className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               )}
 
               {/* Optional Order / Payment Note */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600">
+                <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">
                   Bill Note (Optional)
                 </label>
                 <input
@@ -3121,18 +3184,18 @@ export default function POSClient() {
                   value={paymentNote}
                   onChange={(e) => setPaymentNote(e.target.value)}
                   placeholder="e.g. WhatsApp document sent, Urgent job"
-                  className="h-9 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-800 focus:border-emerald-500 focus:outline-none"
+                  className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-800 dark:text-white focus:border-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Modal Fixed Footer - Always Visible */}
-            <div className="shrink-0 border-t border-slate-100 bg-slate-50/90 px-5 py-3.5 flex items-center gap-3 backdrop-blur-sm">
+            <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 px-5 py-3.5 flex items-center gap-3 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={() => setIsPaymentModalOpen(false)}
                 disabled={processingPayment}
-                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition shadow-sm"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition shadow-sm"
               >
                 Cancel
               </button>
@@ -3141,9 +3204,9 @@ export default function POSClient() {
                 onClick={handleCompleteSale}
                 disabled={
                   processingPayment ||
-                  (paymentMethod === "CASH" && cashTendered < total)
+                  (remainingBalanceAmount > 0 && !selectedCustomerId)
                 }
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:bg-slate-300 disabled:shadow-none transition"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none transition"
               >
                 {processingPayment ? (
                   <>
@@ -3166,11 +3229,11 @@ export default function POSClient() {
       {/* 4. BILL / RECEIPT GENERATED MODAL (RESPONSIVE) */}
       {/* ================================================= */}
       {isBillModalOpen && lastCompletedBill && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden my-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/75 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto overscroll-contain border border-slate-100 dark:border-slate-800">
             {/* Header / Success Indicator */}
-            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-white">
-              <div className="flex items-center gap-2 text-emerald-600">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3.5 bg-white dark:bg-slate-900">
+              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
                 <span className="text-sm font-black uppercase tracking-wide">
                   Bill Generated Successfully
@@ -3179,7 +3242,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => setIsBillModalOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200 transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -3187,71 +3250,71 @@ export default function POSClient() {
 
             {/* Bill Receipt Preview Scrollable Container */}
             <div className="flex-1 overflow-y-auto px-5 py-4">
-              <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-4 sm:p-5 font-mono text-xs text-slate-800">
+              <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 sm:p-5 font-mono text-xs text-slate-800 dark:text-slate-200 shadow-sm">
                 {/* Store Header */}
                 <div className="text-center">
-                  <h4 className="text-base font-black tracking-wider text-slate-900">
+                  <h4 className="text-base font-black tracking-wider text-slate-900 dark:text-white">
                     PUBUDU CREATIVE HUB
                   </h4>
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
                     Printing • Designing • Stationery • Mobile Accessories
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
                     No. 45, Main Street, Colombo, Sri Lanka
                   </p>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
                     Tel: +94 77 123 4567 | WhatsApp: 071 987 6543
                   </p>
                 </div>
 
-                <div className="my-3 border-t border-dashed border-slate-300" />
+                <div className="my-3 border-t border-dashed border-slate-300 dark:border-slate-800" />
 
                 {/* Bill Meta */}
                 <div className="space-y-1 text-[11px]">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Invoice No:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Invoice No:</span>
                     <span className="font-bold">{lastCompletedBill.invoiceNo}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Date & Time:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Date & Time:</span>
                     <span>
                       {lastCompletedBill.date} {lastCompletedBill.time}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Customer:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Customer:</span>
                     <span className="font-bold">{lastCompletedBill.customerName}</span>
                   </div>
                   {lastCompletedBill.customerPhone && (
                     <div className="flex justify-between">
-                      <span className="text-slate-500">Phone:</span>
+                      <span className="text-slate-500 dark:text-slate-400">Phone:</span>
                       <span>{lastCompletedBill.customerPhone}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Payment:</span>
+                    <span className="text-slate-500 dark:text-slate-400">Payment:</span>
                     <span className="font-bold">{lastCompletedBill.paymentMethod}</span>
                   </div>
                 </div>
 
-                <div className="my-3 border-t border-dashed border-slate-300" />
+                <div className="my-3 border-t border-dashed border-slate-300 dark:border-slate-800" />
 
                 {/* Items Table */}
                 <table className="w-full text-[11px]">
                   <thead>
-                    <tr className="border-b border-slate-300 text-slate-500">
+                    <tr className="border-b border-slate-300 dark:border-slate-800 text-slate-500 dark:text-slate-400">
                       <th className="py-1 text-left">Item</th>
                       <th className="py-1 text-center">Qty</th>
                       <th className="py-1 text-right">Price</th>
                       <th className="py-1 text-right">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
                     {lastCompletedBill.items.map((it, idx) => (
                       <tr key={idx}>
                         <td className="py-1.5 pr-2">
-                          <div className="font-bold text-slate-900">{it.name}</div>
-                          <div className="text-[9px] text-slate-400">
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{it.name}</div>
+                          <div className="text-[9px] text-slate-400 dark:text-slate-500">
                             {it.code}
                           </div>
                         </td>
@@ -3265,7 +3328,7 @@ export default function POSClient() {
                   </tbody>
                 </table>
 
-                <div className="my-3 border-t border-dashed border-slate-300" />
+                <div className="my-3 border-t border-dashed border-slate-300 dark:border-slate-800" />
 
                 {/* Totals */}
                 <div className="space-y-1 text-[11px]">
@@ -3274,52 +3337,63 @@ export default function POSClient() {
                     <span>{formatRs(lastCompletedBill.subtotal)}</span>
                   </div>
                   {lastCompletedBill.discount > 0 && (
-                    <div className="flex justify-between text-rose-600">
+                    <div className="flex justify-between text-rose-600 dark:text-rose-400">
                       <span>Discount</span>
                       <span>- {formatRs(lastCompletedBill.discount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between border-t border-slate-300 pt-1.5 text-sm font-black text-slate-900">
+                  <div className="flex justify-between border-t border-slate-300 dark:border-slate-800 pt-1.5 text-sm font-black text-slate-900 dark:text-white">
                     <span>NET TOTAL</span>
                     <span>{formatRs(lastCompletedBill.total)}</span>
                   </div>
-                  {lastCompletedBill.paymentMethod === "CASH" && (
+                  {lastCompletedBill.balanceAmount > 0 ? (
                     <>
-                      <div className="flex justify-between pt-1 text-slate-600">
+                      <div className="flex justify-between pt-1 text-slate-700 dark:text-slate-300">
+                        <span>Paid Amount</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatRs(lastCompletedBill.paidAmount)}</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-rose-600 dark:text-rose-400">
+                        <span>Balance Due (Credit)</span>
+                        <span>{formatRs(lastCompletedBill.balanceAmount)}</span>
+                      </div>
+                    </>
+                  ) : lastCompletedBill.paymentMethod === "CASH" ? (
+                    <>
+                      <div className="flex justify-between pt-1 text-slate-600 dark:text-slate-400">
                         <span>Cash Tendered</span>
                         <span>{formatRs(lastCompletedBill.cashTendered)}</span>
                       </div>
-                      <div className="flex justify-between font-bold text-emerald-700">
+                      <div className="flex justify-between font-bold text-emerald-700 dark:text-emerald-400">
                         <span>Change Returned</span>
                         <span>{formatRs(lastCompletedBill.changeAmount)}</span>
                       </div>
                     </>
-                  )}
+                  ) : null}
                 </div>
 
-                <div className="my-3 border-t border-dashed border-slate-300" />
+                <div className="my-3 border-t border-dashed border-slate-300 dark:border-slate-800" />
 
                 {/* Warranties Issued */}
                 {lastCompletedBill.warranties && lastCompletedBill.warranties.length > 0 && (
-                  <div className="mb-3 rounded-xl border border-emerald-300 bg-emerald-50/90 p-3 text-xs text-emerald-950">
-                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-emerald-800 mb-1.5 text-[11px]">
-                      <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  <div className="mb-3 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50/90 dark:bg-emerald-950/60 p-3 text-xs text-emerald-950 dark:text-emerald-200">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-1.5 text-[11px]">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       Official Warranty Certificates ({lastCompletedBill.warranties.length})
                     </div>
                     <div className="space-y-1.5 text-[11px]">
                       {lastCompletedBill.warranties.map((w, idx) => (
-                        <div key={idx} className="rounded-lg bg-white/90 p-2 border border-emerald-200 shadow-2xs">
-                          <div className="flex items-center justify-between font-mono font-bold text-emerald-700">
+                        <div key={idx} className="rounded-lg bg-white/90 dark:bg-slate-900/90 p-2 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                          <div className="flex items-center justify-between font-mono font-bold text-emerald-700 dark:text-emerald-400">
                             <span>{w.warrantyCode}</span>
-                            <span className="rounded bg-emerald-100 px-1.5 py-0.2 text-[10px] text-emerald-800">
+                            <span className="rounded bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.2 text-[10px] text-emerald-800 dark:text-emerald-300">
                               {w.durationMonths} Months
                             </span>
                           </div>
-                          <div className="text-slate-800 truncate font-sans text-xs font-semibold mt-0.5">
+                          <div className="text-slate-800 dark:text-slate-200 truncate font-sans text-xs font-semibold mt-0.5">
                             {w.productName}
                           </div>
-                          <div className="text-slate-500 text-[10px] mt-0.5">
-                            Valid Until: <strong className="text-slate-700">{w.expiryDate}</strong>
+                          <div className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">
+                            Valid Until: <strong className="text-slate-700 dark:text-slate-200">{w.expiryDate}</strong>
                           </div>
                         </div>
                       ))}
@@ -3328,7 +3402,7 @@ export default function POSClient() {
                 )}
 
                 {/* Bill Footer Note */}
-                <div className="text-center text-[10px] text-slate-500">
+                <div className="text-center text-[10px] text-slate-500 dark:text-slate-400">
                   <p>*** Thank You for Your Business! ***</p>
                   <p>Pubudu Creative Hub • Colombo, Sri Lanka</p>
                 </div>
@@ -3336,22 +3410,22 @@ export default function POSClient() {
             </div>
 
             {/* Print & Action Buttons Fixed Footer */}
-            <div className="shrink-0 border-t border-slate-100 bg-slate-50/90 px-5 py-3.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 backdrop-blur-sm">
+            <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 px-5 py-3.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={() => printBill("thermal")}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-800 shadow-sm transition hover:bg-slate-100"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-sm transition hover:bg-slate-100 dark:hover:bg-slate-700"
               >
-                <Printer className="h-4 w-4 text-emerald-600" />
+                <Printer className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <span>Thermal (80mm)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => printBill("a4")}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-800 shadow-sm transition hover:bg-slate-100"
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-sm transition hover:bg-slate-100 dark:hover:bg-slate-700"
               >
-                <FileText className="h-4 w-4 text-blue-600" />
+                <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <span>A4 Invoice</span>
               </button>
 
@@ -3375,19 +3449,19 @@ export default function POSClient() {
       {/* 5. QUICK ADD CUSTOMER MODAL */}
       {/* ================================================= */}
       {isNewCustomerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in">
           <form
             onSubmit={handleCreateCustomer}
-            className="w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
+            className="w-full max-w-sm max-h-[90vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-2xl border border-slate-100 dark:border-slate-800"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-sm font-black text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-sm font-black text-slate-900 dark:text-white">
                 Quick Add Customer
               </h3>
               <button
                 type="button"
                 onClick={() => setIsNewCustomerModalOpen(false)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100"
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -3395,7 +3469,7 @@ export default function POSClient() {
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="text-xs font-bold text-slate-700">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   Customer Name *
                 </label>
                 <input
@@ -3404,12 +3478,12 @@ export default function POSClient() {
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
                   placeholder="e.g. Kasun Fernando"
-                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   Phone Number
                 </label>
                 <input
@@ -3417,7 +3491,7 @@ export default function POSClient() {
                   value={newCustPhone}
                   onChange={(e) => setNewCustPhone(e.target.value)}
                   placeholder="e.g. 0771234567"
-                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-900 focus:border-emerald-500 focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -3426,7 +3500,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => setIsNewCustomerModalOpen(false)}
-                className="flex-1 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
@@ -3446,19 +3520,19 @@ export default function POSClient() {
       {/* 6. DEDICATED PRODUCT / SERVICE PRICE EDIT MODAL */}
       {/* ================================================= */}
       {priceEditModalItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="relative flex flex-col w-full max-w-md max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white shadow-2xl overflow-hidden my-auto overscroll-contain">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/75 p-3 sm:p-4 backdrop-blur-sm animate-in fade-in overflow-y-auto">
+          <div className="relative flex flex-col w-full max-w-md max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto overscroll-contain border border-slate-100 dark:border-slate-800">
             {/* Header */}
-            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 px-5 py-3.5 bg-white">
+            <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3.5 bg-white dark:bg-slate-900">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                   <Pencil className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900">
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
                     Edit Unit Selling Price (Rs.)
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
                     Custom rate for this sale transaction
                   </p>
                 </div>
@@ -3466,7 +3540,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => setPriceEditModalItem(null)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-200 transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -3475,21 +3549,21 @@ export default function POSClient() {
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {/* Product Info Card */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3.5">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/60 p-3.5">
                 <div className="flex items-center justify-between">
-                  <span className="rounded-md bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 shadow-2xs">
+                  <span className="rounded-md bg-white dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-200 shadow-2xs">
                     {priceEditModalItem.item.category}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">
+                  <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                     {priceEditModalItem.item.code}
                   </span>
                 </div>
-                <h4 className="mt-1.5 text-sm font-extrabold text-slate-900">
+                <h4 className="mt-1.5 text-sm font-extrabold text-slate-900 dark:text-white">
                   {priceEditModalItem.item.name}
                 </h4>
-                <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                <div className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <span>Catalog Base Price:</span>
-                  <span className="font-bold text-slate-800">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">
                     {formatRs(priceEditModalItem.originalPrice)}
                   </span>
                   <span>per {priceEditModalItem.item.unit}</span>
@@ -3498,11 +3572,11 @@ export default function POSClient() {
 
               {/* New Price Input Field */}
               <div className="space-y-1.5">
-                <label className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                <label className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                   New Unit Price for this Customer (Rs.)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-black text-slate-400 dark:text-slate-500">
                     Rs.
                   </span>
                   <input
@@ -3518,21 +3592,21 @@ export default function POSClient() {
                     }}
                     onFocus={(e) => e.target.select()}
                     placeholder="0.00"
-                    className="h-12 w-full rounded-xl border-2 border-emerald-500/50 bg-white pl-10 pr-4 text-xl font-black text-slate-900 shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                    className="h-12 w-full rounded-xl border-2 border-emerald-500/50 bg-white dark:bg-slate-950 pl-10 pr-4 text-xl font-black text-slate-900 dark:text-white shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                   />
                 </div>
               </div>
 
               {/* Quick Preset Discount & Price Adjustment Buttons */}
               <div className="space-y-2">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Quick Adjustments &amp; Discounts
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     type="button"
                     onClick={() => setPriceModalInputValue(priceEditModalItem.originalPrice.toString())}
-                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs"
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-2xs"
                   >
                     Reset (Rs. {priceEditModalItem.originalPrice})
                   </button>
@@ -3543,7 +3617,7 @@ export default function POSClient() {
                         key={pct}
                         type="button"
                         onClick={() => setPriceModalInputValue(discounted.toString())}
-                        className="rounded-lg border border-emerald-200 bg-emerald-50/70 px-2 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100 shadow-2xs"
+                        className="rounded-lg border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/70 dark:bg-emerald-950/60 px-2 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 shadow-2xs"
                       >
                         -{pct}% (Rs. {discounted})
                       </button>
@@ -3557,7 +3631,7 @@ export default function POSClient() {
                           key={amt}
                           type="button"
                           onClick={() => setPriceModalInputValue(reduced.toString())}
-                          className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 shadow-2xs"
+                          className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-2xs"
                         >
                           -Rs. {amt}
                         </button>
@@ -3568,7 +3642,7 @@ export default function POSClient() {
                   <button
                     type="button"
                     onClick={() => setPriceModalInputValue("0")}
-                    className="rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-xs font-bold text-rose-700 hover:bg-rose-100 shadow-2xs"
+                    className="rounded-lg border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/60 px-2 py-1 text-xs font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 shadow-2xs"
                   >
                     Free (Rs. 0)
                   </button>
@@ -3582,10 +3656,10 @@ export default function POSClient() {
                 const pctDiff = priceEditModalItem.originalPrice > 0 ? (diff / priceEditModalItem.originalPrice) * 100 : 0;
                 return (
                   <div className={`rounded-xl p-3 border text-xs ${diff === 0
-                    ? "bg-slate-50 border-slate-200 text-slate-600"
+                    ? "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
                     : diff < 0
-                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                      : "bg-blue-50 border-blue-200 text-blue-800"
+                      ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                      : "bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300"
                     }`}>
                     <div className="flex justify-between items-center font-bold">
                       <span>Rate Difference:</span>
@@ -3605,11 +3679,11 @@ export default function POSClient() {
             </div>
 
             {/* Fixed Footer */}
-            <div className="shrink-0 border-t border-slate-100 bg-slate-50/90 p-4 flex gap-2.5">
+            <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 p-4 flex gap-2.5">
               <button
                 type="button"
                 onClick={() => setPriceEditModalItem(null)}
-                className="flex-1 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-sm transition"
+                className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm transition"
               >
                 Cancel
               </button>
@@ -3630,14 +3704,14 @@ export default function POSClient() {
       {/* ================================================= */}
 
       {isCalculatorOpen && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xs overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 dark:bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-xs overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800">
 
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3">
               <div className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-emerald-600" />
-                <h3 className="text-sm font-black text-slate-900">
+                <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">
                   Calculator
                 </h3>
               </div>
@@ -3645,14 +3719,14 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => setIsCalculatorOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Display */}
-            <div className="m-3 rounded-xl bg-slate-900 p-4 text-right">
+            <div className="m-3 rounded-xl bg-slate-900 dark:bg-slate-950 p-4 text-right border border-slate-800">
               <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                 Result
               </p>
@@ -3669,7 +3743,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={handleCalculatorClear}
-                className="rounded-xl bg-red-50 py-4 text-sm font-black text-red-600 hover:bg-red-100"
+                className="rounded-xl bg-red-50 dark:bg-red-950/50 py-4 text-sm font-black text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50"
               >
                 AC
               </button>
@@ -3677,7 +3751,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={handleCalculatorBackspace}
-                className="rounded-xl bg-slate-100 py-4 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                className="rounded-xl bg-slate-100 dark:bg-slate-800 py-4 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 DEL
               </button>
@@ -3685,7 +3759,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => handleCalculatorOperator("÷")}
-                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
               >
                 ÷
               </button>
@@ -3693,7 +3767,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => handleCalculatorOperator("×")}
-                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
               >
                 ×
               </button>
@@ -3703,7 +3777,7 @@ export default function POSClient() {
                   key={digit}
                   type="button"
                   onClick={() => handleCalculatorDigit(digit)}
-                  className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                  className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
                 >
                   {digit}
                 </button>
@@ -3712,7 +3786,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => handleCalculatorOperator("-")}
-                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
               >
                 −
               </button>
@@ -3722,7 +3796,7 @@ export default function POSClient() {
                   key={digit}
                   type="button"
                   onClick={() => handleCalculatorDigit(digit)}
-                  className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                  className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
                 >
                   {digit}
                 </button>
@@ -3731,7 +3805,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => handleCalculatorOperator("+")}
-                className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100"
+                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
               >
                 +
               </button>
@@ -3741,7 +3815,7 @@ export default function POSClient() {
                   key={digit}
                   type="button"
                   onClick={() => handleCalculatorDigit(digit)}
-                  className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                  className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
                 >
                   {digit}
                 </button>
@@ -3758,7 +3832,7 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={() => handleCalculatorDigit("0")}
-                className="col-span-2 rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                className="col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 0
               </button>
@@ -3766,14 +3840,14 @@ export default function POSClient() {
               <button
                 type="button"
                 onClick={handleCalculatorDecimal}
-                className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100"
+                className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 .
               </button>
             </div>
 
-            <div className="border-t border-slate-100 px-4 py-3 text-center">
-              <p className="text-[10px] font-medium text-slate-400">
+            <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-3 text-center">
+              <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
                 Independent Calculator • POS
               </p>
             </div>

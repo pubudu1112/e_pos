@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await hasPermission("USER_VIEW");
+    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -93,6 +99,11 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await hasPermission("USER_CREATE");
+    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
     }
 
     const body = await req.json();

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 
 export async function GET(
   req: NextRequest,
@@ -11,6 +12,11 @@ export async function GET(
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await hasPermission("USER_VIEW");
+    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
     }
 
     const { id: rawId } = await params;
@@ -58,6 +64,11 @@ export async function PUT(
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await hasPermission("USER_UPDATE");
+    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
     }
 
     const { id: rawId } = await params;
@@ -157,6 +168,11 @@ export async function DELETE(
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await hasPermission("USER_DELETE");
+    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
     }
 
     const { id: rawId } = await params;
