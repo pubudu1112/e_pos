@@ -8,11 +8,14 @@ import {
   useState,
 } from "react";
 import {
+  AlertCircle,
   ArrowRight,
+  ArrowUpDown,
   Banknote,
   BookOpen,
   CheckCircle2,
   Calculator,
+  Clock,
   Copy,
   CreditCard,
   FileText,
@@ -20,8 +23,10 @@ import {
   Layers,
   Loader2,
   Minus,
+  PauseCircle,
   Pencil,
   PenTool,
+  PlayCircle,
   Plus,
   Printer,
   QrCode,
@@ -158,6 +163,42 @@ type CompletedSaleBill = {
     expiryDate: string;
   }>;
 };
+
+type HeldCart = {
+  id: string;
+  holdNumber: number;
+  cart: CartItem[];
+  selectedCustomerId: number | null;
+  selectedCustomerName: string;
+  discountInput: string;
+  note: string;
+  subtotal: number;
+  taxTotal: number;
+  total: number;
+  itemsCount: number;
+  heldAt: string;
+};
+
+function formatTimeAgo(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    const diffMs = Date.now() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const timeStr = date.toLocaleTimeString("en-LK", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    if (diffMins < 1) return `Just now (${timeStr})`;
+    if (diffMins === 1) return `1 min ago (${timeStr})`;
+    if (diffMins < 60) return `${diffMins} mins ago (${timeStr})`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours === 1) return `1 hr ago (${timeStr})`;
+    return `${diffHours} hrs ago (${timeStr})`;
+  } catch {
+    return "";
+  }
+}
 
 // =========================================================
 // CURRENCY FORMATTER (SRI LANKAN RUPEES - Rs.)
@@ -355,6 +396,48 @@ export default function POSClient() {
 
   // Responsive Mobile Drawer
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+
+  // Held Carts State (Persistent in Local Storage)
+  const HELD_CARTS_STORAGE_KEY = "pubudu-pos-held-carts";
+  const [heldCarts, setHeldCarts] = useState<HeldCart[]>([]);
+  const [heldCartsLoaded, setHeldCartsLoaded] = useState(false);
+  const [isHeldCartsModalOpen, setIsHeldCartsModalOpen] = useState(false);
+  const [isHoldConfirmModalOpen, setIsHoldConfirmModalOpen] = useState(false);
+  const [holdNoteInput, setHoldNoteInput] = useState("");
+  const [pendingResumeHeldCart, setPendingResumeHeldCart] =
+    useState<HeldCart | null>(null);
+  const [heldCartSearch, setHeldCartSearch] = useState("");
+
+  // Load held carts from Local Storage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(HELD_CARTS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setHeldCarts(parsed);
+        }
+      }
+    } catch (error) {
+      console.error("LOAD HELD CARTS ERROR:", error);
+    } finally {
+      setHeldCartsLoaded(true);
+    }
+  }, []);
+
+  // Save held carts to Local Storage
+  useEffect(() => {
+    if (!heldCartsLoaded) return;
+    try {
+      localStorage.setItem(
+        HELD_CARTS_STORAGE_KEY,
+        JSON.stringify(heldCarts)
+      );
+    } catch (error) {
+      console.error("SAVE HELD CARTS ERROR:", error);
+      toast.error("Unable to save held orders.");
+    }
+  }, [heldCarts, heldCartsLoaded]);
 
   // =======================================================
   // FETCH ITEMS & CUSTOMERS FROM DATABASE
@@ -814,6 +897,179 @@ export default function POSClient() {
   const clearCart = useCallback(() => {
     setCart([]);
     setDiscountInput("");
+  }, []);
+
+  // =======================================================
+  // HELD CART ACTIONS (බිල්පත් තාවකාලිකව රඳවා තැබීම)
+  // =======================================================
+
+  const handleHoldCurrentCart = useCallback(
+    (noteText?: string) => {
+      if (cart.length === 0) {
+        toast.error("Cart is empty. Add items before holding.");
+        return;
+      }
+
+      const nextHoldNumber =
+        heldCarts.length > 0
+          ? Math.max(...heldCarts.map((h) => h.holdNumber || 0)) + 1
+          : 1;
+
+      const finalNote = (
+        noteText !== undefined ? noteText : holdNoteInput
+      ).trim();
+
+      const newHeldCart: HeldCart = {
+        id: `held_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        holdNumber: nextHoldNumber,
+        cart: [...cart],
+        selectedCustomerId,
+        selectedCustomerName,
+        discountInput,
+        note: finalNote,
+        subtotal,
+        taxTotal,
+        total,
+        itemsCount: totalItemsCount,
+        heldAt: new Date().toISOString(),
+      };
+
+      setHeldCarts((prev) => [newHeldCart, ...prev]);
+
+      // Clear active cart & reset customer
+      setCart([]);
+      setSelectedCustomerId(null);
+      setCustomerSearch("");
+      setDiscountInput("");
+      setHoldNoteInput("");
+      setIsHoldConfirmModalOpen(false);
+
+      toast.success(
+        `Order #${nextHoldNumber} ${finalNote ? `("${finalNote}") ` : ""}put on hold.`
+      );
+    },
+    [
+      cart,
+      heldCarts,
+      selectedCustomerId,
+      selectedCustomerName,
+      discountInput,
+      holdNoteInput,
+      subtotal,
+      taxTotal,
+      total,
+      totalItemsCount,
+    ]
+  );
+
+  const handleResumeCart = useCallback(
+    (
+      heldCart: HeldCart,
+      action: "SWAP" | "OVERWRITE" = "OVERWRITE"
+    ) => {
+      if (cart.length > 0 && !pendingResumeHeldCart) {
+        // Current cart has items, open conflict prompt
+        setPendingResumeHeldCart(heldCart);
+        return;
+      }
+
+      if (action === "SWAP" && cart.length > 0) {
+        // Put current active cart on hold first
+        const nextHoldNumber =
+          heldCarts.length > 0
+            ? Math.max(...heldCarts.map((h) => h.holdNumber || 0)) + 1
+            : 1;
+
+        const currentAsHeld: HeldCart = {
+          id: `held_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          holdNumber: nextHoldNumber,
+          cart: [...cart],
+          selectedCustomerId,
+          selectedCustomerName,
+          discountInput,
+          note: `Swapped for #${heldCart.holdNumber}`,
+          subtotal,
+          taxTotal,
+          total,
+          itemsCount: totalItemsCount,
+          heldAt: new Date().toISOString(),
+        };
+
+        setHeldCarts((prev) => [
+          currentAsHeld,
+          ...prev.filter((h) => h.id !== heldCart.id),
+        ]);
+        toast.info(`Active cart put on hold as Order #${nextHoldNumber}`);
+      } else {
+        // Overwrite / load directly
+        setHeldCarts((prev) => prev.filter((h) => h.id !== heldCart.id));
+      }
+
+      // Load held cart into active
+      setCart(heldCart.cart);
+      setSelectedCustomerId(heldCart.selectedCustomerId);
+      setDiscountInput(heldCart.discountInput);
+      setPendingResumeHeldCart(null);
+      setIsHeldCartsModalOpen(false);
+      setIsMobileCartOpen(false);
+
+      toast.success(
+        `Resumed Order #${heldCart.holdNumber} (${heldCart.selectedCustomerName})`
+      );
+    },
+    [
+      cart,
+      heldCarts,
+      selectedCustomerId,
+      selectedCustomerName,
+      discountInput,
+      subtotal,
+      taxTotal,
+      total,
+      totalItemsCount,
+      pendingResumeHeldCart,
+    ]
+  );
+
+  const handleDeleteHeldCart = useCallback((id: string) => {
+    setHeldCarts((prev) => prev.filter((h) => h.id !== id));
+    toast.success("Held order removed.");
+  }, []);
+
+  const handleClearAllHeldCarts = useCallback(() => {
+    if (heldCarts.length === 0) return;
+    if (window.confirm("Are you sure you want to delete all held orders?")) {
+      setHeldCarts([]);
+      toast.success("All held orders cleared.");
+    }
+  }, [heldCarts.length]);
+
+  const filteredHeldCarts = useMemo(() => {
+    if (!heldCartSearch.trim()) return heldCarts;
+    const q = heldCartSearch.trim().toLowerCase();
+    return heldCarts.filter(
+      (h) =>
+        h.selectedCustomerName.toLowerCase().includes(q) ||
+        h.note.toLowerCase().includes(q) ||
+        String(h.holdNumber).includes(q) ||
+        h.cart.some((i) => i.name.toLowerCase().includes(q))
+    );
+  }, [heldCarts, heldCartSearch]);
+
+  // Keyboard shortcut Alt+H or F4 to view held orders
+  useEffect(() => {
+    const handleHoldShortcut = (event: KeyboardEvent) => {
+      if (
+        (event.altKey && (event.key === "h" || event.key === "H")) ||
+        event.key === "F4"
+      ) {
+        event.preventDefault();
+        setIsHeldCartsModalOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", handleHoldShortcut);
+    return () => window.removeEventListener("keydown", handleHoldShortcut);
   }, []);
 
   const handleStartEditPrice = useCallback((item: CartItem) => {
@@ -1758,6 +2014,22 @@ export default function POSClient() {
             </button>
           )}
 
+          {/* Held Orders Button */}
+          <button
+            type="button"
+            onClick={() => setIsHeldCartsModalOpen(true)}
+            className="relative flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-amber-800 dark:text-amber-300 shadow-sm transition hover:bg-amber-100 dark:hover:bg-amber-900/40"
+            title="View held orders (Alt+H or F4)"
+          >
+            <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span className="hidden sm:inline">Held</span>
+            {heldCarts.length > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-black text-white">
+                {heldCarts.length}
+              </span>
+            )}
+          </button>
+
           {/* Theme Toggle */}
           <ThemeToggle />
 
@@ -2224,15 +2496,30 @@ export default function POSClient() {
             </div>
 
             {cart.length > 0 && (
-              <button
-                type="button"
-                onClick={clearCart}
-                className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300"
-                title="Clear current cart"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span>Clear</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHoldNoteInput("");
+                    setIsHoldConfirmModalOpen(true);
+                  }}
+                  className="flex items-center gap-1 rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition shadow-2xs"
+                  title="Hold this order"
+                >
+                  <PauseCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Hold</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={clearCart}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 ml-1"
+                  title="Clear current cart"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Clear</span>
+                </button>
+              </div>
             )}
           </div>
 
@@ -2287,8 +2574,8 @@ export default function POSClient() {
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleCustomerSelect(null)}
                     className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-slate-700 ${selectedCustomerId === null
-                        ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
-                        : "text-slate-700 dark:text-slate-200"
+                      ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
+                      : "text-slate-700 dark:text-slate-200"
                       }`}
                   >
                     Walk-in Customer
@@ -2305,8 +2592,8 @@ export default function POSClient() {
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleCustomerSelect(customer.id)}
                         className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-slate-700 ${selectedCustomerId === customer.id
-                            ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
-                            : "text-slate-700 dark:text-slate-200"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
+                          : "text-slate-700 dark:text-slate-200"
                           }`}
                       >
                         <span className="block font-semibold">
@@ -2960,6 +3247,33 @@ export default function POSClient() {
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </button>
+
+              {/* Hold Order & Held Orders in Mobile Drawer */}
+              <div className="mt-2.5 flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={cart.length === 0}
+                  onClick={() => {
+                    setHoldNoteInput("");
+                    setIsHoldConfirmModalOpen(true);
+                  }}
+                  className="flex h-9.5 flex-1 items-center justify-center gap-1.5 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 text-xs font-bold text-amber-800 dark:text-amber-300 transition hover:bg-amber-100 dark:hover:bg-amber-900/60 active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <PauseCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <span>Hold Order</span>
+                </button>
+
+                {heldCarts.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsHeldCartsModalOpen(true)}
+                    className="flex h-9.5 items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 transition hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-98"
+                  >
+                    <Clock className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Held ({heldCarts.length})</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -3850,6 +4164,109 @@ export default function POSClient() {
               <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
                 Independent Calculator • POS
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* HOLD ORDER CONFIRMATION MODAL */}
+      {/* ========================================================= */}
+      {isHoldConfirmModalOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
+                  <PauseCircle className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">Hold current order</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Save this cart and start a new order</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => setIsHoldConfirmModalOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white" aria-label="Close hold dialog">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-4 p-5">
+              <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
+                <div className="flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Items</span><strong className="text-slate-900 dark:text-white">{totalItemsCount}</strong></div>
+                <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Customer</span><strong className="max-w-[65%] truncate text-right text-slate-900 dark:text-white">{selectedCustomerName || "Walk-in Customer"}</strong></div>
+                <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Order total</span><strong className="text-base text-emerald-700 dark:text-emerald-300">{formatRs(total)}</strong></div>
+              </div>
+              <label className="block space-y-1.5">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Note (optional)</span>
+                <input value={holdNoteInput} onChange={(event) => setHoldNoteInput(event.target.value)} maxLength={120} autoFocus placeholder="e.g. Customer will come back" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-amber-950" />
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-900">
+              <button type="button" onClick={() => setIsHoldConfirmModalOpen(false)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-white dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
+              <button type="button" onClick={() => handleHoldCurrentCart()} disabled={cart.length === 0} className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-black text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-50">
+                <PauseCircle className="h-4 w-4" /> Hold order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* HELD ORDERS LIST MODAL */}
+      {/* ========================================================= */}
+      {isHeldCartsModalOpen && (
+        <div className="fixed inset-0 z-[85] flex items-center justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:p-5" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsHeldCartsModalOpen(false); }}>
+          <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"><Clock className="h-5 w-5" /></span>
+                <div><h3 className="text-base font-black text-slate-900 dark:text-white">Held Orders</h3><p className="text-xs text-slate-500 dark:text-slate-400">{heldCarts.length} order{heldCarts.length === 1 ? "" : "s"} saved on this device</p></div>
+              </div>
+              <button type="button" onClick={() => setIsHeldCartsModalOpen(false)} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white" aria-label="Close held orders"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="border-b border-slate-100 p-4 dark:border-slate-800">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="relative flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input value={heldCartSearch} onChange={(event) => setHeldCartSearch(event.target.value)} placeholder="Search by order number, customer, note or item..." className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none focus:border-amber-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white" /></div>
+                {heldCarts.length > 0 && <button type="button" onClick={handleClearAllHeldCarts} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:border-rose-900/70 dark:text-rose-300 dark:hover:bg-rose-950/30"><Trash2 className="h-3.5 w-3.5" /> Clear all</button>}
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50/70 p-4 dark:bg-slate-950/30">
+              {filteredHeldCarts.length === 0 ? (
+                <div className="flex min-h-56 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-5 text-center dark:border-slate-700 dark:bg-slate-900">
+                  <Clock className="mb-3 h-9 w-9 text-slate-300 dark:text-slate-600" />
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{heldCarts.length === 0 ? "No held orders yet" : "No matching orders"}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{heldCarts.length === 0 ? "Use the Hold button in the current order panel to save an order." : "Try another search term."}</p>
+                </div>
+              ) : filteredHeldCarts.map((held) => (
+                <div key={held.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2"><span className="rounded-lg bg-amber-100 px-2 py-1 text-xs font-black text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">Order #{held.holdNumber}</span><span className="text-xs text-slate-400">{Number.isNaN(new Date(held.heldAt).getTime()) ? "Date unavailable" : new Date(held.heldAt).toLocaleString()}</span></div>
+                      <p className="mt-2 truncate text-sm font-black text-slate-900 dark:text-white">{held.selectedCustomerName || "Walk-in Customer"}</p>
+                      {held.note && <p className="mt-1 text-xs italic text-slate-500 dark:text-slate-400">{held.note}</p>}
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{held.itemsCount} item{held.itemsCount === 1 ? "" : "s"} · {held.cart.slice(0, 3).map((item) => `${item.name} × ${item.quantity}`).join(", ")}{held.cart.length > 3 ? ` +${held.cart.length - 3} more` : ""}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end"><strong className="text-base font-black text-emerald-700 dark:text-emerald-300">{formatRs(held.total)}</strong><div className="flex items-center gap-2"><button type="button" onClick={() => handleDeleteHeldCart(held.id)} className="rounded-lg border border-rose-200 p-2 text-rose-500 hover:bg-rose-50 dark:border-rose-900/60 dark:hover:bg-rose-950/30" title="Delete held order" aria-label={`Delete order ${held.holdNumber}`}><Trash2 className="h-4 w-4" /></button><button type="button" onClick={() => handleResumeCart(held)} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"><PlayCircle className="h-4 w-4" /> Resume</button></div></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3 dark:border-slate-800"><p className="text-[11px] text-slate-400">Held orders are stored in this browser on this device.</p><button type="button" onClick={() => setIsHeldCartsModalOpen(false)} className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600">Close</button></div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* RESUME CONFLICT CONFIRMATION */}
+      {/* ========================================================= */}
+      {pendingResumeHeldCart && (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"><AlertCircle className="h-5 w-5" /></span><div><h3 className="text-base font-black text-slate-900 dark:text-white">Current order is not empty</h3><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Choose what to do with the current cart before resuming Order #{pendingResumeHeldCart.holdNumber}.</p></div></div>
+            <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800/70"><div className="flex justify-between"><span className="text-slate-500 dark:text-slate-400">Current cart</span><strong className="text-slate-900 dark:text-white">{totalItemsCount} items · {formatRs(total)}</strong></div><div className="mt-2 flex justify-between"><span className="text-slate-500 dark:text-slate-400">Held order</span><strong className="text-slate-900 dark:text-white">{pendingResumeHeldCart.itemsCount} items · {formatRs(pendingResumeHeldCart.total)}</strong></div></div>
+            <div className="mt-5 grid gap-2">
+              <button type="button" onClick={() => handleResumeCart(pendingResumeHeldCart, "SWAP")} className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-sm font-black text-emerald-800 hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/60"><span><span className="block">Swap orders</span><span className="mt-0.5 block text-xs font-medium opacity-75">Save the current cart as a held order, then resume the selected one.</span></span><ArrowRight className="h-5 w-5 shrink-0" /></button>
+              <button type="button" onClick={() => handleResumeCart(pendingResumeHeldCart, "OVERWRITE")} className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-left text-sm font-black text-rose-800 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/60"><span><span className="block">Replace current cart</span><span className="mt-0.5 block text-xs font-medium opacity-75">Discard the current cart and load the selected held order.</span></span><ArrowRight className="h-5 w-5 shrink-0" /></button>
+              <button type="button" onClick={() => setPendingResumeHeldCart(null)} className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
             </div>
           </div>
         </div>
