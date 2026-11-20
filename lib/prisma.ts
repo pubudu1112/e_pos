@@ -8,9 +8,12 @@ const adapter = new PrismaMariaDb({
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
+  collation: "utf8mb4_unicode_ci",
   connectionLimit: 10,
   allowPublicKeyRetrieval: true,
-} as unknown as ConstructorParameters<typeof PrismaMariaDb>[0]);
+} as unknown as ConstructorParameters<typeof PrismaMariaDb>[0], {
+  useTextProtocol: true,
+});
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
+import { getStoredSettings } from "@/lib/settings";
 import POSClient from "./POSClient";
 
 export default async function POSPage() {
@@ -10,5 +11,7 @@ export default async function POSPage() {
   const allowed = await hasPermission("POS_VIEW");
   if (!allowed) redirect("/access-denied?permission=POS_VIEW");
 
-  return <POSClient />;
+  const settings = await getStoredSettings();
+
+  return <POSClient imageMode={settings.posDisplayMode === "IMAGE"} />;
 }

@@ -243,7 +243,7 @@ function renderCategoryIcon(
 // MAIN POS CLIENT COMPONENT
 // =========================================================
 
-export default function POSClient() {
+export default function POSClient({ imageMode = false }: { imageMode?: boolean }) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -2208,6 +2208,11 @@ export default function POSClient() {
               <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
                 {itemsTotal} items available
               </span>
+              {imageMode && (
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                  Image POS
+                </span>
+              )}
             </div>
             {search && (
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -2271,7 +2276,7 @@ export default function POSClient() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
+              <div className={`grid ${imageMode ? "grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4" : "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4"}`}>
                 {filteredItems.map((item, index) => {
                   const itemKey = `${item.type}-${item.id}`;
                   const isFavourite = favouriteKeys.includes(itemKey);
@@ -2335,7 +2340,7 @@ export default function POSClient() {
                       {/* Product Card */}
                       <div
                         onClick={() => !isOutOfStock && addToCart(item)}
-                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 p-3.5 shadow-sm transition-all duration-150 ${isOutOfStock
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 ${imageMode ? "p-2.5" : "p-3.5"} shadow-sm transition-all duration-150 ${isOutOfStock
                           ? "cursor-not-allowed opacity-60 border-slate-200 dark:border-slate-800"
                           : "cursor-pointer border-slate-200 dark:border-slate-800 hover:-translate-y-0.5 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md"
                           } ${inCartQty > 0
@@ -2343,6 +2348,25 @@ export default function POSClient() {
                             : ""
                           }`}
                       >
+                        {imageMode && (
+                          <div className="mb-2 flex h-28 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 sm:h-32">
+                            {item.imageUrl ? (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                loading="lazy"
+                                decoding="async"
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500">
+                                <Layers className="h-8 w-8" />
+                                <span className="text-[10px] font-medium">No photo</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {/* Top Badges */}
                         <div className="flex w-full min-w-0 items-center justify-between gap-2">
 

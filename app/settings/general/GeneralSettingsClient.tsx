@@ -24,6 +24,7 @@ type SettingsData = {
   jobPrefix: string;
   expensePrefix: string;
   defaultTaxRate: number;
+  posDisplayMode: "STANDARD" | "IMAGE";
   receiptFooterMessage: string;
   vatNumber: string;
   businessRegNumber: string;
@@ -42,6 +43,7 @@ export default function GeneralSettingsClient({ canUpdate }: { canUpdate: boolea
     jobPrefix: "JOB-",
     expensePrefix: "EXP-",
     defaultTaxRate: 0,
+    posDisplayMode: "STANDARD",
     receiptFooterMessage: "Thank you for your business! Please come again.",
     vatNumber: "VAT-12345678-000",
     businessRegNumber: "PV-987654",
@@ -135,6 +137,31 @@ export default function GeneralSettingsClient({ canUpdate }: { canUpdate: boolea
           {/* Main Form Fields */}
           <form id="settings-form" onSubmit={handleSave} className="space-y-6 lg:col-span-2">
             <fieldset disabled={!canUpdate} className="space-y-6 disabled:opacity-75">
+            {/* POS Display Mode */}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+              <h2 className="text-base font-bold text-slate-900">POS Display</h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Choose the POS layout used by staff when they open the POS page.
+              </p>
+              <div className="mt-4 max-w-md">
+                <label htmlFor="pos-display-mode" className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  POS Layout
+                </label>
+                <select
+                  id="pos-display-mode"
+                  value={settings.posDisplayMode}
+                  onChange={(event) => setSettings({ ...settings, posDisplayMode: event.target.value as "STANDARD" | "IMAGE" })}
+                  className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 focus:border-primary focus:outline-none"
+                >
+                  <option value="STANDARD">Standard POS</option>
+                  <option value="IMAGE">Image POS (Supermarket)</option>
+                </select>
+                <p className="mt-2 text-xs text-slate-500">
+                  This setting applies to all staff and takes effect the next time the POS page opens.
+                </p>
+              </div>
+            </div>
+
             {/* Store Information */}
             <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">

@@ -79,6 +79,16 @@ export async function PUT(req: NextRequest) {
       updated.defaultTaxRate = defaultTaxRate;
     }
 
+    if (body.posDisplayMode !== undefined) {
+      if (body.posDisplayMode !== "STANDARD" && body.posDisplayMode !== "IMAGE") {
+        return NextResponse.json(
+          { success: false, message: "POS layout must be Standard or Image POS." },
+          { status: 400 }
+        );
+      }
+      updated.posDisplayMode = body.posDisplayMode;
+    }
+
     const saved = await saveStoredSettings(updated);
 
     return NextResponse.json({

@@ -32,6 +32,7 @@ export const DEFAULT_SETTINGS = {
   expensePrefix: "EXP-",
 
   defaultTaxRate: 0,
+  posDisplayMode: "STANDARD" as const,
 
   receiptFooterMessage: "Thank you for your business! Please come again.",
 
