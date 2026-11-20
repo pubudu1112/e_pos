@@ -1,102 +1,81 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authorize } from "@/lib/auth/authorize";
 
 // GET - POS Products + Services + Database Categories
 export async function GET(request: Request) {
   try {
+    const auth = await authorize(["POS_VIEW", "POS_CREATE_SALE"]);
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search")?.trim() || "";
+    const search = (searchParams.get("search")?.trim() || "").slice(0, 100);
+    const rawPage = Number(searchParams.get("page") || 1);
+    const page = Number.isSafeInteger(rawPage) ? Math.max(1, Math.min(rawPage, 10000)) : 1;
+    const pageSize = 80;
+    const categoryType = searchParams.get("categoryType");
+    const rawCategoryId = Number(searchParams.get("categoryId"));
+    const categoryId = Number.isInteger(rawCategoryId) && rawCategoryId > 0 ? rawCategoryId : null;
+    const skip = (page - 1) * pageSize;
+    const productWhere = {
+      status: "ACTIVE" as const,
+      ...(categoryType === "SERVICE" ? { id: -1 } : {}),
+      ...(categoryType === "PRODUCT" && categoryId ? { categoryId } : {}),
+      ...(search ? { OR: [{ name: { contains: search } }, { code: { contains: search } }, { barcode: { contains: search } }, { category: { name: { contains: search } } }] } : {}),
+    };
+    const serviceWhere = {
+      status: "ACTIVE" as const,
+      ...(categoryType === "PRODUCT" ? { id: -1 } : {}),
+      ...(categoryType === "SERVICE" && categoryId ? { categoryId } : {}),
+      ...(search ? { OR: [{ name: { contains: search } }, { code: { contains: search } }, { servicecategory: { name: { contains: search } } }] } : {}),
+    };
 
     // ---------------------------------------------------------
     // 1. Fetch Active Product Categories
     // ---------------------------------------------------------
 
-    const productCategories = await prisma.category.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-      },
-    });
+    const [productCategories, serviceCategories, products, services] = await Promise.all([
+      prisma.category.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, description: true },
+      }),
+      prisma.servicecategory.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, description: true },
+      }),
+      prisma.product.findMany({
+        where: productWhere,
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        skip,
+        take: pageSize,
+        include: { unit: true, category: true, brand: true, tax: true, stock: true },
+      }),
+      prisma.service.findMany({
+        where: serviceWhere,
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        skip,
+        take: pageSize,
+        include: { servicecategory: true, tax: true },
+      }),
+    ]);
 
-    // ---------------------------------------------------------
-    // 2. Fetch Active Service Categories
-    // ---------------------------------------------------------
-
-    const serviceCategories = await prisma.servicecategory.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-      },
-    });
-
-    // ---------------------------------------------------------
-    // 3. Products
-    // ---------------------------------------------------------
-
-    const products = await prisma.product.findMany({
-      where: {
-        status: "ACTIVE",
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search } },
-                { code: { contains: search } },
-                { barcode: { contains: search } },
-              ],
-            }
-          : {}),
-      },
-      orderBy: {
-        name: "asc",
-      },
-      include: {
-        unit: true,
-        category: true,
-        brand: true,
-        tax: true,
-        stock: true,
-      },
-    });
-
-    // ---------------------------------------------------------
-    // 4. Services
-    // ---------------------------------------------------------
-
-    const services = await prisma.service.findMany({
-      where: {
-        status: "ACTIVE",
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search } },
-                { code: { contains: search } },
-              ],
-            }
-          : {}),
-      },
-      orderBy: {
-        name: "asc",
-      },
-      include: {
-        servicecategory: true,
-        tax: true,
-      },
-    });
+    const [productTotal, serviceTotal, productCounts, serviceCounts] = await Promise.all([
+      prisma.product.count({ where: productWhere }),
+      prisma.service.count({ where: serviceWhere }),
+      prisma.product.groupBy({
+        by: ["categoryId"],
+        where: { status: "ACTIVE" },
+        _count: { _all: true },
+      }),
+      prisma.service.groupBy({
+        by: ["categoryId"],
+        where: { status: "ACTIVE" },
+        _count: { _all: true },
+      }),
+    ]);
 
     // ---------------------------------------------------------
     // 5. Format Products
@@ -109,7 +88,6 @@ export async function GET(request: Request) {
       imageUrl: product.imageUrl || null,
       type: "PRODUCT" as const,
       price: Number(product.sellingPrice),
-      purchasePrice: Number(product.purchasePrice),
       unit: product.unit?.shortName || "",
       category: product.category?.name || "",
       categoryId: product.categoryId,
@@ -138,11 +116,6 @@ export async function GET(request: Request) {
     // ---------------------------------------------------------
 
     const serviceData = services.map((service) => {
-      const paperCost = Number(service.paperCost || 0);
-      const tonerCost = Number(service.tonerCost || 0);
-      const machineCost = Number(service.machineCost || 0);
-      const totalCost = paperCost + tonerCost + machineCost;
-
       return {
         id: service.id,
         code: service.code,
@@ -158,11 +131,6 @@ export async function GET(request: Request) {
         barcode: null,
         stock: null,
         minimumStock: null,
-        paperCost,
-        tonerCost,
-        machineCost,
-        costPrice: totalCost,
-        netProfit: Number(service.basePrice) - totalCost,
         tax: service.tax
           ? {
               id: service.tax.id,
@@ -177,27 +145,30 @@ export async function GET(request: Request) {
     // 7. Category Counts
     // ---------------------------------------------------------
 
+    const productCountByCategory = new Map(
+      productCounts.map((entry) => [entry.categoryId, entry._count._all])
+    );
+    const serviceCountByCategory = new Map(
+      serviceCounts.map((entry) => [entry.categoryId, entry._count._all])
+    );
+
     const productCategoryData = productCategories.map((category) => ({
       ...category,
       type: "PRODUCT" as const,
-      count: productData.filter(
-        (item) => item.categoryId === category.id
-      ).length,
+      count: productCountByCategory.get(category.id) ?? 0,
     }));
 
     const serviceCategoryData = serviceCategories.map((category) => ({
       ...category,
       type: "SERVICE" as const,
-      count: serviceData.filter(
-        (item) => item.categoryId === category.id
-      ).length,
+      count: serviceCountByCategory.get(category.id) ?? 0,
     }));
 
     // ---------------------------------------------------------
     // 8. Combined POS Items
     // ---------------------------------------------------------
 
-    const data = [...productData, ...serviceData];
+    const data = [...productData, ...serviceData].sort((a, b) => a.name.localeCompare(b.name));
 
     return NextResponse.json({
       success: true,
@@ -205,6 +176,12 @@ export async function GET(request: Request) {
       categories: {
         products: productCategoryData,
         services: serviceCategoryData,
+      },
+      pagination: {
+        page,
+        pageSize,
+        total: productTotal + serviceTotal,
+        hasMore: productTotal > page * pageSize || serviceTotal > page * pageSize,
       },
     });
     

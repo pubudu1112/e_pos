@@ -37,6 +37,8 @@ import { useEffect, useMemo, useState } from "react";
 type SidebarProps = {
   logoutAction: () => Promise<void>;
   userRole?: string;
+  permissions: string[];
+  permissionsLoading: boolean;
   isMobileDrawer?: boolean;
   onCloseMobile?: () => void;
 };
@@ -302,21 +304,13 @@ function isActivePath(
 export default function Sidebar({
   logoutAction,
   userRole,
+  permissions,
+  permissionsLoading,
   isMobileDrawer = false,
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
-
-  const [permissions, setPermissions] =
-    useState<string[]>([]);
-
-  const [apiIsSuperAdmin, setApiIsSuperAdmin] =
-    useState(false);
-
-  const [permissionsLoading, setPermissionsLoading] =
-    useState(true);
-
-  const isSuperAdmin = userRole === "SUPER_ADMIN" || apiIsSuperAdmin;
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
 
   const [productsOpen, setProductsOpen] =
     useState(
@@ -329,67 +323,6 @@ export default function Sidebar({
     useState(
       pathname.startsWith("/reports")
     );
-
-  /* ==========================================================
-     LOAD CURRENT USER PERMISSIONS
-  ========================================================== */
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadPermissions() {
-      try {
-        setPermissionsLoading(true);
-
-        const response = await fetch(
-          "/api/auth/permissions",
-          {
-            method: "GET",
-            cache: "no-store",
-          }
-        );
-
-        const result = await response.json();
-
-        if (
-          !response.ok ||
-          !result.success ||
-          !Array.isArray(result.data)
-        ) {
-          throw new Error(
-            result.message ||
-              "Unable to load permissions."
-          );
-        }
-
-        if (!cancelled) {
-          if (result.isSuperAdmin) {
-            setApiIsSuperAdmin(true);
-          }
-          setPermissions(result.data);
-        }
-      } catch (error) {
-        console.error(
-          "Sidebar permission loading error:",
-          error
-        );
-
-        if (!cancelled) {
-          setPermissions([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setPermissionsLoading(false);
-        }
-      }
-    }
-
-    loadPermissions();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   /* ==========================================================
      PERMISSION CHECK

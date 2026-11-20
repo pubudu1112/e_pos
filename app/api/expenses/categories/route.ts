@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { authorize } from "@/lib/auth/authorize";
 
 const DEFAULT_CATEGORIES = [
   { name: "Rent & Utilities", description: "Shop rental, electricity, water, and waste management" },
@@ -18,14 +18,8 @@ const DEFAULT_CATEGORIES = [
 
 export async function GET() {
   try {
-    const session = await getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(["EXPENSE_VIEW"]);
+    if (!auth.ok) return auth.response;
 
     // Load categories directly from database.
     // No default category seeding.
@@ -64,10 +58,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authorize(["EXPENSE_CREATE"]);
+    if (!auth.ok) return auth.response;
 
     const body = await req.json();
     const { name, description } = body;

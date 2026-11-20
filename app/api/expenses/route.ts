@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { authorize } from "@/lib/auth/authorize";
 
 
 async function generateExpenseNo(): Promise<string> {
@@ -40,10 +40,8 @@ async function generateExpenseNo(): Promise<string> {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authorize(["EXPENSE_VIEW"]);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("search")?.trim() || "";
@@ -102,7 +100,7 @@ export async function GET(req: NextRequest) {
     const monthExpenses = await prisma.expense.findMany({
       where: {
         status: "ACTIVE",
-        expenseDate: { gte: startOfMonth },
+        expenseDate: { gte: startOfMonth, lt: new Date(now.getFullYear(), now.getMonth() + 1, 1) },
       },
       select: { amount: true, categoryId: true },
     });
@@ -111,7 +109,7 @@ export async function GET(req: NextRequest) {
     const todayExpenses = await prisma.expense.findMany({
       where: {
         status: "ACTIVE",
-        expenseDate: { gte: startOfToday },
+        expenseDate: { gte: startOfToday, lt: new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) },
       },
       select: { amount: true },
     });
@@ -156,10 +154,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authorize(["EXPENSE_CREATE"]);
+    if (!auth.ok) return auth.response;
+    const session = auth.session;
 
     const body = await req.json();
     const { categoryId, description, amount, expenseDate, paymentMethodId } = body;

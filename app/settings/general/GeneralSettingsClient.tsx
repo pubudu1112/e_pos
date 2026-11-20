@@ -29,7 +29,7 @@ type SettingsData = {
   businessRegNumber: string;
 };
 
-export default function GeneralSettingsClient() {
+export default function GeneralSettingsClient({ canUpdate }: { canUpdate: boolean }) {
   const [settings, setSettings] = useState<SettingsData>({
     storeName: "Pubudu Creative Hub",
     tagline: "Printing • Designing • Stationery • Mobile Accessories",
@@ -117,21 +117,24 @@ export default function GeneralSettingsClient() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            form="settings-form"
-            disabled={saving}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            <span>Save Settings</span>
-          </button>
+          {canUpdate && (
+            <button
+              type="submit"
+              form="settings-form"
+              disabled={saving}
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              <span>Save Settings</span>
+            </button>
+          )}
         </div>
 
         {/* Form and Preview Layout */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Form Fields */}
           <form id="settings-form" onSubmit={handleSave} className="space-y-6 lg:col-span-2">
+            <fieldset disabled={!canUpdate} className="space-y-6 disabled:opacity-75">
             {/* Store Information */}
             <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -298,6 +301,7 @@ export default function GeneralSettingsClient() {
                 </div>
               </div>
             </div>
+            </fieldset>
           </form>
 
           {/* Thermal Receipt Live Preview */}

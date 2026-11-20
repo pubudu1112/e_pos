@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { isPasswordLengthAllowed } from "@/lib/auth/password";
 import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
 
@@ -109,17 +110,21 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { username, fullName, email, password, roleId, status } = body;
 
-    if (!username || !username.trim()) {
+    if (typeof username !== "string" || !username.trim() || username.trim().length > 50) {
       return NextResponse.json({ success: false, message: "Username is required" }, { status: 400 });
     }
 
-    if (!fullName || !fullName.trim()) {
+    if (typeof fullName !== "string" || !fullName.trim()) {
       return NextResponse.json({ success: false, message: "Full Name is required" }, { status: 400 });
     }
 
-    if (!password || password.length < 6) {
+    if (
+      typeof password !== "string" ||
+      password.length < 6 ||
+      !isPasswordLengthAllowed(password)
+    ) {
       return NextResponse.json(
-        { success: false, message: "Password must be at least 6 characters" },
+        { success: false, message: "Password must be 6 or more characters and no more than 72 UTF-8 bytes." },
         { status: 400 }
       );
     }

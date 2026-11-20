@@ -11,10 +11,15 @@ export default async function GeneralSettingsPage() {
   }
 
   const allowed = await hasPermission("SETTINGS_VIEW");
+  const canUpdate = await hasPermission("SETTINGS_UPDATE");
 
   if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
     redirect("/access-denied?permission=SETTINGS_VIEW");
   }
 
-  return <GeneralSettingsClient />;
+  return (
+    <GeneralSettingsClient
+      canUpdate={canUpdate || session.user.role.name === "SUPER_ADMIN"}
+    />
+  );
 }

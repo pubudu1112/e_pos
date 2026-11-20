@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authorize } from "@/lib/auth/authorize";
 
 // GET - Stock Movement History
 export async function GET(request: Request) {
   try {
+    const auth = await authorize(["INVENTORY_VIEW_MOVEMENTS"]);
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(request.url);
 
     const productIdParam = searchParams.get("productId");

@@ -691,6 +691,24 @@ model UserSession {
   @@index([userId], map: "UserSession_userId_idx")
 }
 
+model AppSetting {
+  key       String   @id @db.VarChar(100)
+  value     String   @db.LongText
+  updatedAt DateTime @updatedAt
+
+  @@map("AppSetting")
+}
+
+model LoginAttempt {
+  key       String   @id @db.Char(64)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt], map: "LoginAttempt_createdAt_idx")
+  @@map("LoginAttempt")
+}
+
 enum jobstatushistory_status {
   NEW
   DESIGNING

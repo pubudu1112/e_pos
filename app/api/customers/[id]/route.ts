@@ -40,6 +40,13 @@ export async function GET(
       );
     }
 
+    if (!(await hasPermission("CUSTOMER_VIEW"))) {
+      return NextResponse.json(
+        { success: false, message: "Permission denied" },
+        { status: 403 }
+      );
+    }
+
     // 2. Validate customer ID
     const { id: rawId } = await params;
     const id = Number(rawId);

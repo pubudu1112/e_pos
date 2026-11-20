@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { authorize } from "@/lib/auth/authorize";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authorize(["EXPENSE_UPDATE"]);
+    if (!auth.ok) return auth.response;
+    const session = auth.session;
 
     const { id: rawId } = await params;
     const id = parseInt(rawId, 10);
@@ -90,10 +89,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const auth = await authorize(["EXPENSE_DELETE"]);
+    if (!auth.ok) return auth.response;
+    const session = auth.session;
 
     const { id: rawId } = await params;
     const id = parseInt(rawId, 10);

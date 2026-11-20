@@ -49,6 +49,7 @@ import React from "react";
 import PDFCounterModal, {
   type PDFCounterCartEntry,
 } from "@/components/pos/PDFCounterModal";
+import POSCalculator from "@/components/pos/POSCalculator";
 import ThemeToggle from "@/components/ThemeToggle";
 
 // =========================================================
@@ -119,7 +120,6 @@ type POSCustomer = {
   code: string;
   name: string;
   phone: string | null;
-  email: string | null;
 };
 
 type PaymentMethodType =
@@ -249,9 +249,17 @@ export default function POSClient() {
 
   // Data states
   const [items, setItems] = useState<POSItem[]>([]);
+  const [itemsPage, setItemsPage] = useState(1);
+  const [itemsHasMore, setItemsHasMore] = useState(false);
+  const [itemsTotal, setItemsTotal] = useState(0);
+  const [loadingMoreItems, setLoadingMoreItems] = useState(false);
   const [productCategories, setProductCategories] = useState<POSCategory[]>([]);
   const [serviceCategories, setServiceCategories] = useState<POSCategory[]>([]);
   const [customers, setCustomers] = useState<POSCustomer[]>([]);
+  const [customersPage, setCustomersPage] = useState(1);
+  const [customersHasMore, setCustomersHasMore] = useState(false);
+  const [loadingMoreCustomers, setLoadingMoreCustomers] = useState(false);
+  const [selectedCustomerNameOverride, setSelectedCustomerNameOverride] = useState<string | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
 
   // Filter & Search states
@@ -443,42 +451,70 @@ export default function POSClient() {
   // FETCH ITEMS & CUSTOMERS FROM DATABASE
   // =======================================================
 
-  const loadItems = useCallback(async () => {
+  const loadItems = useCallback(async (page = 1, append = false) => {
     try {
-      setLoading(true);
-      const response = await fetch("/api/pos/items", { cache: "no-store" });
+      if (append) setLoadingMoreItems(true);
+      else setLoading(true);
+
+      const params = new URLSearchParams({ page: String(page) });
+      if (search.trim()) params.set("search", search.trim());
+      if (selectedCategory !== "All") {
+        const [categoryType, categoryId] = selectedCategory.split("-");
+        params.set("categoryType", categoryType);
+        params.set("categoryId", categoryId);
+      }
+      const response = await fetch(`/api/pos/items?${params.toString()}`, { cache: "no-store" });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to load products.");
       }
 
-      setItems(result.data || []);
+      setItems((current) => append ? [...current, ...(result.data || [])] : (result.data || []));
       setProductCategories(result.categories?.products || []);
       setServiceCategories(result.categories?.services || []);
+      setItemsPage(page);
+      setItemsHasMore(result.pagination?.hasMore === true);
+      setItemsTotal(Number(result.pagination?.total || 0));
     } catch (err) {
       console.error("LOAD POS ITEMS ERROR:", err);
       const msg = err instanceof Error ? err.message : "Failed to load items.";
       toast.error(msg);
     } finally {
       setLoading(false);
+      setLoadingMoreItems(false);
     }
-  }, []);
+  }, [search, selectedCategory]);
 
-  const loadCustomers = useCallback(async () => {
+  const loadCustomers = useCallback(async (query = "", page = 1, append = false) => {
     try {
-      const response = await fetch("/api/pos/customers", {
-        cache: "no-store",
-      });
+      if (append) setLoadingMoreCustomers(true);
+      const params = new URLSearchParams({ page: String(page) });
+      if (query.trim()) params.set("search", query.trim());
+      const response = await fetch(`/api/pos/customers?${params.toString()}`, { cache: "no-store" });
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setCustomers(result.data || []);
+        setCustomers((current) => append ? [...current, ...(result.data || [])] : (result.data || []));
+        setCustomersPage(page);
+        setCustomersHasMore(result.pagination?.hasMore === true);
       }
     } catch (err) {
       console.error("LOAD CUSTOMERS ERROR:", err);
+    } finally {
+      setLoadingMoreCustomers(false);
     }
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => void loadItems(1, false), search.trim() ? 250 : 0);
+    return () => clearTimeout(timer);
+  }, [loadItems, search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => void loadCustomers(customerSearch, 1, false), customerSearch.trim() ? 250 : 0);
+    return () => clearTimeout(timer);
+  }, [customerSearch, loadCustomers]);
 
   const filteredCustomers = useMemo(() => {
     const keyword = customerSearch.trim().toLowerCase();
@@ -494,54 +530,18 @@ export default function POSClient() {
     );
   }, [customers, customerSearch]);
 
-  const selectedCustomerName =
-    customers.find((customer) => customer.id === selectedCustomerId)?.name ||
-    "Walk-in Customer";
+  const selectedCustomerName = selectedCustomerId === null
+    ? "Walk-in Customer"
+    : selectedCustomerNameOverride || customers.find((customer) => customer.id === selectedCustomerId)?.name || "Customer";
 
   function handleCustomerSelect(customerId: number | null) {
     setSelectedCustomerId(customerId);
+    setSelectedCustomerNameOverride(
+      customerId === null ? null : customers.find((customer) => customer.id === customerId)?.name || null
+    );
     setCustomerSearch("");
     setIsCustomerDropdownOpen(false);
   }
-
-  useEffect(() => {
-    let active = true;
-
-    async function initializePOS() {
-      try {
-        const [itemsRes, custRes] = await Promise.all([
-          fetch("/api/pos/items", { cache: "no-store" }),
-          fetch("/api/pos/customers", { cache: "no-store" }),
-        ]);
-
-        const itemsJson = await itemsRes.json();
-        const custJson = await custRes.json();
-
-        if (active) {
-          if (itemsRes.ok && itemsJson.success) {
-            setItems(itemsJson.data || []);
-            setProductCategories(itemsJson.categories?.products || []);
-            setServiceCategories(itemsJson.categories?.services || []);
-          }
-          if (custRes.ok && custJson.success) {
-            setCustomers(custJson.data || []);
-          }
-        }
-      } catch (err) {
-        console.error("INIT POS ERROR:", err);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    initializePOS();
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // =======================================================
   // DATABASE-DRIVEN PRODUCT & SERVICE CATEGORIES
@@ -939,6 +939,7 @@ export default function POSClient() {
       // Clear active cart & reset customer
       setCart([]);
       setSelectedCustomerId(null);
+      setSelectedCustomerNameOverride(null);
       setCustomerSearch("");
       setDiscountInput("");
       setHoldNoteInput("");
@@ -1008,6 +1009,7 @@ export default function POSClient() {
       // Load held cart into active
       setCart(heldCart.cart);
       setSelectedCustomerId(heldCart.selectedCustomerId);
+      setSelectedCustomerNameOverride(heldCart.selectedCustomerName || null);
       setDiscountInput(heldCart.discountInput);
       setPendingResumeHeldCart(null);
       setIsHeldCartsModalOpen(false);
@@ -1162,14 +1164,30 @@ export default function POSClient() {
   }, [priceEditModalItem, priceModalInputValue]);
 
   // Quick Barcode / Code search add on Enter
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleSearchKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && search.trim()) {
+      e.preventDefault();
       const trimmed = search.trim().toLowerCase();
-      const exactMatch = items.find(
+      let exactMatch = items.find(
         (i) =>
           (i.barcode && i.barcode.toLowerCase() === trimmed) ||
           i.code.toLowerCase() === trimmed
       );
+
+      if (!exactMatch) {
+        try {
+          const params = new URLSearchParams({ search: search.trim(), page: "1" });
+          const response = await fetch(`/api/pos/items?${params.toString()}`, { cache: "no-store" });
+          const result = await response.json();
+          if (response.ok && result.success && Array.isArray(result.data)) {
+            exactMatch = result.data.find(
+              (item: POSItem) => item.barcode?.toLowerCase() === trimmed || item.code.toLowerCase() === trimmed
+            );
+          }
+        } catch {
+          toast.error("Could not look up that barcode. Please try again.");
+        }
+      }
 
       if (exactMatch) {
         addToCart(exactMatch);
@@ -1281,7 +1299,7 @@ export default function POSClient() {
           second: "2-digit",
           hour12: true,
         }),
-        customerName: selectedCustomer ? selectedCustomer.name : "Walk-in Customer",
+        customerName: selectedCustomer ? selectedCustomer.name : selectedCustomerName,
         customerPhone: selectedCustomer?.phone || undefined,
         paymentMethod,
         items: cart.map((i) => ({
@@ -1717,7 +1735,8 @@ export default function POSClient() {
       }
 
       toast.success(`Customer ${result.data.name} added!`);
-      await loadCustomers();
+      setSelectedCustomerNameOverride(result.data.name);
+      await loadCustomers("", 1, false);
       setSelectedCustomerId(result.data.id);
       setIsNewCustomerModalOpen(false);
       setNewCustName("");
@@ -2035,7 +2054,7 @@ export default function POSClient() {
 
           <button
             type="button"
-            onClick={loadItems}
+            onClick={() => void loadItems(1, false)}
             disabled={loading}
             className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-700"
             title="Refresh Catalog"
@@ -2187,7 +2206,7 @@ export default function POSClient() {
                   : categoryList.find((cat) => cat.key === selectedCategory)?.name || "Category"}
               </span>
               <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                {filteredItems.length} items available
+                {itemsTotal} items available
               </span>
             </div>
             {search && (
@@ -2208,7 +2227,7 @@ export default function POSClient() {
                 }`}
             >
               <Layers className="h-3 w-3" />
-              <span>All ({items.length})</span>
+              <span>All ({categoryList.reduce((sum, category) => sum + category.count, 0)})</span>
             </button>
             {categoryList.map((cat) => {
               const isSelected = selectedCategory === cat.key;
@@ -2478,6 +2497,18 @@ export default function POSClient() {
                 })}
               </div>
             )}
+            {!loading && itemsHasMore && (
+              <div className="flex justify-center py-5">
+                <button
+                  type="button"
+                  onClick={() => void loadItems(itemsPage + 1, true)}
+                  disabled={loadingMoreItems}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50"
+                >
+                  {loadingMoreItems ? "Loading…" : "Load more items"}
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
@@ -2610,6 +2641,17 @@ export default function POSClient() {
                     <p className="px-3 py-4 text-center text-xs text-slate-400 dark:text-slate-500">
                       No customers found
                     </p>
+                  )}
+                  {customersHasMore && (
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => void loadCustomers(customerSearch, customersPage + 1, true)}
+                      disabled={loadingMoreCustomers}
+                      className="w-full border-t border-slate-100 dark:border-slate-700 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 disabled:opacity-50"
+                    >
+                      {loadingMoreCustomers ? "Loading…" : "Load more customers"}
+                    </button>
                   )}
                 </div>
               )}
@@ -3325,8 +3367,7 @@ export default function POSClient() {
                 </div>
                 <p className="mt-2 text-[11px] text-slate-300 border-t border-white/10 pt-1.5 truncate">
                   Customer:{" "}
-                  {customers.find((c) => c.id === selectedCustomerId)?.name ||
-                    "Walk-in Customer"}
+                  {selectedCustomerName}
                 </p>
               </div>
 
@@ -4013,161 +4054,17 @@ export default function POSClient() {
         </div>
       )}
 
-      {/* ================================================= */}
-      {/* INDEPENDENT CALCULATOR MODAL */}
-      {/* ================================================= */}
-
-      {isCalculatorOpen && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-900/50 dark:bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-xs overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-2xl border border-slate-100 dark:border-slate-800">
-
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white">
-                  Calculator
-                </h3>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsCalculatorOpen(false)}
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Display */}
-            <div className="m-3 rounded-xl bg-slate-900 dark:bg-slate-950 p-4 text-right border border-slate-800">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Result
-              </p>
-              <p className="overflow-hidden text-3xl font-black text-white">
-                {Number(calculatorDisplay).toLocaleString("en-LK", {
-                  maximumFractionDigits: 8,
-                })}
-              </p>
-            </div>
-
-            {/* Keypad */}
-            <div className="grid grid-cols-4 gap-2 p-3 pt-0">
-
-              <button
-                type="button"
-                onClick={handleCalculatorClear}
-                className="rounded-xl bg-red-50 dark:bg-red-950/50 py-4 text-sm font-black text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50"
-              >
-                AC
-              </button>
-
-              <button
-                type="button"
-                onClick={handleCalculatorBackspace}
-                className="rounded-xl bg-slate-100 dark:bg-slate-800 py-4 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
-              >
-                DEL
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCalculatorOperator("÷")}
-                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
-              >
-                ÷
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCalculatorOperator("×")}
-                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
-              >
-                ×
-              </button>
-
-              {["7", "8", "9"].map((digit) => (
-                <button
-                  key={digit}
-                  type="button"
-                  onClick={() => handleCalculatorDigit(digit)}
-                  className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
-                >
-                  {digit}
-                </button>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => handleCalculatorOperator("-")}
-                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
-              >
-                −
-              </button>
-
-              {["4", "5", "6"].map((digit) => (
-                <button
-                  key={digit}
-                  type="button"
-                  onClick={() => handleCalculatorDigit(digit)}
-                  className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
-                >
-                  {digit}
-                </button>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => handleCalculatorOperator("+")}
-                className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 py-4 text-lg font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
-              >
-                +
-              </button>
-
-              {["1", "2", "3"].map((digit) => (
-                <button
-                  key={digit}
-                  type="button"
-                  onClick={() => handleCalculatorDigit(digit)}
-                  className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
-                >
-                  {digit}
-                </button>
-              ))}
-
-              <button
-                type="button"
-                onClick={handleCalculatorEquals}
-                className="row-span-2 rounded-xl bg-emerald-600 text-xl font-black text-white hover:bg-emerald-700"
-              >
-                =
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCalculatorDigit("0")}
-                className="col-span-2 rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
-              >
-                0
-              </button>
-
-              <button
-                type="button"
-                onClick={handleCalculatorDecimal}
-                className="rounded-xl bg-slate-50 dark:bg-slate-800 py-4 text-lg font-bold text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700"
-              >
-                .
-              </button>
-            </div>
-
-            <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-3 text-center">
-              <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                Independent Calculator • POS
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      <POSCalculator
+        open={isCalculatorOpen}
+        display={calculatorDisplay}
+        onClose={() => setIsCalculatorOpen(false)}
+        onDigit={handleCalculatorDigit}
+        onDecimal={handleCalculatorDecimal}
+        onOperator={handleCalculatorOperator}
+        onEquals={handleCalculatorEquals}
+        onClear={handleCalculatorClear}
+        onBackspace={handleCalculatorBackspace}
+      />
 
       {/* ========================================================= */}
       {/* HOLD ORDER CONFIRMATION MODAL */}

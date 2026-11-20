@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authorize } from "@/lib/auth/authorize";
 
 // GET - Current Inventory
 export async function GET() {
   try {
+    const auth = await authorize(["INVENTORY_VIEW"]);
+    if (!auth.ok) return auth.response;
+
     // ---------------------------------------------------------
     // Get all active products
     // ---------------------------------------------------------

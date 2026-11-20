@@ -1,22 +1,38 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { verifyPassword } from "@/lib/auth/password";
+import { isPasswordLengthAllowed, verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
+import { clearLoginAttempts, consumeLoginAttempt } from "@/lib/auth/login-rate-limit";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body: unknown = await request.json();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json(
+        { success: false, message: "Username and password are required." },
+        { status: 400 }
+      );
+    }
 
-    const username = body.username?.trim();
-    const password = body.password;
+    const payload = body as Record<string, unknown>;
+    const username = typeof payload.username === "string" ? payload.username.trim() : "";
+    const password = typeof payload.password === "string" ? payload.password : "";
 
-    if (!username || !password) {
+    if (!username || username.length > 50 || !password || !isPasswordLengthAllowed(password)) {
       return NextResponse.json(
         {
           success: false,
           message: "Username and password are required.",
         },
         { status: 400 }
+      );
+    }
+
+    const rateLimit = await consumeLoginAttempt(username, request);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { success: false, message: "Too many sign-in attempts. Please try again shortly." },
+        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
       );
     }
 
@@ -43,9 +59,9 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Your account is not active.",
+          message: "Invalid username or password.",
         },
-        { status: 403 }
+        { status: 401 }
       );
     }
 
@@ -63,6 +79,8 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
+    await clearLoginAttempts(username, request);
 
     await prisma.user.update({
       where: {

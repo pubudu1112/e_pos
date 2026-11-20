@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { authorize } from "@/lib/auth/authorize";
 
 function generateAdjustmentNo() {
   const now = new Date();
@@ -18,6 +19,9 @@ function generateAdjustmentNo() {
 // POST - Create Stock Adjustment
 export async function POST(request: Request) {
   try {
+    const auth = await authorize(["INVENTORY_ADJUST"]);
+    if (!auth.ok) return auth.response;
+
     const body = await request.json();
 
     const productId = Number(body.productId);
@@ -124,22 +128,7 @@ export async function POST(request: Request) {
     // Check Login
     // ---------------------------------------------------------
 
-    const { getSession } = await import(
-      "@/lib/auth/session"
-    );
-
-    const session = await getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "You must be logged in to adjust stock.",
-        },
-        { status: 401 }
-      );
-    }
+    const session = auth.session;
 
     const createdById = session.user.id;
 

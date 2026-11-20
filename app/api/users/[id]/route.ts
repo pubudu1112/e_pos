@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { isPasswordLengthAllowed } from "@/lib/auth/password";
 import { getSession } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
 
@@ -110,13 +111,14 @@ export async function PUT(
     if (status !== undefined) data.status = status;
 
     if (newPassword && newPassword.trim()) {
-      if (newPassword.trim().length < 6) {
+      const normalizedPassword = newPassword.trim();
+      if (normalizedPassword.length < 6 || !isPasswordLengthAllowed(normalizedPassword)) {
         return NextResponse.json(
-          { success: false, message: "New password must be at least 6 characters" },
+          { success: false, message: "New password must be 6 or more characters and no more than 72 UTF-8 bytes." },
           { status: 400 }
         );
       }
-      data.passwordHash = await bcrypt.hash(newPassword.trim(), 12);
+      data.passwordHash = await bcrypt.hash(normalizedPassword, 12);
     }
 
     const updated = await prisma.user.update({

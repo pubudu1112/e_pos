@@ -44,7 +44,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push("/");
       router.refresh();
     } catch {
       setError("Unable to connect to the server.");

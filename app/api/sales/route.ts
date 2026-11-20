@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { authorize } from "@/lib/auth/authorize";
 import { prisma } from "@/lib/prisma";
 
 function toNumber(value: unknown) {
@@ -8,17 +8,8 @@ function toNumber(value: unknown) {
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized",
-        },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(["SALE_VIEW", "REPORT_SALES_VIEW"]);
+    if (!auth.ok) return auth.response;
 
     const { searchParams } =
       new URL(request.url);

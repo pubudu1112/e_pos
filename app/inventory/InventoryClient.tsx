@@ -92,6 +92,7 @@ export default function InventoryClient() {
 
   // Stock Adjustment
   const [adjustmentOpen, setAdjustmentOpen] = useState(false);
+  const [canAdjustStock, setCanAdjustStock] = useState(false);
 
   const [adjustmentProducts, setAdjustmentProducts] = useState<
     AdjustmentProduct[]
@@ -179,6 +180,21 @@ export default function InventoryClient() {
 
   useEffect(() => {
     loadInventory();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/auth/permissions", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((result) => {
+        if (active && result.success && Array.isArray(result.data)) {
+          setCanAdjustStock(result.isSuperAdmin === true || result.data.includes("INVENTORY_ADJUST"));
+        }
+      })
+      .catch(() => {
+        if (active) setCanAdjustStock(false);
+      });
+    return () => { active = false; };
   }, []);
 
   // ============================================================
@@ -579,14 +595,14 @@ export default function InventoryClient() {
         {/* Header Buttons */}
         <div className="flex flex-wrap items-center gap-3">
 
-          <button
+          {canAdjustStock && <button
             type="button"
             onClick={handleOpenAdjustment}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
             Stock Adjustment
-          </button>
+          </button>}
 
           <button
             type="button"
@@ -1175,12 +1191,12 @@ export default function InventoryClient() {
       {/* STOCK ADJUSTMENT MODAL */}
       {/* ====================================================== */}
 
-      <StockAdjustmentModal
+      {canAdjustStock && <StockAdjustmentModal
         open={adjustmentOpen}
         products={adjustmentProducts}
         onClose={() => setAdjustmentOpen(false)}
         onSuccess={handleAdjustmentSuccess}
-      />
+      />}
 
     </div>
   );

@@ -14,6 +14,10 @@ export async function GET(
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
+    if (!(await hasPermission("JOB_VIEW"))) {
+      return NextResponse.json({ success: false, message: "Permission denied" }, { status: 403 });
+    }
+
     const { id: rawId } = await params;
     const id = Number(rawId);
     if (isNaN(id) || id <= 0) {

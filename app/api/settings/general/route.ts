@@ -1,28 +1,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 
-import { getSession } from "@/lib/auth/session";
-import { hasPermission } from "@/lib/auth/permissions";
-import { getStoredSettings } from "@/lib/settings";
-
-const SETTINGS_FILE = path.join(
-  process.cwd(),
-  "data",
-  "general-settings.json"
-);
+import { authorize } from "@/lib/auth/authorize";
+import { getStoredSettings, saveStoredSettings } from "@/lib/settings";
 
 export async function GET() {
   try {
-    const session = await getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(["SETTINGS_VIEW"]);
+    if (!auth.ok) return auth.response;
 
     const settings = await getStoredSettings();
 
@@ -45,22 +30,8 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
-    const session = await getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const allowed = await hasPermission("SETTINGS_VIEW");
-    if (!allowed && session.user.role.name !== "SUPER_ADMIN") {
-      return NextResponse.json(
-        { success: false, message: "Permission denied" },
-        { status: 403 }
-      );
-    }
+    const auth = await authorize(["SETTINGS_UPDATE"]);
+    if (!auth.ok) return auth.response;
 
     const body = await req.json();
 
@@ -79,26 +50,41 @@ export async function PUT(req: NextRequest) {
     }
 
     const current = await getStoredSettings();
+    const stringFields = [
+      "storeName", "tagline", "phone", "email", "address",
+      "currencySymbol", "currencyCode", "invoicePrefix", "jobPrefix",
+      "expensePrefix", "receiptFooterMessage", "vatNumber", "businessRegNumber",
+    ] as const;
+    const updated: Record<string, unknown> = { ...current };
 
-    const updated = {
-      ...current,
-      ...body,
-    };
+    for (const field of stringFields) {
+      if (body[field] === undefined) continue;
+      if (typeof body[field] !== "string" || body[field].length > 500) {
+        return NextResponse.json(
+          { success: false, message: `Invalid value for ${field}.` },
+          { status: 400 }
+        );
+      }
+      updated[field] = body[field].trim();
+    }
 
-    const dir = path.dirname(SETTINGS_FILE);
+    if (body.defaultTaxRate !== undefined) {
+      const defaultTaxRate = Number(body.defaultTaxRate);
+      if (!Number.isFinite(defaultTaxRate) || defaultTaxRate < 0 || defaultTaxRate > 100) {
+        return NextResponse.json(
+          { success: false, message: "Tax rate must be between 0 and 100." },
+          { status: 400 }
+        );
+      }
+      updated.defaultTaxRate = defaultTaxRate;
+    }
 
-    await fs.mkdir(dir, { recursive: true });
-
-    await fs.writeFile(
-      SETTINGS_FILE,
-      JSON.stringify(updated, null, 2),
-      "utf-8"
-    );
+    const saved = await saveStoredSettings(updated);
 
     return NextResponse.json({
       success: true,
       message: "Settings updated successfully",
-      data: updated,
+      data: saved,
     });
   } catch (error) {
     console.error("UPDATE SETTINGS ERROR:", error);

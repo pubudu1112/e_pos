@@ -1,12 +1,13 @@
 
 import fs from "fs/promises";
 import path from "path";
+import { prisma } from "@/lib/prisma";
 
 // ============================================================
 // SETTINGS FILE PATH
 // ============================================================
 
-const SETTINGS_FILE = path.join(
+const LEGACY_SETTINGS_FILE = path.join(
   process.cwd(),
   "data",
   "general-settings.json"
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS = {
 
   vatNumber: "VAT-12345678-000",
   businessRegNumber: "PV-987654",
+  posAllowPriceEdit: "ADMIN_MANAGER",
 };
 
 // ============================================================
@@ -43,19 +45,55 @@ export const DEFAULT_SETTINGS = {
 // ============================================================
 
 export async function getStoredSettings() {
-  try {
-    const raw = await fs.readFile(
-      SETTINGS_FILE,
-      "utf-8"
-    );
+  const persisted = await prisma.appSetting.findUnique({
+    where: { key: "general" },
+    select: { value: true },
+  });
 
-    const savedSettings = JSON.parse(raw);
-
+  if (persisted) {
     return {
       ...DEFAULT_SETTINGS,
-      ...savedSettings,
+      ...JSON.parse(persisted.value),
     };
-  } catch (error) {
-    return DEFAULT_SETTINGS;
   }
+
+  // One-time migration from the former local file store.
+  let legacy: Record<string, unknown> = {};
+  try {
+    const raw = await fs.readFile(LEGACY_SETTINGS_FILE, "utf-8");
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      legacy = parsed as Record<string, unknown>;
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      throw error;
+    }
+  }
+
+  const initial = { ...DEFAULT_SETTINGS, ...legacy };
+  await prisma.appSetting.createMany({
+    data: [{ key: "general", value: JSON.stringify(initial), updatedAt: new Date() }],
+    skipDuplicates: true,
+  });
+
+  const saved = await prisma.appSetting.findUnique({
+    where: { key: "general" },
+    select: { value: true },
+  });
+
+  return {
+    ...DEFAULT_SETTINGS,
+    ...JSON.parse(saved?.value ?? JSON.stringify(initial)),
+  };
+}
+
+export async function saveStoredSettings(settings: Record<string, unknown>) {
+  const value = JSON.stringify(settings);
+  await prisma.appSetting.upsert({
+    where: { key: "general" },
+    create: { key: "general", value, updatedAt: new Date() },
+    update: { value },
+  });
+  return settings;
 }

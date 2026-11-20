@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth/session";
+import { authorize } from "@/lib/auth/authorize";
 
 /* ============================================================
    HELPERS
@@ -106,17 +106,8 @@ export async function GET(request: NextRequest) {
        AUTHENTICATION
     ======================================================== */
 
-    const session = await getSession();
-
-    if (!session) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Unauthorized.",
-        },
-        { status: 401 }
-      );
-    }
+    const auth = await authorize(["DASHBOARD_VIEW"]);
+    if (!auth.ok) return auth.response;
 
     /* ========================================================
        REQUEST PARAMETERS
