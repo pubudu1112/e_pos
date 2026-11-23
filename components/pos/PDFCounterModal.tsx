@@ -87,7 +87,7 @@ export default function PDFCounterModal({ services, onClose, onAddToCart }: Prop
           {doubleServiceId && doubleServiceId === singleServiceId && <p className="mt-2 text-sm text-red-600 dark:text-red-400">Choose two different POS services.</p>}
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex gap-5 text-sm font-bold text-slate-800 dark:text-slate-200"><span>Double Side: {counts.doubleSideCount}</span><span>One Side: {counts.singleSideCount}</span></div>
-            <button type="button" disabled={!canAdd} onClick={addToCart} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-40"><ShoppingCart size={18}/> Add to POS Cart</button>
+            <button type="button" disabled={!canAdd} onClick={addToCart} className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-3 font-bold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40"><ShoppingCart size={18}/> Add to POS Cart</button>
           </div>
         </div>
       </div>

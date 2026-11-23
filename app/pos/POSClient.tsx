@@ -9,20 +9,33 @@ import {
 } from "react";
 import {
   AlertCircle,
+  Apple,
   ArrowRight,
   ArrowUpDown,
   Banknote,
+  Book,
   BookOpen,
+  Box,
+  Brush,
+  Cable,
+  Camera,
+  CalendarDays,
   CheckCircle2,
   Calculator,
   Clock,
+  ClipboardList,
   Copy,
   CreditCard,
   FileText,
+  FolderOpen,
   Home,
   Layers,
   Loader2,
+  LogOut,
   Minus,
+  Monitor,
+  Package,
+  Palette,
   PauseCircle,
   Pencil,
   PenTool,
@@ -33,14 +46,17 @@ import {
   Receipt,
   RefreshCw,
   ScanLine,
+  Scissors,
   Search,
   ShieldCheck,
+  ShoppingBasket,
   ShoppingCart,
   Star,
   Smartphone,
   Trash2,
   UserPlus,
   UserRound,
+  Wrench,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -91,7 +107,7 @@ type CartItem = POSItem & {
 type CategoryInfo = {
   name: string;
   count: number;
-  iconName: string;
+  iconName: CategoryIconName;
   colorScheme: {
     bg: string;
     text: string;
@@ -179,6 +195,130 @@ type HeldCart = {
   heldAt: string;
 };
 
+type POSPaletteId =
+  | "lagoon"
+  | "cobalt"
+  | "orchid"
+  | "sage"
+  | "arctic"
+  | "marigold"
+  | "tangerine"
+  | "cherry"
+  | "plum"
+  | "graphite";
+
+const POS_PALETTE_STORAGE_KEY = "pubudu-pos-palette";
+const POS_PALETTE_SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const;
+
+const POS_PALETTES: Array<{
+  id: POSPaletteId;
+  name: string;
+  description: string;
+  swatch: string;
+  shades: Record<(typeof POS_PALETTE_SHADES)[number], string>;
+}> = [
+  {
+    id: "lagoon",
+    name: "Lagoon",
+    description: "Balanced teal",
+    swatch: "#0d9488",
+    shades: {
+      50: "#f0fdfa", 100: "#ccfbf1", 200: "#99f6e4", 300: "#5eead4", 400: "#2dd4bf",
+      500: "#14b8a6", 600: "#0d9488", 700: "#0f766e", 800: "#115e59", 900: "#134e4a", 950: "#042f2e",
+    },
+  },
+  {
+    id: "cobalt",
+    name: "Cobalt",
+    description: "Confident blue",
+    swatch: "#2563eb",
+    shades: {
+      50: "#eff6ff", 100: "#dbeafe", 200: "#bfdbfe", 300: "#93c5fd", 400: "#60a5fa",
+      500: "#3b82f6", 600: "#2563eb", 700: "#1d4ed8", 800: "#1e40af", 900: "#1e3a8a", 950: "#172554",
+    },
+  },
+  {
+    id: "orchid",
+    name: "Orchid",
+    description: "Expressive violet",
+    swatch: "#7c3aed",
+    shades: {
+      50: "#f5f3ff", 100: "#ede9fe", 200: "#ddd6fe", 300: "#c4b5fd", 400: "#a78bfa",
+      500: "#8b5cf6", 600: "#7c3aed", 700: "#6d28d9", 800: "#5b21b6", 900: "#4c1d95", 950: "#2e1065",
+    },
+  },
+  {
+    id: "sage",
+    name: "Sage",
+    description: "Calm botanical green",
+    swatch: "#16a34a",
+    shades: {
+      50: "#f0fdf4", 100: "#dcfce7", 200: "#bbf7d0", 300: "#86efac", 400: "#4ade80",
+      500: "#22c55e", 600: "#16a34a", 700: "#15803d", 800: "#166534", 900: "#14532d", 950: "#052e16",
+    },
+  },
+  {
+    id: "arctic",
+    name: "Arctic",
+    description: "Fresh sky blue",
+    swatch: "#0284c7",
+    shades: {
+      50: "#f0f9ff", 100: "#e0f2fe", 200: "#bae6fd", 300: "#7dd3fc", 400: "#38bdf8",
+      500: "#0ea5e9", 600: "#0284c7", 700: "#0369a1", 800: "#075985", 900: "#0c4a6e", 950: "#082f49",
+    },
+  },
+  {
+    id: "marigold",
+    name: "Marigold",
+    description: "Warm golden yellow",
+    swatch: "#d97706",
+    shades: {
+      50: "#fffbeb", 100: "#fef3c7", 200: "#fde68a", 300: "#fcd34d", 400: "#fbbf24",
+      500: "#f59e0b", 600: "#d97706", 700: "#b45309", 800: "#92400e", 900: "#78350f", 950: "#451a03",
+    },
+  },
+  {
+    id: "tangerine",
+    name: "Tangerine",
+    description: "Bright citrus orange",
+    swatch: "#ea580c",
+    shades: {
+      50: "#fff7ed", 100: "#ffedd5", 200: "#fed7aa", 300: "#fdba74", 400: "#fb923c",
+      500: "#f97316", 600: "#ea580c", 700: "#c2410c", 800: "#9a3412", 900: "#7c2d12", 950: "#431407",
+    },
+  },
+  {
+    id: "cherry",
+    name: "Cherry",
+    description: "Bold ruby red",
+    swatch: "#dc2626",
+    shades: {
+      50: "#fef2f2", 100: "#fee2e2", 200: "#fecaca", 300: "#fca5a5", 400: "#f87171",
+      500: "#ef4444", 600: "#dc2626", 700: "#b91c1c", 800: "#991b1b", 900: "#7f1d1d", 950: "#450a0a",
+    },
+  },
+  {
+    id: "plum",
+    name: "Plum",
+    description: "Rich magenta violet",
+    swatch: "#c026d3",
+    shades: {
+      50: "#fdf4ff", 100: "#fae8ff", 200: "#f5d0fe", 300: "#f0abfc", 400: "#e879f9",
+      500: "#d946ef", 600: "#c026d3", 700: "#a21caf", 800: "#86198f", 900: "#701a75", 950: "#4a044e",
+    },
+  },
+  {
+    id: "graphite",
+    name: "Graphite",
+    description: "Quiet slate neutral",
+    swatch: "#475569",
+    shades: {
+      50: "#f8fafc", 100: "#f1f5f9", 200: "#e2e8f0", 300: "#cbd5e1", 400: "#94a3b8",
+      500: "#64748b", 600: "#475569", 700: "#334155", 800: "#1e293b", 900: "#0f172a", 950: "#020617",
+    },
+  },
+];
+
 function formatTimeAgo(isoString: string): string {
   try {
     const date = new Date(isoString);
@@ -228,24 +368,194 @@ const DEFAULT_CATEGORY_STYLE = {
   activeRing: "ring-slate-900 dark:ring-slate-800",
 };
 
-function renderCategoryIcon(
+const CATEGORY_ICONS = {
+  Apple,
+  Book,
+  BookOpen,
+  Box,
+  Brush,
+  Cable,
+  Camera,
+  ClipboardList,
+  Copy,
+  FileText,
+  FolderOpen,
+  Layers,
+  Monitor,
+  Package,
+  Palette,
+  PenTool,
+  Printer,
+  Scissors,
+  ShoppingBasket,
+  Smartphone,
+  Wrench,
+};
+
+type CategoryIconName = keyof typeof CATEGORY_ICONS;
+
+const FALLBACK_CATEGORY_ICONS: CategoryIconName[] = [
+  "Package",
+  "Box",
+  "ClipboardList",
+  "FolderOpen",
+  "FileText",
+  "Book",
+  "ShoppingBasket",
+  "Wrench",
+  "Palette",
+  "Camera",
+  "Cable",
+  "Smartphone",
+  "Scissors",
+  "PenTool",
+  "Printer",
+  "Layers",
+  "Apple",
+  "Brush",
+  "Monitor",
+  "Copy",
+  "BookOpen",
+];
+
+function getCategoryIconName(
   type: "PRODUCT" | "SERVICE",
+  name: string,
+  description: string | null = null,
+  id = 0
+): CategoryIconName {
+  const searchableName = `${name} ${description || ""}`
+    .toLocaleLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  const categoryIconRules: Array<[RegExp, CategoryIconName]> = [
+    [/\b(photo|photography|camera|image|picture)\b|ඡායාරූප|කැමරා/i, "Camera"],
+    [/\b(copy|photocopy|scan|xerox)\b|පිටපත්|කොපි|ස්කෑන්/i, "Copy"],
+    [/\b(print|printing|printer)\b|මුද්‍රණ|ප්‍රින්ට්/i, "Printer"],
+    [/\b(laminat\w*)\b|ලැමිනේට්|ලැමිනේෂන්/i, "Layers"],
+    [/\b(bind|binding)\b|බයින්ඩින්|බයින්ඩ්/i, "Book"],
+    [/\b(stationer\w*|paper|book|pen|school|office supplies?)\b|ලිපිද්‍රව්‍ය|පොත්|පෑන්/i, "BookOpen"],
+    [/\b(phone|mobile|smartphone|telephone)\b|දුරකථන|ෆෝන්|මොබයිල්|ජංගම/i, "Smartphone"],
+    [/\b(charger|cable|wire|adapter)\b|කේබල්|චාජර්/i, "Cable"],
+    [/\b(graphic|design|art|colour|color|paint|creative)\b|ග්‍රැෆික්|ඩිසයින්|කලා|වර්ණ|පාට/i, "Palette"],
+    [/\b(computer|laptop|desktop|electronics?)\b|පරිගණක|ලැප්ටොප්|ඉලෙක්ට්‍රොනික/i, "Monitor"],
+    [/\b(fruit|fruits|vegetable|vegetables|produce)\b|පළතුරු|එළවළු/i, "Apple"],
+    [/\b(grocery|groceries|supermarket|food)\b|සිල්ලර|ආහාර|සුපිරි වෙළඳසැල්/i, "ShoppingBasket"],
+    [/\b(tool|tools|repair|maintenance|hardware)\b|අලුත්වැඩියා|මෙවලම්/i, "Wrench"],
+    [/\b(document|form|record)\b|ලේඛන|ලියකියවිලි/i, "FileText"],
+    [/\b(accessor\w*|spare parts?)\b|උපාංග|අමතර කොටස්/i, "Package"],
+  ];
+
+  const matchedRule = categoryIconRules.find(([pattern]) => pattern.test(searchableName));
+  if (matchedRule) return matchedRule[1];
+
+  const typeOffset = type === "SERVICE" ? Math.floor(FALLBACK_CATEGORY_ICONS.length / 2) : 0;
+  const fallbackIndex = (Math.max(0, id - 1) + typeOffset) % FALLBACK_CATEGORY_ICONS.length;
+  return FALLBACK_CATEGORY_ICONS[fallbackIndex];
+}
+
+function renderCategoryIcon(
+  iconName: CategoryIconName,
   className = "h-4 w-4"
 ) {
-  return type === "SERVICE" ? (
-    <Printer className={className} />
-  ) : (
-    <Layers className={className} />
-  );
+  const CategoryIcon = CATEGORY_ICONS[iconName];
+  return <CategoryIcon className={className} />;
 }
 
 // =========================================================
 // MAIN POS CLIENT COMPONENT
 // =========================================================
 
-export default function POSClient({ imageMode = false }: { imageMode?: boolean }) {
+export default function POSClient({
+  imageMode = false,
+  user,
+}: {
+  imageMode?: boolean;
+  user: { username: string; fullName: string };
+}) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const palettePickerRef = useRef<HTMLDivElement>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState<Date | null>(null);
+  const [posPaletteId, setPosPaletteId] = useState<POSPaletteId>("lagoon");
+  const [isPaletteMenuOpen, setIsPaletteMenuOpen] = useState(false);
+  const activePalette = useMemo(
+    () => POS_PALETTES.find((palette) => palette.id === posPaletteId) ?? POS_PALETTES[0],
+    [posPaletteId]
+  );
+  const paletteStyle = useMemo(
+    () => Object.fromEntries(
+      POS_PALETTE_SHADES.map((shade) => [`--color-teal-${shade}`, activePalette.shades[shade]])
+    ) as React.CSSProperties,
+    [activePalette]
+  );
+
+  useEffect(() => {
+    const updateDateTime = () => setCurrentDateTime(new Date());
+    updateDateTime();
+
+    const intervalId = window.setInterval(updateDateTime, 30_000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    try {
+      const storedPalette = window.localStorage.getItem(POS_PALETTE_STORAGE_KEY);
+      if (POS_PALETTES.some((palette) => palette.id === storedPalette)) {
+        setPosPaletteId(storedPalette as POSPaletteId);
+      }
+    } catch {
+      // The POS still works with the default palette when storage is unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isPaletteMenuOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!palettePickerRef.current?.contains(event.target as Node)) {
+        setIsPaletteMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, [isPaletteMenuOpen]);
+
+  const selectPOSPalette = (paletteId: POSPaletteId) => {
+    setPosPaletteId(paletteId);
+    setIsPaletteMenuOpen(false);
+    try {
+      window.localStorage.setItem(POS_PALETTE_STORAGE_KEY, paletteId);
+    } catch {
+      // Keep the selected palette active for this session if storage is unavailable.
+    }
+  };
+
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to log out.");
+      }
+
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to log out.");
+      setIsLoggingOut(false);
+    }
+  }, [isLoggingOut, router]);
 
   // Data states
   const [items, setItems] = useState<POSItem[]>([]);
@@ -553,10 +863,50 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
       ...serviceCategories,
     ];
 
+    const assignedIcons = new Map<string, CategoryIconName>();
+    const usedIcons = new Set<CategoryIconName>();
+
+    [...categories]
+      .sort((a, b) => a.type.localeCompare(b.type) || a.id - b.id)
+      .forEach((category) => {
+        let iconName = getCategoryIconName(
+          category.type,
+          category.name,
+          category.description,
+          category.id
+        );
+
+        if (usedIcons.has(iconName)) {
+          const typeOffset = category.type === "SERVICE"
+            ? Math.floor(FALLBACK_CATEGORY_ICONS.length / 2)
+            : 0;
+          const startIndex = (Math.max(0, category.id - 1) + typeOffset) % FALLBACK_CATEGORY_ICONS.length;
+
+          for (let offset = 0; offset < FALLBACK_CATEGORY_ICONS.length; offset += 1) {
+            const candidate = FALLBACK_CATEGORY_ICONS[
+              (startIndex + offset) % FALLBACK_CATEGORY_ICONS.length
+            ];
+            if (!usedIcons.has(candidate)) {
+              iconName = candidate;
+              break;
+            }
+          }
+        }
+
+        usedIcons.add(iconName);
+        assignedIcons.set(`${category.type}-${category.id}`, iconName);
+      });
+
     return categories.map((category) => ({
       name: category.name,
       count: Number(category.count || 0),
-      iconName: category.type === "SERVICE" ? "Printer" : "Layers",
+      iconName: assignedIcons.get(`${category.type}-${category.id}`)
+        || getCategoryIconName(
+          category.type,
+          category.name,
+          category.description,
+          category.id
+        ),
       colorScheme: DEFAULT_CATEGORY_STYLE,
       description:
         category.description ||
@@ -1948,26 +2298,25 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
   // =======================================================
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 antialiased">
+    <div
+      data-pos-palette={posPaletteId}
+      style={paletteStyle}
+      className="flex h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased"
+    >
       {/* ================================================= */}
       {/* 1. TOP NAVIGATION / HEADER (RESPONSIVE) */}
       {/* ================================================= */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 sm:px-4 lg:px-6 shadow-sm gap-2">
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-teal-900/20 dark:border-teal-900 bg-teal-800 dark:bg-teal-950 px-3 sm:px-4 lg:px-6 shadow-sm gap-2">
         {/* Left: Brand & POS Title */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-500/20">
+          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-500 text-white shadow-md shadow-teal-500/20">
             <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div className="hidden xs:block">
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-xs sm:text-base font-black tracking-tight text-slate-900 dark:text-white">
-                Pubudu Hub
-              </h1>
-              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 px-1.5 py-0.2 text-[9px] sm:text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
-                POS
-              </span>
-            </div>
-            <p className="hidden md:block text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <div className="min-w-0">
+            <h1 className="whitespace-nowrap text-base sm:text-xl font-black tracking-tight text-white">
+              Smart POS
+            </h1>
+            <p className="hidden md:block text-[11px] font-medium text-teal-100/80">
               Sri Lankan Currency (Rs.) • Fast Billing Terminal
             </p>
           </div>
@@ -1984,7 +2333,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleSearchKeyDown}
               placeholder="Search product, barcode or code..."
-              className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 pl-8 sm:pl-10 pr-8 text-xs font-medium text-slate-900 dark:text-white transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40"
+              className="h-9 sm:h-10 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 pl-8 sm:pl-10 pr-8 text-xs font-medium text-slate-900 dark:text-white transition placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-teal-500 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/40"
             />
             {search && (
               <button
@@ -2003,7 +2352,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             <button
               type="button"
               onClick={() => setIsBillModalOpen(true)}
-              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-sm transition hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-teal-200 dark:border-teal-800/60 bg-teal-50 dark:bg-teal-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-teal-700 dark:text-teal-300 shadow-sm transition hover:bg-teal-100 dark:hover:bg-teal-900/40"
               title="View or print the last completed bill"
             >
               <Receipt className="h-4 w-4" />
@@ -2015,7 +2364,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
           <button
             type="button"
             onClick={() => setIsCalculatorOpen(true)}
-            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 shadow-sm transition hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-teal-200 dark:border-teal-800/60 bg-teal-50 dark:bg-teal-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-teal-700 dark:text-teal-300 shadow-sm transition hover:bg-teal-100 dark:hover:bg-teal-900/40"
             title="Open Calculator"
           >
             <Calculator className="h-4 w-4" />
@@ -2060,7 +2409,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             title="Refresh Catalog"
           >
             <RefreshCw
-              className={`h-4 w-4 ${loading ? "animate-spin text-emerald-600" : ""}`}
+              className={`h-4 w-4 ${loading ? "animate-spin text-teal-600" : ""}`}
             />
           </button>
 
@@ -2082,12 +2431,12 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
         {/* ================================================= */}
         {/* LEFT COLUMN: CATEGORIES RESOURCE SELECTOR */}
         {/* ================================================= */}
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 md:flex">
-          <div className="border-b border-slate-100 dark:border-slate-800 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <aside className="hidden w-64 shrink-0 flex-col border-r border-teal-100 dark:border-slate-800 bg-teal-50/40 dark:bg-slate-950 md:flex">
+          <div className="border-b border-teal-100 dark:border-slate-800 bg-white/70 dark:bg-slate-950/70 p-4">
+            <p className="text-[10px] font-black uppercase tracking-wider text-teal-800 dark:text-teal-300">
               Resource Categories
             </p>
-            <h2 className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+            <h2 className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-100">
               Pubudu Creative Services
             </h2>
           </div>
@@ -2098,15 +2447,15 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               type="button"
               onClick={() => setSelectedCategory("All")}
               className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${selectedCategory === "All"
-                ? "bg-slate-900 dark:bg-slate-800 text-white shadow-md shadow-slate-900/10"
-                : "bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                ? "border border-teal-800 dark:border-teal-900 bg-teal-800 dark:bg-teal-950 text-white shadow-sm shadow-teal-950/15"
+                : "border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-white dark:hover:bg-slate-800"
                 }`}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${selectedCategory === "All"
-                    ? "bg-white/20 text-white"
-                    : "bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm"
+                    ? "bg-white/15 text-white"
+                    : "bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 ring-1 ring-inset ring-slate-100 dark:ring-slate-700"
                     }`}
                 >
                   <Layers className="h-4 w-4" />
@@ -2115,7 +2464,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   <p className="truncate text-xs font-bold">All Resources</p>
                   <p
                     className={`truncate text-[10px] ${selectedCategory === "All"
-                      ? "text-slate-300"
+                      ? "text-teal-100/80"
                       : "text-slate-400 dark:text-slate-500"
                       }`}
                   >
@@ -2125,8 +2474,8 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               </div>
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-black ${selectedCategory === "All"
-                  ? "bg-white/20 text-white"
-                  : "bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-sm"
+                  ? "bg-white/15 text-white"
+                  : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 ring-1 ring-inset ring-slate-100 dark:ring-slate-700"
                   }`}
               >
                 {items.length}
@@ -2142,23 +2491,23 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   type="button"
                   onClick={() => setSelectedCategory(cat.key)}
                   className={`group flex w-full items-center justify-between rounded-xl p-3 text-left transition ${isSelected
-                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/15"
-                    : "border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    ? "border border-teal-800 dark:border-teal-900 bg-teal-800 dark:bg-teal-950 text-white shadow-sm shadow-teal-950/15"
+                    : "border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:border-teal-300 dark:hover:border-teal-700 hover:bg-white dark:hover:bg-slate-800"
                     }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isSelected
-                        ? "bg-white/20 text-white"
-                        : `${cat.colorScheme.bg} ${cat.colorScheme.text}`
+                        ? "bg-white/15 text-white"
+                        : "bg-white dark:bg-slate-800 text-teal-700 dark:text-teal-300 ring-1 ring-inset ring-slate-100 dark:ring-slate-700"
                         }`}
                     >
-                      {renderCategoryIcon(cat.type, "h-4 w-4")}
+                      {renderCategoryIcon(cat.iconName, "h-4 w-4")}
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-bold">{cat.name}</p>
                       <p
-                        className={`truncate text-[10px] ${isSelected ? "text-emerald-100" : "text-slate-400 dark:text-slate-500"
+                        className={`truncate text-[10px] ${isSelected ? "text-teal-100/80" : "text-slate-400 dark:text-slate-500"
                           }`}
                       >
                         {cat.description}
@@ -2167,8 +2516,8 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   </div>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-black ${isSelected
-                      ? "bg-white/20 text-white"
-                      : `${cat.colorScheme.badgeBg}`
+                      ? "bg-white/15 text-white"
+                      : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 ring-1 ring-inset ring-slate-100 dark:ring-slate-700"
                       }`}
                   >
                     {cat.count}
@@ -2178,10 +2527,31 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             })}
           </div>
 
-          <div className="border-t border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 p-3 text-center">
-            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
-              Sri Lankan POS Currency • LKR (Rs.)
-            </p>
+          <div className="border-t border-teal-100 dark:border-slate-800 bg-teal-50 dark:bg-slate-900 p-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-800 text-white dark:bg-teal-700">
+                <UserRound className="h-4 w-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold text-slate-800 dark:text-slate-100" title={user.fullName || user.username}>
+                  {user.fullName || user.username}
+                </p>
+                <p className="truncate text-[10px] text-slate-500 dark:text-slate-400" title={user.username}>
+                  {user.username}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                disabled={isLoggingOut}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-2 text-[10px] font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700/30 disabled:cursor-wait disabled:opacity-60 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                title="Log out"
+                aria-label="Log out"
+              >
+                {isLoggingOut ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <LogOut className="h-3.5 w-3.5" />}
+                <span>{isLoggingOut ? "Logging out" : "Logout"}</span>
+              </button>
+            </div>
           </div>
         </aside>
 
@@ -2190,45 +2560,129 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
         {/* ================================================= */}
         <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/60 pb-24 lg:pb-0">
           {/* Catalog Header Bar */}
-          <div className="flex shrink-0 items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm lg:px-6">
+          <div className="relative z-40 flex shrink-0 items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm lg:px-6">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 {selectedCategory === "All"
-                  ? <Layers className="h-4 w-4" />
+                  ? <Layers className="h-5 w-5" />
                   : renderCategoryIcon(
-                    categoryList.find((cat) => cat.key === selectedCategory)?.type || "PRODUCT",
-                    "h-4 w-4"
+                    categoryList.find((cat) => cat.key === selectedCategory)?.iconName || "Layers",
+                    "h-5 w-5"
                   )}
               </span>
-              <span className="text-sm font-black text-slate-800 dark:text-slate-100">
+              <span className="text-sm font-black text-slate-800 dark:text-slate-100 sm:text-base">
                 {selectedCategory === "All"
                   ? "All Products & Services"
                   : categoryList.find((cat) => cat.key === selectedCategory)?.name || "Category"}
               </span>
-              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 sm:text-[11px]">
                 {itemsTotal} items available
               </span>
               {imageMode && (
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300">
+                <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:bg-teal-950/70 dark:text-teal-300">
                   Image POS
                 </span>
               )}
             </div>
-            {search && (
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Filtering by &quot;{search}&quot;
-              </p>
-            )}
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+              {search && (
+                <p className="hidden max-w-40 truncate text-xs text-slate-500 dark:text-slate-400 lg:block">
+                  Filtering by &quot;{search}&quot;
+                </p>
+              )}
+              <div className="relative shrink-0" ref={palettePickerRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsPaletteMenuOpen((open) => !open)}
+                  aria-label="Choose POS color palette"
+                  aria-haspopup="menu"
+                  aria-expanded={isPaletteMenuOpen}
+                  title="Choose POS color palette"
+                  className="flex h-9 items-center gap-1.5 rounded-xl border border-teal-200 bg-white px-2.5 text-teal-800 shadow-sm transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-teal-800 dark:bg-slate-900 dark:text-teal-200 dark:hover:bg-slate-800"
+                >
+                  <Palette className="h-4 w-4" />
+                  <span className="hidden text-[11px] font-bold md:inline">Palette</span>
+                  <span
+                    aria-hidden="true"
+                    className="h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900"
+                    style={{ backgroundColor: activePalette.swatch }}
+                  />
+                </button>
+                {isPaletteMenuOpen && (
+                  <div
+                    role="menu"
+                    aria-label="POS color palettes"
+                    className="absolute right-0 top-full z-[100] mt-2 max-h-[70vh] w-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+                  >
+                    <div className="px-2 pb-2 pt-1">
+                      <p className="text-xs font-black text-slate-900 dark:text-slate-100">POS color palette</p>
+                      <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">Choose an accent for your workspace</p>
+                    </div>
+                    <div className="space-y-1">
+                      {POS_PALETTES.map((palette) => {
+                        const isSelected = palette.id === posPaletteId;
+                        return (
+                          <button
+                            key={palette.id}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={isSelected}
+                            onClick={() => selectPOSPalette(palette.id)}
+                            className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left transition ${isSelected
+                              ? "bg-teal-50 ring-1 ring-teal-200 dark:bg-teal-950/50 dark:ring-teal-800"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-800"
+                              }`}
+                          >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+                              <span className="h-4 w-4 rounded-full ring-4 ring-white dark:ring-slate-700" style={{ backgroundColor: palette.swatch }} />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block text-xs font-bold text-slate-800 dark:text-slate-100">{palette.name}</span>
+                              <span className="block text-[10px] text-slate-500 dark:text-slate-400">{palette.description}</span>
+                            </span>
+                            {isSelected && <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600 dark:text-teal-300" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+              {currentDateTime && (
+                <div className="hidden shrink-0 items-center gap-2 rounded-xl border border-teal-100 bg-teal-50/70 px-2.5 py-2 dark:border-teal-900/60 dark:bg-teal-950/30 sm:flex">
+                  <CalendarDays className="h-4 w-4 text-teal-700 dark:text-teal-300" />
+                  <span className="whitespace-nowrap text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                    {currentDateTime.toLocaleDateString("en-LK", {
+                      timeZone: "Asia/Colombo",
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span className="h-4 w-px bg-teal-200 dark:bg-teal-800" />
+                  <span className="flex items-center gap-1 whitespace-nowrap text-xs font-bold tabular-nums text-teal-800 dark:text-teal-200">
+                    <Clock className="h-3.5 w-3.5" />
+                    {currentDateTime.toLocaleTimeString("en-LK", {
+                      timeZone: "Asia/Colombo",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Mobile Horizontal Category Pills (Visible on Mobile & Tablet) */}
-          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 scrollbar-none">
+          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto border-b border-teal-100 dark:border-slate-800 bg-teal-50/70 dark:bg-slate-900 px-3 py-2 scrollbar-none">
             <button
               type="button"
               onClick={() => setSelectedCategory("All")}
               className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${selectedCategory === "All"
-                ? "bg-slate-900 dark:bg-slate-800 text-white shadow-sm"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700"
+                ? "bg-teal-800 dark:bg-teal-700 text-white shadow-sm"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-teal-100 dark:hover:bg-slate-700"
                 }`}
             >
               <Layers className="h-3 w-3" />
@@ -2242,11 +2696,11 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   type="button"
                   onClick={() => setSelectedCategory(cat.key)}
                   className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${isSelected
-                    ? "bg-emerald-600 text-white shadow-sm"
+                    ? "bg-teal-800 dark:bg-teal-700 text-white shadow-sm"
                     : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 dark:border-slate-700 hover:opacity-90`
                     }`}
                 >
-                  {renderCategoryIcon(cat.type, "h-3 w-3")}
+                  {renderCategoryIcon(cat.iconName, "h-3 w-3")}
                   <span>{cat.name}</span>
                   <span className="opacity-75">({cat.count})</span>
                 </button>
@@ -2258,7 +2712,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
           <div className="flex-1 overflow-y-auto p-4 lg:p-6">
             {loading ? (
               <div className="flex h-96 flex-col items-center justify-center text-slate-400 dark:text-slate-500">
-                <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
                 <p className="mt-3 text-xs font-bold text-slate-600 dark:text-slate-400">
                   Loading POS items from database...
                 </p>
@@ -2281,7 +2735,16 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   const itemKey = `${item.type}-${item.id}`;
                   const isFavourite = favouriteKeys.includes(itemKey);
                   const shortcutNumber = shortcutNumberMap.get(itemKey);
-
+                  const itemCategoryIconName = categoryList.find(
+                    (category) =>
+                      category.type === item.categoryType &&
+                      category.id === item.categoryId
+                  )?.iconName || getCategoryIconName(
+                    item.categoryType,
+                    item.category,
+                    null,
+                    item.categoryId
+                  );
                   const previousWasFavourite =
                     index > 0 &&
                     favouriteKeys.includes(
@@ -2299,12 +2762,8 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     item.minimumStock !== null &&
                     item.stock <= item.minimumStock;
 
-                  const catStyle = DEFAULT_CATEGORY_STYLE;
-
-
                   return (
                     <React.Fragment key={`${item.type}-${item.id}`}>
-                      {/* Favourite Section Heading */}
                       {index === 0 && isFavourite && (
                         <div className="col-span-full flex items-center gap-2 py-1">
                           <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
@@ -2318,17 +2777,15 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                               )
                             ).length})
                           </span>
-                          <span className="ml-auto text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                          <span className="ml-auto text-[10px] font-medium text-teal-700 dark:text-teal-400">
                             Shortcuts: 1–9, 0
                           </span>
                         </div>
                       )}
 
-                      {/* All Products Section Heading */}
                       {!isFavourite && previousWasFavourite && (
                         <>
                           <div className="col-span-full my-2 border-t border-slate-300 dark:border-slate-800" />
-
                           <div className="col-span-full py-1">
                             <h3 className="text-sm font-bold text-slate-600 dark:text-slate-400">
                               All Products & Services
@@ -2337,17 +2794,17 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                         </>
                       )}
 
-                      {/* Product Card */}
                       <div
                         onClick={() => !isOutOfStock && addToCart(item)}
-                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 ${imageMode ? "p-2.5" : "p-3.5"} shadow-sm transition-all duration-150 ${isOutOfStock
+                        className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white dark:bg-slate-900 shadow-sm transition-all duration-150 ${isOutOfStock
                           ? "cursor-not-allowed opacity-60 border-slate-200 dark:border-slate-800"
-                          : "cursor-pointer border-slate-200 dark:border-slate-800 hover:-translate-y-0.5 hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md"
+                          : "cursor-pointer border-slate-200 dark:border-slate-800 hover:-translate-y-0.5 hover:border-teal-400 dark:hover:border-teal-500 hover:shadow-md hover:shadow-teal-900/10 dark:hover:shadow-teal-950/40"
                           } ${inCartQty > 0
-                            ? "ring-2 ring-emerald-500/80 border-emerald-500 dark:border-emerald-500"
+                            ? "ring-2 ring-teal-500/80 border-teal-500 dark:border-teal-500"
                             : ""
                           }`}
                       >
+                        <div className={`flex flex-1 flex-col bg-teal-50/60 transition-colors dark:bg-teal-950/20 ${isOutOfStock ? "" : "group-hover:bg-teal-100/80 dark:group-hover:bg-teal-950/50"} ${imageMode ? "p-2.5" : "p-3.5"}`}>
                         {imageMode && (
                           <div className="mb-2 flex h-28 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 sm:h-32">
                             {item.imageUrl ? (
@@ -2372,10 +2829,10 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
 
                           {/* Category Badge */}
                           <span
-                            className={`inline-flex min-w-0 max-w-[70%] items-center gap-1 rounded-md px-2 py-1 text-[9px] font-bold ${catStyle.bg} ${catStyle.text}`}
+                            className="inline-flex min-w-0 max-w-[70%] items-center gap-1 rounded-md bg-teal-50 px-2 py-1 text-[9px] font-bold text-teal-800 ring-1 ring-inset ring-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:ring-teal-900/60"
                           >
                             <span className="shrink-0">
-                              {renderCategoryIcon(item.categoryType, "h-3 w-3")}
+                              {renderCategoryIcon(itemCategoryIconName, "h-3 w-3")}
                             </span>
                             <span className="truncate">{item.category}</span>
                           </span>
@@ -2417,7 +2874,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                                 addToCart(item);
                               }}
                               disabled={isOutOfStock}
-                              className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 text-[10px] font-black text-emerald-700 dark:text-emerald-300 transition hover:bg-emerald-100 dark:hover:bg-emerald-900/40 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-teal-200 dark:border-teal-800/70 bg-teal-50 dark:bg-teal-950/60 px-1.5 text-[10px] font-black text-teal-700 dark:text-teal-300 transition hover:bg-teal-100 dark:hover:bg-teal-900/40 disabled:cursor-not-allowed disabled:opacity-50"
                               title={`Add ${item.name} to cart (keyboard shortcut ${shortcutNumber === 10 ? "0" : shortcutNumber})`}
                               aria-label={`Add ${item.name} to cart using shortcut ${shortcutNumber}`}
                             >
@@ -2427,7 +2884,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
 
                           {/* In Cart Badge */}
                           {inCartQty > 0 && (
-                            <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-emerald-600 px-2.5 py-1 text-[9px] font-bold text-white shadow-sm">
+                            <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-teal-600 px-2.5 py-1 text-[9px] font-bold text-white shadow-sm">
                               <CheckCircle2 className="mr-1 h-3 w-3" />
                               {inCartQty} in cart
                             </span>
@@ -2436,43 +2893,41 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
 
                         {/* Product Name & Code */}
                         <div className="mt-3">
-                          <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
+                          <h4 className="line-clamp-2 text-lg font-bold leading-snug text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">
                             {item.name}
                           </h4>
 
                           {item.brand?.trim() && (
-                            <p className="mt-1 text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                            <p className="mt-1 text-[11px] font-bold text-teal-700 dark:text-teal-400">
                               {item.brand}
                             </p>
                           )}
 
-                          <div className="mt-1 flex items-center gap-2 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                            <span>{item.code}</span>
-                            {item.unit && <span>• {item.unit}</span>}
-                          </div>
-                        </div>
-
-                        {/* Stock Info */}
-                        {item.type === "PRODUCT" && item.stock !== null && (
-                          <div className="mt-2 text-[10px]">
-                            {isOutOfStock ? (
-                              <span className="font-bold text-rose-600 dark:text-rose-400">
-                                Out of stock
-                              </span>
-                            ) : isLowStock ? (
-                              <span className="font-medium text-amber-600 dark:text-amber-400">
-                                Low stock: {item.stock} {item.unit}
-                              </span>
-                            ) : (
-                              <span className="text-slate-400 dark:text-slate-500">
-                                Stock: {item.stock} {item.unit}
-                              </span>
+                          <div className="mt-1 flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                            <span className="min-w-0 flex-1 truncate">{item.code}</span>
+                            {item.type === "PRODUCT" && item.stock !== null && (
+                              <>
+                                <span className="shrink-0">•</span>
+                                <span className={`shrink-0 ${isOutOfStock
+                                  ? "font-bold text-rose-600 dark:text-rose-400"
+                                  : isLowStock
+                                    ? "font-medium text-amber-600 dark:text-amber-400"
+                                    : "text-slate-400 dark:text-slate-500"
+                                  }`}>
+                                  {isOutOfStock
+                                    ? "Out of stock"
+                                    : isLowStock
+                                      ? `Low: ${item.stock}`
+                                      : `Stock: ${item.stock}`}
+                                </span>
+                              </>
                             )}
                           </div>
-                        )}
+                        </div>
+                        </div>
 
                         {/* Price and Add Button */}
-                        <div className="mt-3 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-2.5">
+                        <div className={`mt-auto flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-2.5 ${imageMode ? "mx-2.5 mb-2.5" : "mx-3.5 mb-3.5"}`}>
                           <div>
                             <p className="text-xs font-black text-slate-900 dark:text-slate-100">
                               {formatRs(item.price)}
@@ -2490,10 +2945,10 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                                 e.stopPropagation();
                                 openPriceEditModal(item);
                               }}
-                              className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 disabled:opacity-40"
+                              className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:text-teal-800 dark:hover:text-teal-300 disabled:opacity-40"
                               title="Edit unit price for this product before selling"
                             >
-                              <Pencil className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                              <Pencil className="h-3 w-3 text-teal-600 dark:text-teal-400" />
                               <span className="hidden sm:inline">Price</span>
                             </button>
 
@@ -2506,7 +2961,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                               }}
                               className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
                                 ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
-                                : "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
+                                : "bg-teal-500 text-white hover:bg-teal-600 active:scale-95"
                                 }`}
                               title="Add to order"
                             >
@@ -2545,7 +3000,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             <div className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-slate-800 dark:text-slate-200" />
               <h2 className="text-sm font-black text-slate-900 dark:text-slate-100">Current Order</h2>
-              <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300">
+              <span className="rounded-full bg-teal-100 dark:bg-teal-950/70 px-2 py-0.5 text-[10px] font-black text-teal-800 dark:text-teal-300">
                 {totalItemsCount} items
               </span>
             </div>
@@ -2605,7 +3060,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                 onFocus={() => setIsCustomerDropdownOpen(true)}
                 placeholder={selectedCustomerName}
                 autoComplete="off"
-                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-8 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none transition placeholder:text-slate-700 dark:placeholder:text-slate-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40"
+                className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-8 text-xs font-semibold text-slate-700 dark:text-slate-200 outline-none transition placeholder:text-slate-700 dark:placeholder:text-slate-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-900/40"
               />
 
               {customerSearch ? (
@@ -2628,8 +3083,8 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleCustomerSelect(null)}
-                    className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-slate-700 ${selectedCustomerId === null
-                      ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
+                    className={`w-full px-3 py-2 text-left text-xs transition hover:bg-teal-50 dark:hover:bg-slate-700 ${selectedCustomerId === null
+                      ? "bg-teal-50 dark:bg-teal-950/60 font-bold text-teal-700 dark:text-teal-300"
                       : "text-slate-700 dark:text-slate-200"
                       }`}
                   >
@@ -2646,8 +3101,8 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                         type="button"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleCustomerSelect(customer.id)}
-                        className={`w-full px-3 py-2 text-left text-xs transition hover:bg-emerald-50 dark:hover:bg-slate-700 ${selectedCustomerId === customer.id
-                          ? "bg-emerald-50 dark:bg-emerald-950/60 font-bold text-emerald-700 dark:text-emerald-300"
+                        className={`w-full px-3 py-2 text-left text-xs transition hover:bg-teal-50 dark:hover:bg-slate-700 ${selectedCustomerId === customer.id
+                          ? "bg-teal-50 dark:bg-teal-950/60 font-bold text-teal-700 dark:text-teal-300"
                           : "text-slate-700 dark:text-slate-200"
                           }`}
                       >
@@ -2672,7 +3127,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={() => void loadCustomers(customerSearch, customersPage + 1, true)}
                       disabled={loadingMoreCustomers}
-                      className="w-full border-t border-slate-100 dark:border-slate-700 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 disabled:opacity-50"
+                      className="w-full border-t border-slate-100 dark:border-slate-700 px-3 py-2 text-xs font-bold text-teal-700 dark:text-teal-300 disabled:opacity-50"
                     >
                       {loadingMoreCustomers ? "Loading…" : "Load more customers"}
                     </button>
@@ -2684,7 +3139,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             <button
               type="button"
               onClick={() => setIsNewCustomerModalOpen(true)}
-              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-700 hover:text-emerald-700 dark:hover:text-emerald-300"
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-teal-300 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-slate-700 hover:text-teal-700 dark:hover:text-teal-300"
               title="Add New Customer"
             >
               <UserPlus className="h-3.5 w-3.5" />
@@ -2707,12 +3162,18 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                 </p>
               </div>
             ) : (
-              cart.map((item) => {
+              cart.map((item, index) => {
                 const itemKey = `${item.type}-${item.id}`;
                 const isEditingThisPrice = editingPriceKey === itemKey;
 
                 return (
-                  <div key={itemKey} className="p-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                  <div
+                    key={itemKey}
+                    className={`p-3.5 transition-colors ${index % 2 === 0
+                      ? "bg-white dark:bg-slate-900/40"
+                      : "bg-teal-50/60 dark:bg-teal-950/25"
+                      } hover:bg-teal-100/70 dark:hover:bg-teal-900/40`}
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="min-w-0">
@@ -2726,80 +3187,13 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                             </p>
                           )}
                         </div>
-                        {/* Inline Unit Price Editor */}
-                        {isEditingThisPrice ? (
-                          <div className="mt-1.5 flex items-center gap-1.5">
-                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Rs.</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              autoFocus
-                              value={editPriceValue}
-                              onChange={(e) => setEditPriceValue(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") handleSavePrice(item);
-                                if (e.key === "Escape") setEditingPriceKey(null);
-                              }}
-                              className="h-6 w-20 rounded border border-emerald-400 dark:border-emerald-500 bg-white dark:bg-slate-800 px-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleSavePrice(item)}
-                              className="rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-700"
-                            >
-                              Save
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setEditingPriceKey(null)}
-                              className="rounded bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => openPriceEditModal(item)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition shadow-2xs"
-                              title="Click to edit unit price for this product"
-                            >
-                              <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 dark:text-emerald-400 font-black" : ""}>
-                                {formatRs(item.price)}
-                              </span>
-                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">/ {item.unit}</span>
-                              <Pencil className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
-                            </button>
-
-                            {item.originalPrice !== undefined && item.price !== item.originalPrice ? (
-                              <div className="flex items-center gap-1">
-                                <span className="text-[10px] line-through text-slate-400 dark:text-slate-500">{formatRs(item.originalPrice)}</span>
-                                <span className="rounded bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.2 text-[9px] font-black text-amber-800 dark:text-amber-300">
-                                  Custom Price
-                                </span>
-                              </div>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => openPriceEditModal(item)}
-                                className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition"
-                                title="Edit unit price"
-                              >
-                                Edit Price
-                              </button>
-                            )}
-                          </div>
-                        )}
-
                         {/* Warranty Selector */}
                         {item.type === "PRODUCT" &&
                           item.warrantyEnabled && (
                             <div className="mt-1.5 flex items-center gap-1.5">
                               <ShieldCheck
                                 className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
-                                  ? "text-emerald-600 dark:text-emerald-400"
+                                  ? "text-teal-600 dark:text-teal-400"
                                   : "text-slate-400 dark:text-slate-500"
                                   }`}
                               />
@@ -2809,7 +3203,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                                   updateItemWarranty(item, Number(e.target.value))
                                 }
                                 className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
-                                  ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold"
+                                  ? "border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 font-extrabold"
                                   : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                                   }`}
                                 title="Set product warranty duration"
@@ -2837,13 +3231,61 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                       </button>
                     </div>
 
-                    {/* Quantity Stepper & Line Total */}
-                    <div className="mt-2.5 flex items-center justify-between">
-                      <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+                    {/* Unit Price, Quantity & Line Total */}
+                    <div className="mt-2.5 flex w-full min-w-0 flex-nowrap items-center justify-between gap-1.5">
+                      {isEditingThisPrice ? (
+                        <div className="flex min-w-0 shrink items-center gap-1">
+                          <span className="shrink-0 text-[10px] font-bold text-slate-500 dark:text-slate-400">Rs.</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            autoFocus
+                            value={editPriceValue}
+                            onChange={(e) => setEditPriceValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleSavePrice(item);
+                              if (e.key === "Escape") setEditingPriceKey(null);
+                            }}
+                            className="h-7 w-16 min-w-0 rounded border border-teal-400 dark:border-teal-500 bg-white dark:bg-slate-800 px-1 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleSavePrice(item)}
+                            className="rounded bg-teal-600 px-1.5 py-1 text-[9px] font-bold text-white hover:bg-teal-700"
+                            aria-label="Save item price"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingPriceKey(null)}
+                            className="rounded bg-slate-200 dark:bg-slate-700 p-1 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
+                            aria-label="Cancel price edit"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => openPriceEditModal(item)}
+                          className="inline-flex min-w-0 shrink items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 py-1 text-[11px] font-bold text-slate-800 dark:text-slate-200 hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:text-teal-700 dark:hover:text-teal-300 transition shadow-2xs sm:gap-1.5 sm:px-2 sm:text-xs"
+                          title="Click to edit unit price for this product"
+                        >
+                          <span className={`truncate ${item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-teal-700 dark:text-teal-400 font-black" : ""}`}>
+                            {formatRs(item.price)}
+                          </span>
+                          <span className="hidden shrink-0 text-[10px] font-normal text-slate-400 dark:text-slate-500 sm:inline">/ {item.unit}</span>
+                          <Pencil className="h-2.5 w-2.5 shrink-0 text-teal-600 dark:text-teal-400" />
+                        </button>
+                      )}
+
+                      <div className="flex shrink-0 items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
                         <button
                           type="button"
                           onClick={() => decreaseQuantity(item)}
-                          className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
+                          className="flex h-7 w-6 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700 sm:w-7"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
@@ -2857,22 +3299,31 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                             const val = parseInt(e.target.value, 10);
                             updateQuantity(item, isNaN(val) ? 1 : val);
                           }}
-                          className="h-7 w-12 border-x border-slate-200 dark:border-slate-700 bg-transparent text-center text-xs font-black text-slate-800 dark:text-slate-100 focus:outline-none"
+                          className="h-7 w-9 border-x border-slate-200 dark:border-slate-700 bg-transparent text-center text-xs font-black text-slate-800 dark:text-slate-100 focus:outline-none sm:w-12"
                         />
 
                         <button
                           type="button"
                           onClick={() => increaseQuantity(item)}
-                          className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
+                          className="flex h-7 w-6 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700 sm:w-7"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
                       </div>
 
-                      <p className="text-xs font-black text-slate-900 dark:text-slate-100">
+                      <p className="shrink-0 whitespace-nowrap text-[11px] font-black text-slate-900 dark:text-slate-100 sm:text-xs">
                         {formatRs(item.price * item.quantity)}
                       </p>
                     </div>
+
+                    {item.originalPrice !== undefined && item.price !== item.originalPrice && (
+                      <div className="mt-1 flex items-center gap-1">
+                        <span className="text-[10px] line-through text-slate-400 dark:text-slate-500">{formatRs(item.originalPrice)}</span>
+                        <span className="rounded bg-amber-100 dark:bg-amber-950/60 px-1.5 py-0.2 text-[9px] font-black text-amber-800 dark:text-amber-300">
+                          Custom Price
+                        </span>
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -2899,7 +3350,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   value={discountInput}
                   onChange={(e) => setDiscountInput(e.target.value)}
                   placeholder="0.00"
-                  className="h-8 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-7 pr-2 text-right text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+                  className="h-8 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-7 pr-2 text-right text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-teal-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -2946,7 +3397,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               type="button"
               disabled={cart.length === 0}
               onClick={openPaymentModal}
-              className="mt-4 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 transition hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none"
+              className="mt-4 flex h-12 w-full items-center justify-between rounded-xl bg-teal-600 px-4 text-white shadow-lg shadow-teal-600/25 transition hover:bg-teal-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none"
             >
               <div className="flex items-center gap-2">
                 <Banknote className="h-5 w-5" />
@@ -2972,7 +3423,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-sm">
               <ShoppingCart className="h-5 w-5" />
               {totalItemsCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-black text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-teal-500 text-[10px] font-black text-white">
                   {totalItemsCount}
                 </span>
               )}
@@ -2990,7 +3441,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
           <button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-xs font-black text-white shadow-md shadow-emerald-600/30 hover:bg-emerald-700 active:scale-95"
+            className="flex h-10 items-center gap-2 rounded-xl bg-teal-600 px-4 text-xs font-black text-white shadow-md shadow-teal-600/30 hover:bg-teal-700 active:scale-95"
           >
             <span>View Cart ({totalItemsCount})</span>
             <ArrowRight className="h-4 w-4" />
@@ -3009,7 +3460,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               <div className="flex items-center gap-2">
                 <ShoppingCart className="h-5 w-5 text-slate-800 dark:text-slate-200" />
                 <h2 className="text-sm font-black text-slate-900 dark:text-slate-100">Current Order</h2>
-                <span className="rounded-full bg-emerald-100 dark:bg-emerald-950/70 px-2 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300">
+                <span className="rounded-full bg-teal-100 dark:bg-teal-950/70 px-2 py-0.5 text-[10px] font-black text-teal-800 dark:text-teal-300">
                   {totalItemsCount} items
                 </span>
               </div>
@@ -3045,7 +3496,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     const val = e.target.value;
                     setSelectedCustomerId(val ? Number(val) : null);
                   }}
-                  className="h-9 w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-7 text-xs font-semibold text-slate-700 dark:text-slate-200 transition focus:border-emerald-500 focus:outline-none"
+                  className="h-9 w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-8 pr-7 text-xs font-semibold text-slate-700 dark:text-slate-200 transition focus:border-teal-500 focus:outline-none"
                 >
                   <option value="">Walk-in Customer</option>
                   {customers.map((c) => (
@@ -3059,7 +3510,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               <button
                 type="button"
                 onClick={() => setIsNewCustomerModalOpen(true)}
-                className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-emerald-300 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-700 hover:text-emerald-700 dark:hover:text-emerald-300"
+                className="flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition hover:border-teal-300 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-slate-700 hover:text-teal-700 dark:hover:text-teal-300"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 <span>New</span>
@@ -3079,12 +3530,18 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   </p>
                 </div>
               ) : (
-                cart.map((item) => {
+                cart.map((item, index) => {
                   const itemKey = `${item.type}-${item.id}`;
                   const isEditingThisPrice = editingPriceKey === itemKey;
 
                   return (
-                    <div key={itemKey} className="p-3.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                    <div
+                      key={itemKey}
+                      className={`p-3.5 transition-colors ${index % 2 === 0
+                        ? "bg-white dark:bg-slate-900/40"
+                        : "bg-teal-50/60 dark:bg-teal-950/25"
+                        } hover:bg-teal-100/70 dark:hover:bg-teal-900/40`}
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="min-w-0">
@@ -3114,12 +3571,12 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                                   if (e.key === "Enter") handleSavePrice(item);
                                   if (e.key === "Escape") setEditingPriceKey(null);
                                 }}
-                                className="h-6 w-20 rounded border border-emerald-400 dark:border-emerald-500 bg-white dark:bg-slate-800 px-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
+                                className="h-6 w-20 rounded border border-teal-400 dark:border-teal-500 bg-white dark:bg-slate-800 px-1.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none"
                               />
                               <button
                                 type="button"
                                 onClick={() => handleSavePrice(item)}
-                                className="rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-700"
+                                className="rounded bg-teal-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-teal-700"
                               >
                                 Save
                               </button>
@@ -3136,14 +3593,14 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                               <button
                                 type="button"
                                 onClick={() => openPriceEditModal(item)}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-300 transition shadow-2xs"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:text-teal-700 dark:hover:text-teal-300 transition shadow-2xs"
                                 title="Click to edit unit price for this product"
                               >
-                                <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-emerald-700 dark:text-emerald-400 font-black" : ""}>
+                                <span className={item.originalPrice !== undefined && item.price !== item.originalPrice ? "text-teal-700 dark:text-teal-400 font-black" : ""}>
                                   {formatRs(item.price)}
                                 </span>
                                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">/ {item.unit}</span>
-                                <Pencil className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                                <Pencil className="h-2.5 w-2.5 text-teal-600 dark:text-teal-400" />
                               </button>
 
                               {item.originalPrice !== undefined && item.price !== item.originalPrice ? (
@@ -3157,7 +3614,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                                 <button
                                   type="button"
                                   onClick={() => openPriceEditModal(item)}
-                                  className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition"
+                                  className="rounded bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-teal-700 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-950/60 transition"
                                   title="Edit unit price"
                                 >
                                   Edit Price
@@ -3172,7 +3629,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                               <div className="mt-1.5 flex items-center gap-1.5">
                                 <ShieldCheck
                                   className={`h-3.5 w-3.5 shrink-0 ${(item.warrantyMonths ?? 0) > 0
-                                    ? "text-emerald-600 dark:text-emerald-400"
+                                    ? "text-teal-600 dark:text-teal-400"
                                     : "text-slate-400 dark:text-slate-500"
                                     }`}
                                 />
@@ -3182,7 +3639,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                                     updateItemWarranty(item, Number(e.target.value))
                                   }
                                   className={`rounded-md border px-1.5 py-0.5 text-[10px] font-bold outline-none cursor-pointer transition ${(item.warrantyMonths ?? 0) > 0
-                                    ? "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-extrabold"
+                                    ? "border-teal-300 dark:border-teal-700 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 font-extrabold"
                                     : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                                     }`}
                                   title="Set product warranty duration"
@@ -3267,7 +3724,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     value={discountInput}
                     onChange={(e) => setDiscountInput(e.target.value)}
                     placeholder="0.00"
-                    className="h-8 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-7 pr-2 text-right text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-emerald-500 focus:outline-none"
+                    className="h-8 w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-7 pr-2 text-right text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-teal-500 focus:outline-none"
                   />
                 </div>
               </div>
@@ -3300,7 +3757,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                 type="button"
                 disabled={cart.length === 0}
                 onClick={openPaymentModal}
-                className="mt-3.5 flex h-12 w-full items-center justify-between rounded-xl bg-emerald-600 px-4 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
+                className="mt-3.5 flex h-12 w-full items-center justify-between rounded-xl bg-teal-600 px-4 text-white shadow-lg shadow-teal-600/25 hover:bg-teal-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600"
               >
                 <div className="flex items-center gap-2">
                   <Banknote className="h-5 w-5" />
@@ -3384,7 +3841,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-emerald-400">
+                    <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-teal-400">
                       {totalItemsCount} items
                     </span>
                   </div>
@@ -3400,7 +3857,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                 <label className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Payment Method
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-nowrap gap-1.5 overflow-x-auto scrollbar-none">
                   {[
                     { id: "CASH", label: "Cash", icon: Banknote },
                     { id: "CARD", label: "Card", icon: CreditCard },
@@ -3423,13 +3880,13 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                             setCashTenderedInput(total.toString());
                           }
                         }}
-                        className={`flex items-center gap-2 rounded-xl border p-2 text-xs font-bold transition ${isSelected
-                          ? "border-emerald-600 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20"
+                        className={`flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border px-2 py-2 text-[10px] font-bold transition sm:text-[11px] ${isSelected
+                          ? "border-teal-600 dark:border-teal-500 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 ring-2 ring-teal-500/20"
                           : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750"
                           }`}
                       >
                         <Icon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{pm.label}</span>
+                        <span>{pm.label}</span>
                       </button>
                     );
                   })}
@@ -3463,51 +3920,14 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     step="any"
                     value={cashTenderedInput}
                     onChange={(e) => setCashTenderedInput(e.target.value)}
-                    className="h-10 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 text-base font-black text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                    className="h-10 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 pl-9 pr-3 text-base font-black text-slate-900 dark:text-white focus:border-teal-500 focus:outline-none"
                   />
-                </div>
-
-                {/* Quick Amount Shortcuts */}
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setCashTenderedInput(total.toString())}
-                    className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  >
-                    Full (Rs. {total})
-                  </button>
-                  {total > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setCashTenderedInput(String(Math.round(total / 2)))}
-                      className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 shadow-sm border border-blue-200 dark:border-blue-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                    >
-                      50% (Rs. {Math.round(total / 2)})
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setCashTenderedInput("0")}
-                    className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 shadow-sm border border-amber-200 dark:border-amber-800/70 hover:bg-amber-50 dark:hover:bg-amber-950/40"
-                  >
-                    Rs. 0 (Credit)
-                  </button>
-                  {[100, 500, 1000, 2000, 5000].map((amt) => (
-                    <button
-                      key={amt}
-                      type="button"
-                      onClick={() => setCashTenderedInput(amt.toString())}
-                      className="rounded-lg bg-white dark:bg-slate-800 px-2 py-1 text-[11px] font-bold text-slate-700 dark:text-slate-200 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700"
-                    >
-                      Rs. {amt}
-                    </button>
-                  ))}
                 </div>
 
                 {/* Change or Remaining Credit Due Display */}
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-2.5 space-y-2">
                   {cashTendered >= total ? (
-                    <div className="flex items-center justify-between rounded-xl bg-emerald-100/70 dark:bg-emerald-950/60 px-3 py-2 text-emerald-900 dark:text-emerald-200">
+                    <div className="flex items-center justify-between rounded-xl bg-teal-100/70 dark:bg-teal-950/60 px-3 py-2 text-teal-900 dark:text-teal-200">
                       <span className="text-xs font-bold">
                         {paymentMethod === "CASH" ? "Change to Return:" : "Full Amount Paid:"}
                       </span>
@@ -3519,7 +3939,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     <div className="rounded-xl bg-amber-100/80 dark:bg-amber-950/60 px-3 py-2 text-amber-950 dark:text-amber-200 space-y-1">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-semibold">Paid Now:</span>
-                        <span className="font-bold text-emerald-800 dark:text-emerald-300">{formatRs(paidNowAmount)}</span>
+                        <span className="font-bold text-teal-800 dark:text-teal-300">{formatRs(paidNowAmount)}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs border-t border-amber-200/80 dark:border-amber-800/60 pt-1">
                         <span className="font-bold">Remaining Due (Customer Credit):</span>
@@ -3548,7 +3968,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     value={paymentReference}
                     onChange={(e) => setPaymentReference(e.target.value)}
                     placeholder="e.g. Card approval code or Bank slip no"
-                    className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                    className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-900 dark:text-white focus:border-teal-500 focus:outline-none"
                   />
                 </div>
               )}
@@ -3563,7 +3983,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   value={paymentNote}
                   onChange={(e) => setPaymentNote(e.target.value)}
                   placeholder="e.g. WhatsApp document sent, Urgent job"
-                  className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-800 dark:text-white focus:border-emerald-500 focus:outline-none"
+                  className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-800 dark:text-white focus:border-teal-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -3585,7 +4005,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   processingPayment ||
                   (remainingBalanceAmount > 0 && !selectedCustomerId)
                 }
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/25 hover:bg-emerald-700 active:scale-[0.99] disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none transition"
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-teal-600 py-2.5 text-xs font-black text-white shadow-md shadow-teal-600/25 hover:bg-teal-700 active:scale-[0.99] disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-600 disabled:shadow-none transition"
               >
                 {processingPayment ? (
                   <>
@@ -3612,7 +4032,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
           <div className="relative flex flex-col w-full max-w-lg max-h-[90dvh] sm:max-h-[85vh] rounded-2xl bg-white dark:bg-slate-900 shadow-2xl overflow-hidden my-auto overscroll-contain border border-slate-100 dark:border-slate-800">
             {/* Header / Success Indicator */}
             <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3.5 bg-white dark:bg-slate-900">
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
                 <CheckCircle2 className="h-5 w-5" />
                 <span className="text-sm font-black uppercase tracking-wide">
                   Bill Generated Successfully
@@ -3729,7 +4149,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     <>
                       <div className="flex justify-between pt-1 text-slate-700 dark:text-slate-300">
                         <span>Paid Amount</span>
-                        <span className="font-bold text-emerald-700 dark:text-emerald-400">{formatRs(lastCompletedBill.paidAmount)}</span>
+                        <span className="font-bold text-teal-700 dark:text-teal-400">{formatRs(lastCompletedBill.paidAmount)}</span>
                       </div>
                       <div className="flex justify-between font-bold text-rose-600 dark:text-rose-400">
                         <span>Balance Due (Credit)</span>
@@ -3742,7 +4162,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                         <span>Cash Tendered</span>
                         <span>{formatRs(lastCompletedBill.cashTendered)}</span>
                       </div>
-                      <div className="flex justify-between font-bold text-emerald-700 dark:text-emerald-400">
+                      <div className="flex justify-between font-bold text-teal-700 dark:text-teal-400">
                         <span>Change Returned</span>
                         <span>{formatRs(lastCompletedBill.changeAmount)}</span>
                       </div>
@@ -3754,21 +4174,21 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
 
                 {/* Warranties Issued */}
                 {lastCompletedBill.warranties && lastCompletedBill.warranties.length > 0 && (
-                  <div className="mb-3 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50/90 dark:bg-emerald-950/60 p-3 text-xs text-emerald-950 dark:text-emerald-200">
-                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 mb-1.5 text-[11px]">
-                      <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <div className="mb-3 rounded-xl border border-teal-300 dark:border-teal-700 bg-teal-50/90 dark:bg-teal-950/60 p-3 text-xs text-teal-950 dark:text-teal-200">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 mb-1.5 text-[11px]">
+                      <ShieldCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                       Official Warranty Certificates ({lastCompletedBill.warranties.length})
                     </div>
                     <div className="space-y-1.5 text-[11px]">
                       {lastCompletedBill.warranties.map((w, idx) => (
-                        <div key={idx} className="rounded-lg bg-white/90 dark:bg-slate-900/90 p-2 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
-                          <div className="flex items-center justify-between font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                        <div key={idx} className="rounded-lg bg-white/90 dark:bg-slate-900/90 p-2 border border-teal-200 dark:border-teal-800 shadow-2xs">
+                          <div className="flex items-center justify-between font-mono font-bold text-teal-700 dark:text-teal-400">
                             <span>{w.warrantyCode}</span>
-                            <span className="rounded bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.2 text-[10px] text-emerald-800 dark:text-emerald-300">
+                            <span className="rounded bg-teal-100 dark:bg-teal-950 px-1.5 py-0.2 text-[10px] text-teal-800 dark:text-teal-300">
                               {w.durationMonths} Months
                             </span>
                           </div>
-                          <div className="text-slate-800 dark:text-slate-200 truncate font-sans text-xs font-semibold mt-0.5">
+                          <div className="text-slate-800 dark:text-slate-200 truncate text-xs font-semibold mt-0.5">
                             {w.productName}
                           </div>
                           <div className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">
@@ -3795,7 +4215,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                 onClick={() => printBill("thermal")}
                 className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-sm transition hover:bg-slate-100 dark:hover:bg-slate-700"
               >
-                <Printer className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <Printer className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                 <span>Thermal (80mm)</span>
               </button>
 
@@ -3814,7 +4234,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   setIsBillModalOpen(false);
                   clearCart();
                 }}
-                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700"
+                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 rounded-xl bg-teal-600 py-2.5 text-xs font-black text-white shadow-md shadow-teal-600/20 transition hover:bg-teal-700"
               >
                 <Plus className="h-4 w-4" />
                 <span>New Sale</span>
@@ -3857,7 +4277,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   value={newCustName}
                   onChange={(e) => setNewCustName(e.target.value)}
                   placeholder="e.g. Kasun Fernando"
-                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-teal-500 focus:outline-none"
                 />
               </div>
 
@@ -3870,7 +4290,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   value={newCustPhone}
                   onChange={(e) => setNewCustPhone(e.target.value)}
                   placeholder="e.g. 0771234567"
-                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-emerald-500 focus:outline-none"
+                  className="mt-1 h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:border-teal-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -3886,7 +4306,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               <button
                 type="submit"
                 disabled={savingCustomer}
-                className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white hover:bg-emerald-700 disabled:opacity-50"
+                className="flex-1 rounded-xl bg-teal-600 py-2.5 text-xs font-black text-white hover:bg-teal-700 disabled:opacity-50"
               >
                 {savingCustomer ? "Saving..." : "Save Customer"}
               </button>
@@ -3904,7 +4324,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             {/* Header */}
             <div className="shrink-0 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-3.5 bg-white dark:bg-slate-900">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400">
                   <Pencil className="h-4 w-4" />
                 </div>
                 <div>
@@ -3971,7 +4391,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                     }}
                     onFocus={(e) => e.target.select()}
                     placeholder="0.00"
-                    className="h-12 w-full rounded-xl border-2 border-emerald-500/50 bg-white dark:bg-slate-950 pl-10 pr-4 text-xl font-black text-slate-900 dark:text-white shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                    className="h-12 w-full rounded-xl border-2 border-teal-500/50 bg-white dark:bg-slate-950 pl-10 pr-4 text-xl font-black text-slate-900 dark:text-white shadow-inner focus:border-teal-600 focus:outline-none focus:ring-4 focus:ring-teal-500/10"
                   />
                 </div>
               </div>
@@ -3996,7 +4416,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                         key={pct}
                         type="button"
                         onClick={() => setPriceModalInputValue(discounted.toString())}
-                        className="rounded-lg border border-emerald-200 dark:border-emerald-800/70 bg-emerald-50/70 dark:bg-emerald-950/60 px-2 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 shadow-2xs"
+                        className="rounded-lg border border-teal-200 dark:border-teal-800/70 bg-teal-50/70 dark:bg-teal-950/60 px-2 py-1 text-xs font-bold text-teal-800 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/40 shadow-2xs"
                       >
                         -{pct}% (Rs. {discounted})
                       </button>
@@ -4037,7 +4457,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                   <div className={`rounded-xl p-3 border text-xs ${diff === 0
                     ? "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
                     : diff < 0
-                      ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300"
+                      ? "bg-teal-50 dark:bg-teal-950/50 border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-300"
                       : "bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300"
                     }`}>
                     <div className="flex justify-between items-center font-bold">
@@ -4069,7 +4489,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               <button
                 type="button"
                 onClick={handleApplyModalPrice}
-                className="flex-1 rounded-xl bg-emerald-600 py-2.5 text-xs font-black text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20 active:scale-[0.99] transition"
+                className="flex-1 rounded-xl bg-teal-600 py-2.5 text-xs font-black text-white hover:bg-teal-700 shadow-md shadow-teal-600/20 active:scale-[0.99] transition"
               >
                 Apply Custom Price
               </button>
@@ -4114,7 +4534,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
               <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/70">
                 <div className="flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Items</span><strong className="text-slate-900 dark:text-white">{totalItemsCount}</strong></div>
                 <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Customer</span><strong className="max-w-[65%] truncate text-right text-slate-900 dark:text-white">{selectedCustomerName || "Walk-in Customer"}</strong></div>
-                <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Order total</span><strong className="text-base text-emerald-700 dark:text-emerald-300">{formatRs(total)}</strong></div>
+                <div className="mt-2 flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">Order total</span><strong className="text-base text-teal-700 dark:text-teal-300">{formatRs(total)}</strong></div>
               </div>
               <label className="block space-y-1.5">
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Note (optional)</span>
@@ -4166,7 +4586,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
                       {held.note && <p className="mt-1 text-xs italic text-slate-500 dark:text-slate-400">{held.note}</p>}
                       <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{held.itemsCount} item{held.itemsCount === 1 ? "" : "s"} · {held.cart.slice(0, 3).map((item) => `${item.name} × ${item.quantity}`).join(", ")}{held.cart.length > 3 ? ` +${held.cart.length - 3} more` : ""}</p>
                     </div>
-                    <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end"><strong className="text-base font-black text-emerald-700 dark:text-emerald-300">{formatRs(held.total)}</strong><div className="flex items-center gap-2"><button type="button" onClick={() => handleDeleteHeldCart(held.id)} className="rounded-lg border border-rose-200 p-2 text-rose-500 hover:bg-rose-50 dark:border-rose-900/60 dark:hover:bg-rose-950/30" title="Delete held order" aria-label={`Delete order ${held.holdNumber}`}><Trash2 className="h-4 w-4" /></button><button type="button" onClick={() => handleResumeCart(held)} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"><PlayCircle className="h-4 w-4" /> Resume</button></div></div>
+                    <div className="flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end"><strong className="text-base font-black text-teal-700 dark:text-teal-300">{formatRs(held.total)}</strong><div className="flex items-center gap-2"><button type="button" onClick={() => handleDeleteHeldCart(held.id)} className="rounded-lg border border-rose-200 p-2 text-rose-500 hover:bg-rose-50 dark:border-rose-900/60 dark:hover:bg-rose-950/30" title="Delete held order" aria-label={`Delete order ${held.holdNumber}`}><Trash2 className="h-4 w-4" /></button><button type="button" onClick={() => handleResumeCart(held)} className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-2 text-xs font-black text-white hover:bg-teal-700"><PlayCircle className="h-4 w-4" /> Resume</button></div></div>
                   </div>
                 </div>
               ))}
@@ -4185,7 +4605,7 @@ export default function POSClient({ imageMode = false }: { imageMode?: boolean }
             <div className="flex items-start gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"><AlertCircle className="h-5 w-5" /></span><div><h3 className="text-base font-black text-slate-900 dark:text-white">Current order is not empty</h3><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Choose what to do with the current cart before resuming Order #{pendingResumeHeldCart.holdNumber}.</p></div></div>
             <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm dark:bg-slate-800/70"><div className="flex justify-between"><span className="text-slate-500 dark:text-slate-400">Current cart</span><strong className="text-slate-900 dark:text-white">{totalItemsCount} items · {formatRs(total)}</strong></div><div className="mt-2 flex justify-between"><span className="text-slate-500 dark:text-slate-400">Held order</span><strong className="text-slate-900 dark:text-white">{pendingResumeHeldCart.itemsCount} items · {formatRs(pendingResumeHeldCart.total)}</strong></div></div>
             <div className="mt-5 grid gap-2">
-              <button type="button" onClick={() => handleResumeCart(pendingResumeHeldCart, "SWAP")} className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-left text-sm font-black text-emerald-800 hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/60"><span><span className="block">Swap orders</span><span className="mt-0.5 block text-xs font-medium opacity-75">Save the current cart as a held order, then resume the selected one.</span></span><ArrowRight className="h-5 w-5 shrink-0" /></button>
+              <button type="button" onClick={() => handleResumeCart(pendingResumeHeldCart, "SWAP")} className="flex items-center justify-between rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-left text-sm font-black text-teal-800 hover:bg-teal-100 dark:border-teal-900/60 dark:bg-teal-950/30 dark:text-teal-300 dark:hover:bg-teal-950/60"><span><span className="block">Swap orders</span><span className="mt-0.5 block text-xs font-medium opacity-75">Save the current cart as a held order, then resume the selected one.</span></span><ArrowRight className="h-5 w-5 shrink-0" /></button>
               <button type="button" onClick={() => handleResumeCart(pendingResumeHeldCart, "OVERWRITE")} className="flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-left text-sm font-black text-rose-800 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300 dark:hover:bg-rose-950/60"><span><span className="block">Replace current cart</span><span className="mt-0.5 block text-xs font-medium opacity-75">Discard the current cart and load the selected held order.</span></span><ArrowRight className="h-5 w-5 shrink-0" /></button>
               <button type="button" onClick={() => setPendingResumeHeldCart(null)} className="rounded-xl px-4 py-2.5 text-sm font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
             </div>

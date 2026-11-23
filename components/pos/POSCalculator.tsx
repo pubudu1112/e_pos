@@ -34,7 +34,7 @@ export default function POSCalculator({
       <div className="w-full max-w-xs overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <Calculator className="h-5 w-5 text-teal-600 dark:text-teal-400" />
             <h3 className="text-sm font-black text-slate-900 dark:text-white">Calculator</h3>
           </div>
           <button
@@ -57,23 +57,23 @@ export default function POSCalculator({
         <div className="grid grid-cols-4 gap-2 p-3 pt-0">
           <button type="button" onClick={onClear} className="rounded-xl bg-red-50 py-4 text-sm font-black text-red-600 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-400 dark:hover:bg-red-900/50">AC</button>
           <button type="button" onClick={onBackspace} className="rounded-xl bg-slate-100 py-4 text-sm font-bold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">DEL</button>
-          <button type="button" onClick={() => onOperator("÷")} className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/50">÷</button>
-          <button type="button" onClick={() => onOperator("×")} className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/50">×</button>
+          <button type="button" onClick={() => onOperator("÷")} className="rounded-xl bg-teal-50 py-4 text-lg font-black text-teal-700 hover:bg-teal-100 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/50">÷</button>
+          <button type="button" onClick={() => onOperator("×")} className="rounded-xl bg-teal-50 py-4 text-lg font-black text-teal-700 hover:bg-teal-100 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/50">×</button>
 
           {["7", "8", "9"].map((digit) => (
             <button key={digit} type="button" onClick={() => onDigit(digit)} className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{digit}</button>
           ))}
-          <button type="button" onClick={() => onOperator("-")} className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/50">−</button>
+          <button type="button" onClick={() => onOperator("-")} className="rounded-xl bg-teal-50 py-4 text-lg font-black text-teal-700 hover:bg-teal-100 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/50">−</button>
 
           {["4", "5", "6"].map((digit) => (
             <button key={digit} type="button" onClick={() => onDigit(digit)} className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{digit}</button>
           ))}
-          <button type="button" onClick={() => onOperator("+")} className="rounded-xl bg-emerald-50 py-4 text-lg font-black text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/50">+</button>
+          <button type="button" onClick={() => onOperator("+")} className="rounded-xl bg-teal-50 py-4 text-lg font-black text-teal-700 hover:bg-teal-100 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/50">+</button>
 
           {["1", "2", "3"].map((digit) => (
             <button key={digit} type="button" onClick={() => onDigit(digit)} className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">{digit}</button>
           ))}
-          <button type="button" onClick={onEquals} className="row-span-2 rounded-xl bg-emerald-600 text-xl font-black text-white hover:bg-emerald-700">=</button>
+          <button type="button" onClick={onEquals} className="row-span-2 rounded-xl bg-teal-600 text-xl font-black text-white hover:bg-teal-700">=</button>
           <button type="button" onClick={() => onDigit("0")} className="col-span-2 rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">0</button>
           <button type="button" onClick={onDecimal} className="rounded-xl bg-slate-50 py-4 text-lg font-bold text-slate-800 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700">.</button>
         </div>
