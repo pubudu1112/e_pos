@@ -25,6 +25,7 @@ type Product = {
     id: number;
     code: string;
     name: string;
+    brand: string;
     sellingPrice: number;
     purchasePrice: number;
     stock: number;
@@ -185,6 +186,7 @@ export default function PurchaseClient() {
                     id: item.id,
                     code: item.code,
                     name: item.name,
+                    brand: String(item.brand ?? ""),
                     sellingPrice: Number(item.price ?? 0),
                     purchasePrice: Number(item.purchasePrice ?? 0),
                     stock: Number(item.stock ?? 0),
@@ -247,12 +249,14 @@ export default function PurchaseClient() {
         return products.filter((product) => {
             const productName = product.name.toLowerCase();
             const productCode = product.code.toLowerCase();
+            const brandName = product.brand.toLowerCase();
             const fullName =
                 `${product.code} - ${product.name}`.toLowerCase();
 
             return (
                 productName.includes(value) ||
                 productCode.includes(value) ||
+                brandName.includes(value) ||
                 fullName.includes(value)
             );
         });
@@ -694,7 +698,7 @@ export default function PurchaseClient() {
                                     setSelectedProductId("");
                                     setUnitPrice(0);
                                 }}
-                                placeholder="Search product name or code..."
+                                placeholder="Search product name, brand or code..."
                                 autoComplete="off"
                                 className="h-11 w-full rounded-xl border border-slate-300 pl-10 pr-10 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                             />
@@ -741,6 +745,10 @@ export default function PurchaseClient() {
 
                                                     <p className="mt-1 text-xs text-slate-400">
                                                         {product.code}
+                                                        <span className="mx-1.5 text-slate-300">•</span>
+                                                        <span className="text-slate-600">
+                                                            Brand: {product.brand || "No brand"}
+                                                        </span>
                                                     </p>
                                                 </div>
 
