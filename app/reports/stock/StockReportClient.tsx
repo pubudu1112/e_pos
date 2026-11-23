@@ -299,16 +299,16 @@ export default function StockReportClient() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <div className="min-h-[calc(100dvh_-_4rem)] bg-slate-50 p-3 sm:p-4 lg:min-h-[calc(100dvh_-_5rem)] md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         {/* Header */}
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-amber-600">
                 Reports · Inventory & Valuation
               </p>
-              <h1 className="mt-1 text-2xl font-black text-slate-900">
+              <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
                 Stock Valuation, Low Stock & Fast/Slow Moving Report
               </h1>
               <p className="mt-1 text-sm text-slate-500">
@@ -482,57 +482,57 @@ export default function StockReportClient() {
           <>
             {/* KPI Summary Cards */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Stock Cost
                 </p>
-                <p className="mt-2 text-lg font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-slate-900">
                   Rs. {money(filteredTotals.costValue)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Retail Value
                 </p>
-                <p className="mt-2 text-lg font-black text-blue-600">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-blue-600">
                   Rs. {money(filteredTotals.retailValue)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Expected Profit
                 </p>
-                <p className="mt-2 text-lg font-black text-emerald-600">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-emerald-600">
                   Rs. {money(filteredTotals.expectedProfit)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Low / Out of Stock
                 </p>
-                <p className="mt-2 text-lg font-black text-red-600">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-red-600">
                   {data.summary.lowStockCount} Low ·{" "}
                   {data.summary.outOfStockCount} Out
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Fast Moving Items
                 </p>
-                <p className="mt-2 text-lg font-black text-amber-600">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-amber-600">
                   {data.summary.fastMovingCount} Products
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Dead Stock (0 Sold)
                 </p>
-                <p className="mt-2 text-lg font-black text-slate-600">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-slate-600">
                   {data.summary.deadStockCount} Products
                 </p>
               </div>
@@ -557,7 +557,7 @@ export default function StockReportClient() {
                   </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                       <tr>
@@ -648,7 +648,7 @@ export default function StockReportClient() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                     <tr>
@@ -789,3 +789,4 @@ export default function StockReportClient() {
     </div>
   );
 }
+

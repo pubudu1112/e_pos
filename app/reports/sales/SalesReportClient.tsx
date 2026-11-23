@@ -154,17 +154,17 @@ export default function SalesReportClient() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <div className="min-h-[calc(100dvh_-_4rem)] bg-slate-50 p-3 sm:p-4 lg:min-h-[calc(100dvh_-_5rem)] md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
-        <div className="flex flex-col gap-4 rounded-2xl border bg-white p-5 shadow-sm md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4 shadow-sm sm:p-5 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-emerald-600">
               Reports
             </p>
-            <h1 className="mt-1 text-2xl font-black text-slate-900">
+            <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
               Sales Report
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 sm:text-sm">
               Normal sales report + AI-powered sales analysis
             </p>
           </div>
@@ -226,9 +226,9 @@ export default function SalesReportClient() {
                 ["Paid", `Rs. ${money(data.paidAmount)}`],
                 ["Balance", `Rs. ${money(data.balanceAmount)}`],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl border bg-white p-4 shadow-sm">
+                <div key={label} className="min-w-0 rounded-2xl border bg-white p-3 shadow-sm sm:p-4">
                   <p className="text-xs font-semibold text-slate-500">{label}</p>
-                  <p className="mt-2 text-xl font-black text-slate-900">{value}</p>
+                  <p className="mt-2 break-words text-base font-black text-slate-900 sm:text-xl">{value}</p>
                 </div>
               ))}
             </div>
@@ -415,7 +415,7 @@ export default function SalesReportClient() {
                 <FileDown className="h-5 w-5 text-slate-400" />
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                     <tr>
@@ -494,3 +494,4 @@ function Metric({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
+

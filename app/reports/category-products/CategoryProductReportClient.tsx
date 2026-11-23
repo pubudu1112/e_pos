@@ -374,16 +374,16 @@ export default function CategoryProductReportClient() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <div className="min-h-[calc(100dvh_-_4rem)] bg-slate-50 p-3 sm:p-4 lg:min-h-[calc(100dvh_-_5rem)] md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         {/* Header & Filter Bar */}
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">
                 Reports · Category & Product Analytics
               </p>
-              <h1 className="mt-1 text-2xl font-black text-slate-900">
+              <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
                 Category & Product-Wise Sales Report
               </h1>
               <p className="mt-1 text-sm text-slate-500">
@@ -567,56 +567,56 @@ export default function CategoryProductReportClient() {
           <>
             {/* KPI Summary Cards */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Categories
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-900">
                   {filteredSummary.categoriesCount.toLocaleString()}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Products / Items
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-900">
                   {filteredSummary.productsCount.toLocaleString()}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Qty Sold
                 </p>
-                <p className="mt-2 text-xl font-black text-indigo-600">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-indigo-600">
                   {qtyFormat(filteredSummary.totalQuantity)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Gross Sales Value
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-900">
                   Rs. {money(filteredSummary.grossSalesValue)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Cost (COGS)
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-700">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-700">
                   Rs. {money(filteredSummary.totalCost)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Gross Profit ({filteredSummary.profitMargin.toFixed(1)}%)
                 </p>
-                <p className="mt-2 text-xl font-black text-emerald-600">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-emerald-600">
                   Rs. {money(filteredSummary.grossProfit)}
                 </p>
               </div>
@@ -625,7 +625,7 @@ export default function CategoryProductReportClient() {
             {/* SECTION 1: CATEGORY-WISE REPORT */}
             {(activeTab === "BOTH" || activeTab === "CATEGORY") && (
               <section className="space-y-4">
-                <div className="flex flex-col gap-2 rounded-2xl border bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-2 rounded-2xl border bg-white p-4 shadow-sm sm:p-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600">
                       <FolderTree className="h-5 w-5" />
@@ -783,7 +783,7 @@ export default function CategoryProductReportClient() {
 
                           {isExpanded && (
                             <div className="border-t bg-slate-50/50 p-4">
-                              <div className="overflow-x-auto rounded-xl border bg-white">
+                              <div className="touch-pan-x overscroll-x-contain overflow-x-auto rounded-xl border bg-white">
                                 <table className="min-w-full text-sm">
                                   <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                                     <tr>
@@ -885,7 +885,7 @@ export default function CategoryProductReportClient() {
                   <Layers className="h-5 w-5 text-slate-400" />
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                   <table className="min-w-full text-sm">
                     <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                       <tr>
@@ -1022,3 +1022,4 @@ export default function CategoryProductReportClient() {
     </div>
   );
 }
+

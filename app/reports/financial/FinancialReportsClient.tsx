@@ -219,30 +219,30 @@ export default function FinancialReportsClient() {
   const isNetPositive = (data?.netProfit ?? 0) >= 0;
 
   return (
-    <div className="min-h-full bg-slate-50/50 p-4 md:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-full bg-slate-50/50 p-3 sm:p-4 md:p-8">
+      <div className="mx-auto max-w-7xl space-y-5 sm:space-y-6">
         {/* Page Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                <FileSpreadsheet className="h-6 w-6" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 sm:h-11 sm:w-11">
+                <FileSpreadsheet className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-900">Financial Reports</h1>
-                <p className="text-sm text-slate-500">
+                <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Financial Reports</h1>
+                <p className="text-xs text-slate-500 sm:text-sm">
                   Comprehensive Profit & Loss, revenue, COGS, and operating outflow analysis
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex w-full items-center gap-2.5 sm:w-auto">
             <button
               type="button"
               onClick={handlePrintStatement}
               disabled={loading || !data}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50"
+              className="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 sm:flex-none sm:px-3.5 sm:text-sm"
             >
               <Printer className="h-4 w-4 text-slate-500" />
               <span>Print P&L Statement</span>
@@ -317,52 +317,52 @@ export default function FinancialReportsClient() {
         ) : (
           <>
             {/* 5 Core Financial Cards */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
               {/* Gross Revenue */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-3 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Gross Revenue</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider sm:text-xs">Gross Revenue</span>
                   <DollarSign className="h-4 w-4 text-emerald-500" />
                 </div>
-                <p className="mt-2 text-2xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black text-slate-900 sm:text-2xl">
                   Rs. {formatPrice(data.totalRevenue)}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">{data.salesCount} completed sales</p>
               </div>
 
               {/* COGS */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-3 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Cost of Goods (COGS)</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider sm:text-xs">Cost of Goods (COGS)</span>
                   <TrendingDown className="h-4 w-4 text-amber-500" />
                 </div>
-                <p className="mt-2 text-2xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black text-slate-900 sm:text-2xl">
                   Rs. {formatPrice(data.cogs)}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">Inventory cost of sold items</p>
               </div>
 
               {/* Gross Profit */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-3 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Gross Profit</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider sm:text-xs">Gross Profit</span>
                   <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
                     {data.grossMargin.toFixed(1)}% Margin
                   </span>
                 </div>
-                <p className="mt-2 text-2xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black text-slate-900 sm:text-2xl">
                   Rs. {formatPrice(data.grossProfit)}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">Revenue minus product cost</p>
               </div>
 
               {/* Operating Expenses */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-3 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Operating Expenses</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider sm:text-xs">Operating Expenses</span>
                   <WalletCards className="h-4 w-4 text-rose-500" />
                 </div>
-                <p className="mt-2 text-2xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black text-slate-900 sm:text-2xl">
                   Rs. {formatPrice(data.totalExpenses)}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">{data.expensesCount} logged expenses</p>
@@ -370,7 +370,7 @@ export default function FinancialReportsClient() {
 
               {/* NET PROFIT */}
               <div
-                className={`rounded-2xl border p-5 shadow-sm ${
+                className={`rounded-2xl border p-3 shadow-sm sm:p-5 ${
                   isNetPositive
                     ? "border-emerald-200 bg-emerald-50/50"
                     : "border-rose-200 bg-rose-50/50"
@@ -378,7 +378,7 @@ export default function FinancialReportsClient() {
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-xs font-bold uppercase tracking-wider ${
+                    className={`text-[10px] font-bold uppercase tracking-wider sm:text-xs ${
                       isNetPositive ? "text-emerald-800" : "text-rose-800"
                     }`}
                   >
@@ -391,7 +391,7 @@ export default function FinancialReportsClient() {
                   )}
                 </div>
                 <p
-                  className={`mt-2 text-2xl font-black ${
+                  className={`mt-2 break-words text-base font-black sm:text-2xl ${
                     isNetPositive ? "text-emerald-700" : "text-rose-700"
                   }`}
                 >
@@ -408,9 +408,9 @@ export default function FinancialReportsClient() {
             </div>
 
             {/* Middle Section: Breakdown Grids */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
               {/* Expenses Breakdown */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="font-bold text-slate-900">Expenses by Category</h3>
                   <WalletCards className="h-4 w-4 text-slate-400" />
@@ -441,7 +441,7 @@ export default function FinancialReportsClient() {
               </div>
 
               {/* Payment Methods */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="font-bold text-slate-900">Revenue by Payment Method</h3>
                   <CreditCard className="h-4 w-4 text-slate-400" />
@@ -472,7 +472,7 @@ export default function FinancialReportsClient() {
               </div>
 
               {/* Job Orders Performance */}
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <h3 className="font-bold text-slate-900">Job Orders Pipeline</h3>
                   <Briefcase className="h-4 w-4 text-slate-400" />
@@ -506,12 +506,12 @@ export default function FinancialReportsClient() {
 
             {/* Income Statement Detailed Table */}
             <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-              <div className="border-b border-slate-100 px-6 py-4">
+              <div className="border-b border-slate-100 px-4 py-4 sm:px-6">
                 <h3 className="text-base font-bold text-slate-900">Formal Income Statement</h3>
                 <p className="text-xs text-slate-500">Summary table of operational performance</p>
               </div>
 
-              <div className="p-6">
+              <div className="touch-pan-x overscroll-x-contain overflow-x-auto p-3 sm:p-6">
                 <table className="w-full text-left text-sm text-slate-700">
                   <tbody className="divide-y divide-slate-100">
                     <tr className="bg-slate-50/75 font-semibold">

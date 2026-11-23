@@ -320,16 +320,16 @@ export default function PurchaseReportClient() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <div className="min-h-[calc(100dvh_-_4rem)] bg-slate-50 p-3 sm:p-4 lg:min-h-[calc(100dvh_-_5rem)] md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         {/* Header */}
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-teal-600">
                 Reports · Procurement & Suppliers
               </p>
-              <h1 className="mt-1 text-2xl font-black text-slate-900">
+              <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
                 Supplier & Purchase Analysis Report
               </h1>
               <p className="mt-1 text-sm text-slate-500">
@@ -450,61 +450,61 @@ export default function PurchaseReportClient() {
         ) : (
           <>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">Suppliers</p>
-                <p className="mt-2 text-xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-900">
                   {filteredSummary.supplierCount.toLocaleString()}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Purchase Orders
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-900">
                   {filteredSummary.purchaseCount.toLocaleString()}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Qty Purchased
                 </p>
-                <p className="mt-2 text-xl font-black text-teal-600">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-teal-600">
                   {qtyFormat(filteredSummary.totalQuantity)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Purchase Value
                 </p>
-                <p className="mt-2 text-xl font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-slate-900">
                   Rs. {money(filteredSummary.totalValue)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Paid to Suppliers
                 </p>
-                <p className="mt-2 text-xl font-black text-emerald-600">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-emerald-600">
                   Rs. {money(filteredSummary.paidAmount)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Payable Balance Due
                 </p>
-                <p className="mt-2 text-xl font-black text-red-600">
+                <p className="mt-2 break-words text-base font-black sm:text-xl text-red-600">
                   Rs. {money(filteredSummary.balanceAmount)}
                 </p>
               </div>
             </div>
 
             {/* Mode Switcher */}
-            <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between print:hidden">
+            <div className="flex flex-col gap-3 min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between print:hidden">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Item View Mode:
@@ -655,7 +655,7 @@ export default function PurchaseReportClient() {
                       {isExpanded && (
                         <div className="border-t bg-slate-50/40 p-4 md:p-5">
                           {detailMode === "GROUPED" ? (
-                            <div className="overflow-x-auto rounded-xl border bg-white">
+                            <div className="touch-pan-x overscroll-x-contain overflow-x-auto rounded-xl border bg-white">
                               <table className="min-w-full text-sm">
                                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                                   <tr>
@@ -714,7 +714,7 @@ export default function PurchaseReportClient() {
                               </table>
                             </div>
                           ) : (
-                            <div className="overflow-x-auto rounded-xl border bg-white">
+                            <div className="touch-pan-x overscroll-x-contain overflow-x-auto rounded-xl border bg-white">
                               <table className="min-w-full text-sm">
                                 <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                                   <tr>
@@ -796,7 +796,7 @@ export default function PurchaseReportClient() {
                 })}
                 </div>
 
-                <div className="rounded-2xl border bg-white p-4 shadow-sm print:hidden">
+                <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm print:hidden">
                   <Pagination pagination={pagination} />
                 </div>
               </>
@@ -807,3 +807,4 @@ export default function PurchaseReportClient() {
     </div>
   );
 }
+

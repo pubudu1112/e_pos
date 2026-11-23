@@ -181,7 +181,7 @@ export default function AppShellClient({
       {/* =========================================================
           MAIN APPLICATION
       ========================================================= */}
-      <div className="flex min-h-screen">
+      <div className="flex min-h-[calc(100dvh_-_4rem)] lg:min-h-screen">
 
         {/* DESKTOP SIDEBAR */}
         <Sidebar

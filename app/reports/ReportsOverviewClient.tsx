@@ -92,17 +92,17 @@ const reportCards = [
 
 export default function ReportsOverviewClient() {
   return (
-    <div className="min-h-full bg-slate-50/50 p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-6">
+    <div className="min-h-full bg-slate-50/50 p-3 sm:p-4 md:p-8">
+      <div className="mx-auto max-w-6xl space-y-5 sm:space-y-6">
         {/* Header */}
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <FileSpreadsheet className="h-6 w-6" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-11 sm:w-11">
+              <FileSpreadsheet className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Reports Hub</h1>
-              <p className="text-sm text-slate-500">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">Reports Hub</h1>
+              <p className="text-xs text-slate-500 sm:text-sm">
                 Access sales analytics, financial profit & loss statements, and activity audits
               </p>
             </div>
@@ -110,19 +110,19 @@ export default function ReportsOverviewClient() {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
           {reportCards.map((card) => {
             const Icon = card.icon;
             return (
               <Link
                 key={card.href}
                 href={card.href}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md"
+                className="group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md sm:p-6"
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${card.color}`}>
-                      <Icon className="h-6 w-6" />
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12 ${card.color}`}>
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                     <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-600">
                       {card.badge}
@@ -145,8 +145,8 @@ export default function ReportsOverviewClient() {
         </div>
 
         {/* Informational Banner */}
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-          <div className="flex items-start gap-4">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-6">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
               <TrendingUp className="h-5 w-5" />
             </div>

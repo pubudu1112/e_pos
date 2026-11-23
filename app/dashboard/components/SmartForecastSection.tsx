@@ -716,7 +716,7 @@ export default function SmartForecastSection() {
                     </p>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                     <table className="w-full min-w-[700px] text-left text-sm">
                         <thead className="bg-muted/40 text-xs text-muted-foreground">
                             <tr>
@@ -798,7 +798,7 @@ export default function SmartForecastSection() {
                     </p>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                     <table className="w-full min-w-[650px] text-left text-sm">
                         <thead className="bg-muted/40 text-xs text-muted-foreground">
                             <tr>
@@ -880,7 +880,7 @@ export default function SmartForecastSection() {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                     <table className="w-full min-w-[750px] text-left text-sm">
                         <thead className="bg-muted/40 text-xs text-muted-foreground">
                             <tr>

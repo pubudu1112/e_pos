@@ -32,7 +32,7 @@ export default function TopSellingProductsChart({
 
   if (sortedData.length === 0) {
     return (
-      <div className="flex h-[320px] w-full items-center justify-center">
+      <div className="flex h-[260px] w-full items-center justify-center sm:h-[320px]">
         <div className="text-center">
           <p className="text-sm font-medium text-muted-foreground">
             No sales data available
@@ -201,7 +201,7 @@ export default function TopSellingProductsChart({
   };
 
   return (
-    <div className="h-[320px] w-full">
+    <div className="h-[280px] w-full sm:h-[320px]">
       <ReactECharts
         option={option}
         style={{

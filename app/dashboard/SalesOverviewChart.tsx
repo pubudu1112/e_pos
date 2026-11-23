@@ -309,7 +309,7 @@ export default function SalesOverviewChart({
   ============================================================ */
 
   return (
-    <div className="relative h-[280px] w-full">
+    <div className="relative h-[240px] w-full sm:h-[280px]">
 
       {/* CHART */}
 

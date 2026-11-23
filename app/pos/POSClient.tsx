@@ -2301,15 +2301,15 @@ export default function POSClient({
     <div
       data-pos-palette={posPaletteId}
       style={paletteStyle}
-      className="flex h-screen flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased"
+      className="flex h-dvh flex-col overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased"
     >
       {/* ================================================= */}
       {/* 1. TOP NAVIGATION / HEADER (RESPONSIVE) */}
       {/* ================================================= */}
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-teal-900/20 dark:border-teal-900 bg-teal-800 dark:bg-teal-950 px-3 sm:px-4 lg:px-6 shadow-sm gap-2">
+      <header className="relative z-30 flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-x-0 gap-y-2 border-b border-teal-900/20 bg-teal-800 px-3 py-2 shadow-sm dark:border-teal-900 dark:bg-teal-950 sm:h-16 sm:flex-nowrap sm:gap-2 sm:px-4 sm:py-0 lg:px-6">
         {/* Left: Brand & POS Title */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-500 text-white shadow-md shadow-teal-500/20">
+        <div className="order-1 flex shrink-0 items-center gap-2 sm:order-none sm:gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-600 to-teal-500 text-white shadow-md shadow-teal-500/20 sm:h-11 sm:w-11">
             <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
           <div className="min-w-0">
@@ -2323,7 +2323,7 @@ export default function POSClient({
         </div>
 
         {/* Center: Search & Barcode Input */}
-        <div className="mx-1 sm:mx-4 max-w-xl flex-1 min-w-0">
+        <div className="order-3 mx-0 w-full min-w-0 basis-full sm:order-none sm:mx-4 sm:w-auto sm:max-w-xl sm:flex-1 sm:basis-auto">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
@@ -2347,16 +2347,17 @@ export default function POSClient({
           </div>
         </div>
         {/* Right: Quick Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+        <div className="order-2 ml-auto flex shrink-0 items-center gap-1 sm:order-none sm:gap-1.5 lg:gap-2.5">
           {lastCompletedBill && (
             <button
               type="button"
               onClick={() => setIsBillModalOpen(true)}
-              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-teal-200 dark:border-teal-800/60 bg-teal-50 dark:bg-teal-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-teal-700 dark:text-teal-300 shadow-sm transition hover:bg-teal-100 dark:hover:bg-teal-900/40"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-teal-200 bg-teal-50 text-teal-700 shadow-sm transition hover:bg-teal-100 dark:border-teal-800/60 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/40 sm:w-auto sm:gap-1.5 sm:px-3.5 sm:text-xs sm:font-bold"
               title="View or print the last completed bill"
+              aria-label="View or print the last completed bill"
             >
               <Receipt className="h-4 w-4" />
-              <span className="hidden md:inline">Last Bill ({lastCompletedBill.invoiceNo})</span>
+              <span className="hidden lg:inline">Last Bill ({lastCompletedBill.invoiceNo})</span>
             </button>
           )}
 
@@ -2364,7 +2365,7 @@ export default function POSClient({
           <button
             type="button"
             onClick={() => setIsCalculatorOpen(true)}
-            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-teal-200 dark:border-teal-800/60 bg-teal-50 dark:bg-teal-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-teal-700 dark:text-teal-300 shadow-sm transition hover:bg-teal-100 dark:hover:bg-teal-900/40"
+            className="hidden h-10 items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 px-3.5 text-xs font-bold text-teal-700 shadow-sm transition hover:bg-teal-100 dark:border-teal-800/60 dark:bg-teal-950/40 dark:text-teal-300 dark:hover:bg-teal-900/40 lg:flex"
             title="Open Calculator"
           >
             <Calculator className="h-4 w-4" />
@@ -2375,7 +2376,7 @@ export default function POSClient({
             <button
               type="button"
               onClick={() => setIsPDFCounterOpen(true)}
-              className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50 dark:bg-blue-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-blue-700 dark:text-blue-300 shadow-sm transition hover:bg-blue-100 dark:hover:bg-blue-900/40"
+            className="hidden h-10 items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/40 lg:flex"
             >
               <FileText className="h-4 w-4" />
               <span>PDF Counter</span>
@@ -2386,8 +2387,9 @@ export default function POSClient({
           <button
             type="button"
             onClick={() => setIsHeldCartsModalOpen(true)}
-            className="relative flex h-9 sm:h-10 items-center gap-1.5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 px-2.5 sm:px-3.5 text-xs font-bold text-amber-800 dark:text-amber-300 shadow-sm transition hover:bg-amber-100 dark:hover:bg-amber-900/40"
+            className="relative hidden h-10 w-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 text-xs font-bold text-amber-800 shadow-sm transition hover:bg-amber-100 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-900/40 md:flex md:w-auto md:px-3.5"
             title="View held orders (Alt+H or F4)"
+            aria-label={`View held orders${heldCarts.length > 0 ? ` (${heldCarts.length})` : ""}`}
           >
             <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <span className="hidden sm:inline">Held</span>
@@ -2405,8 +2407,9 @@ export default function POSClient({
             type="button"
             onClick={() => void loadItems(1, false)}
             disabled={loading}
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm transition hover:bg-slate-50 dark:hover:bg-slate-700"
+            className="hidden h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:flex"
             title="Refresh Catalog"
+            aria-label="Refresh catalog"
           >
             <RefreshCw
               className={`h-4 w-4 ${loading ? "animate-spin text-teal-600" : ""}`}
@@ -2416,7 +2419,9 @@ export default function POSClient({
           <button
             type="button"
             onClick={() => router.push("/dashboard")}
-            className="flex h-9 sm:h-10 items-center gap-1.5 rounded-xl bg-slate-900 dark:bg-slate-800 dark:border dark:border-slate-700 px-3 sm:px-4 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800 dark:hover:bg-slate-700"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition hover:bg-slate-800 dark:border dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 sm:w-auto sm:gap-1.5 sm:px-4 sm:text-xs sm:font-bold"
+            title="Dashboard"
+            aria-label="Go to dashboard"
           >
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -2558,10 +2563,10 @@ export default function POSClient({
         {/* ================================================= */}
         {/* CENTER COLUMN: PRODUCT CATALOG */}
         {/* ================================================= */}
-        <section className="flex flex-1 flex-col min-w-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/60 pb-24 lg:pb-0">
+        <section className="flex min-w-0 flex-1 flex-col overflow-hidden bg-slate-50/50 pb-28 dark:bg-slate-950/60 lg:pb-0">
           {/* Catalog Header Bar */}
-          <div className="relative z-40 flex shrink-0 items-center justify-between border-b border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm lg:px-6">
-            <div className="flex items-center gap-2.5">
+          <div className="relative z-40 flex shrink-0 items-center justify-between gap-2 border-b border-slate-200/80 bg-white/70 px-3 py-2.5 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80 sm:px-4 sm:py-3 lg:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 {selectedCategory === "All"
                   ? <Layers className="h-5 w-5" />
@@ -2570,16 +2575,17 @@ export default function POSClient({
                     "h-5 w-5"
                   )}
               </span>
-              <span className="text-sm font-black text-slate-800 dark:text-slate-100 sm:text-base">
+              <span className="min-w-0 truncate text-xs font-black text-slate-800 dark:text-slate-100 sm:text-base">
                 {selectedCategory === "All"
-                  ? "All Products & Services"
+                  ? <><span className="sm:hidden">All Products</span><span className="hidden sm:inline">All Products &amp; Services</span></>
                   : categoryList.find((cat) => cat.key === selectedCategory)?.name || "Category"}
               </span>
-              <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:text-slate-400 sm:text-[11px]">
-                {itemsTotal} items available
+              <span className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400 sm:px-2 sm:text-[11px]">
+                <span className="sm:hidden">{itemsTotal} items</span>
+                <span className="hidden sm:inline">{itemsTotal} items available</span>
               </span>
               {imageMode && (
-                <span className="rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:bg-teal-950/70 dark:text-teal-300">
+                <span className="hidden shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:bg-teal-950/70 dark:text-teal-300 sm:inline-flex">
                   Image POS
                 </span>
               )}
@@ -2598,7 +2604,7 @@ export default function POSClient({
                   aria-haspopup="menu"
                   aria-expanded={isPaletteMenuOpen}
                   title="Choose POS color palette"
-                  className="flex h-9 items-center gap-1.5 rounded-xl border border-teal-200 bg-white px-2.5 text-teal-800 shadow-sm transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-teal-800 dark:bg-slate-900 dark:text-teal-200 dark:hover:bg-slate-800"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-teal-200 bg-white px-0 text-teal-800 shadow-sm transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-teal-800 dark:bg-slate-900 dark:text-teal-200 dark:hover:bg-slate-800 md:h-9 md:w-auto md:justify-start md:px-2.5"
                 >
                   <Palette className="h-4 w-4" />
                   <span className="hidden text-[11px] font-bold md:inline">Palette</span>
@@ -2676,11 +2682,11 @@ export default function POSClient({
           </div>
 
           {/* Mobile Horizontal Category Pills (Visible on Mobile & Tablet) */}
-          <div className="flex md:hidden items-center gap-1.5 overflow-x-auto border-b border-teal-100 dark:border-slate-800 bg-teal-50/70 dark:bg-slate-900 px-3 py-2 scrollbar-none">
+          <div className="flex min-h-12 items-center gap-1.5 overflow-x-auto border-b border-teal-100 bg-teal-50/70 px-3 py-2 scrollbar-none dark:border-slate-800 dark:bg-slate-900 md:hidden">
             <button
               type="button"
               onClick={() => setSelectedCategory("All")}
-              className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${selectedCategory === "All"
+              className={`flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${selectedCategory === "All"
                 ? "bg-teal-800 dark:bg-teal-700 text-white shadow-sm"
                 : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-teal-100 dark:hover:bg-slate-700"
                 }`}
@@ -2695,7 +2701,7 @@ export default function POSClient({
                   key={cat.key}
                   type="button"
                   onClick={() => setSelectedCategory(cat.key)}
-                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${isSelected
+                  className={`flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition ${isSelected
                     ? "bg-teal-800 dark:bg-teal-700 text-white shadow-sm"
                     : `${cat.colorScheme.bg} ${cat.colorScheme.text} border border-slate-200 dark:border-slate-700 hover:opacity-90`
                     }`}
@@ -2709,7 +2715,7 @@ export default function POSClient({
           </div>
 
           {/* Product Grid Area */}
-          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <div className="flex-1 overflow-y-auto p-2.5 sm:p-4 lg:p-6">
             {loading ? (
               <div className="flex h-96 flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                 <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
@@ -2730,7 +2736,7 @@ export default function POSClient({
                 </p>
               </div>
             ) : (
-              <div className={`grid ${imageMode ? "grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4" : "grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4"}`}>
+              <div className={`grid ${imageMode ? "grid-cols-2 gap-2 sm:gap-2.5 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4" : "grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4"}`}>
                 {filteredItems.map((item, index) => {
                   const itemKey = `${item.type}-${item.id}`;
                   const isFavourite = favouriteKeys.includes(itemKey);
@@ -2804,7 +2810,7 @@ export default function POSClient({
                             : ""
                           }`}
                       >
-                        <div className={`flex flex-1 flex-col bg-teal-50/60 transition-colors dark:bg-teal-950/20 ${isOutOfStock ? "" : "group-hover:bg-teal-100/80 dark:group-hover:bg-teal-950/50"} ${imageMode ? "p-2.5" : "p-3.5"}`}>
+                        <div className={`flex flex-1 flex-col bg-teal-50/60 transition-colors dark:bg-teal-950/20 ${isOutOfStock ? "" : "group-hover:bg-teal-100/80 dark:group-hover:bg-teal-950/50"} ${imageMode ? "p-2.5" : "p-2.5 sm:p-3.5"}`}>
                         {imageMode && (
                           <div className="mb-2 flex h-28 items-center justify-center overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 sm:h-32">
                             {item.imageUrl ? (
@@ -2825,11 +2831,11 @@ export default function POSClient({
                         )}
 
                         {/* Top Badges */}
-                        <div className="flex w-full min-w-0 items-center justify-between gap-2">
+                        <div className="flex w-full min-w-0 items-center justify-between gap-1 sm:gap-2">
 
                           {/* Category Badge */}
                           <span
-                            className="inline-flex min-w-0 max-w-[70%] items-center gap-1 rounded-md bg-teal-50 px-2 py-1 text-[9px] font-bold text-teal-800 ring-1 ring-inset ring-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:ring-teal-900/60"
+                            className="inline-flex min-w-0 max-w-[54%] items-center gap-1 rounded-md bg-teal-50 px-1.5 py-1 text-[9px] font-bold text-teal-800 ring-1 ring-inset ring-teal-100 dark:bg-teal-950/40 dark:text-teal-300 dark:ring-teal-900/60 sm:max-w-[70%] sm:px-2"
                           >
                             <span className="shrink-0">
                               {renderCategoryIcon(itemCategoryIconName, "h-3 w-3")}
@@ -2844,7 +2850,7 @@ export default function POSClient({
                               e.stopPropagation();
                               toggleFavourite(item);
                             }}
-                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition ${isFavourite
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition sm:h-6 sm:w-6 sm:rounded-md ${isFavourite
                               ? "border-amber-300 dark:border-amber-600/70 bg-amber-50 dark:bg-amber-950/50 text-amber-500"
                               : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-400 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-500"
                               }`}
@@ -2874,7 +2880,7 @@ export default function POSClient({
                                 addToCart(item);
                               }}
                               disabled={isOutOfStock}
-                              className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-teal-200 dark:border-teal-800/70 bg-teal-50 dark:bg-teal-950/60 px-1.5 text-[10px] font-black text-teal-700 dark:text-teal-300 transition hover:bg-teal-100 dark:hover:bg-teal-900/40 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="hidden h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-teal-200 bg-teal-50 px-1.5 text-[10px] font-black text-teal-700 transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-teal-800/70 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/40 sm:flex"
                               title={`Add ${item.name} to cart (keyboard shortcut ${shortcutNumber === 10 ? "0" : shortcutNumber})`}
                               aria-label={`Add ${item.name} to cart using shortcut ${shortcutNumber}`}
                             >
@@ -2884,21 +2890,22 @@ export default function POSClient({
 
                           {/* In Cart Badge */}
                           {inCartQty > 0 && (
-                            <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-teal-600 px-2.5 py-1 text-[9px] font-bold text-white shadow-sm">
-                              <CheckCircle2 className="mr-1 h-3 w-3" />
-                              {inCartQty} in cart
+                            <span className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-teal-600 px-1.5 py-1 text-[9px] font-bold text-white shadow-sm sm:px-2.5">
+                              <CheckCircle2 className="mr-0 h-3 w-3 sm:mr-1" />
+                              <span className="sm:hidden">{inCartQty}</span>
+                              <span className="hidden sm:inline">{inCartQty} in cart</span>
                             </span>
                           )}
                         </div>
 
                         {/* Product Name & Code */}
-                        <div className="mt-3">
-                          <h4 className="line-clamp-2 text-lg font-bold leading-snug text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">
+                        <div className="mt-2 sm:mt-3">
+                          <h4 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 sm:text-lg">
                             {item.name}
                           </h4>
 
                           {item.brand?.trim() && (
-                            <p className="mt-1 text-[11px] font-bold text-teal-700 dark:text-teal-400">
+                            <p className="mt-1 truncate text-[11px] font-bold text-teal-700 dark:text-teal-400">
                               {item.brand}
                             </p>
                           )}
@@ -2927,7 +2934,7 @@ export default function POSClient({
                         </div>
 
                         {/* Price and Add Button */}
-                        <div className={`mt-auto flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-2.5 ${imageMode ? "mx-2.5 mb-2.5" : "mx-3.5 mb-3.5"}`}>
+                        <div className={`mt-auto flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-slate-800 ${imageMode ? "mx-2 mb-2 sm:mx-2.5 sm:mb-2.5" : "mx-2 mb-2 sm:mx-3.5 sm:mb-3.5"}`}>
                           <div>
                             <p className="text-xs font-black text-slate-900 dark:text-slate-100">
                               {formatRs(item.price)}
@@ -2945,7 +2952,7 @@ export default function POSClient({
                                 e.stopPropagation();
                                 openPriceEditModal(item);
                               }}
-                              className="flex h-8 items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 shadow-2xs transition hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-950/40 hover:text-teal-800 dark:hover:text-teal-300 disabled:opacity-40"
+                              className="flex h-9 w-9 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2 text-[10px] font-bold text-slate-700 shadow-2xs transition hover:border-teal-500 hover:bg-teal-50 hover:text-teal-800 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-teal-950/40 dark:hover:text-teal-300 sm:h-8 sm:w-auto sm:justify-start"
                               title="Edit unit price for this product before selling"
                             >
                               <Pencil className="h-3 w-3 text-teal-600 dark:text-teal-400" />
@@ -2959,7 +2966,7 @@ export default function POSClient({
                                 e.stopPropagation();
                                 addToCart(item);
                               }}
-                              className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm transition ${isOutOfStock
+                              className={`flex h-9 w-9 items-center justify-center rounded-xl shadow-sm transition sm:h-8 sm:w-8 ${isOutOfStock
                                 ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
                                 : "bg-teal-500 text-white hover:bg-teal-600 active:scale-95"
                                 }`}
@@ -3417,7 +3424,10 @@ export default function POSClient({
       {/* ================================================= */}
       {/* MOBILE STICKY FLOATING CART BAR (Screens < lg) */}
       {/* ================================================= */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-3 shadow-2xl backdrop-blur-md">
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 lg:hidden"
+        style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+      >
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div className="flex items-center gap-2.5">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 dark:bg-slate-800 text-white shadow-sm">
@@ -3441,7 +3451,7 @@ export default function POSClient({
           <button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="flex h-10 items-center gap-2 rounded-xl bg-teal-600 px-4 text-xs font-black text-white shadow-md shadow-teal-600/30 hover:bg-teal-700 active:scale-95"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-teal-600 px-3 text-xs font-black text-white shadow-md shadow-teal-600/30 hover:bg-teal-700 active:scale-95 sm:gap-2 sm:px-4"
           >
             <span>View Cart ({totalItemsCount})</span>
             <ArrowRight className="h-4 w-4" />
@@ -3454,7 +3464,7 @@ export default function POSClient({
       {/* ================================================= */}
       {isMobileCartOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex justify-end bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="relative flex h-full w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-2xl animate-in slide-in-from-right">
+          <div className="relative flex h-dvh w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right dark:bg-slate-900">
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-4 py-3.5">
               <div className="flex items-center gap-2">
@@ -3673,7 +3683,7 @@ export default function POSClient({
                           <button
                             type="button"
                             onClick={() => decreaseQuantity(item)}
-                            className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
+                            className="flex h-9 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
@@ -3687,13 +3697,13 @@ export default function POSClient({
                               const val = parseInt(e.target.value, 10);
                               updateQuantity(item, isNaN(val) ? 1 : val);
                             }}
-                            className="h-7 w-12 border-x border-slate-200 dark:border-slate-700 bg-transparent text-center text-xs font-black text-slate-800 dark:text-slate-100 focus:outline-none"
+                            className="h-9 w-14 border-x border-slate-200 bg-transparent text-center text-xs font-black text-slate-800 focus:outline-none dark:border-slate-700 dark:text-slate-100"
                           />
 
                           <button
                             type="button"
                             onClick={() => increaseQuantity(item)}
-                            className="flex h-7 w-7 items-center justify-center text-slate-600 dark:text-slate-300 transition hover:bg-slate-100 dark:hover:bg-slate-700"
+                            className="flex h-9 w-9 items-center justify-center text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700"
                           >
                             <Plus className="h-3 w-3" />
                           </button>

@@ -54,7 +54,10 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
+    <main
+      className="flex min-h-screen items-center justify-center bg-slate-100 px-4 text-slate-900"
+      style={{ colorScheme: "light" }}
+    >
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
           <div className="bg-slate-900 px-8 py-8 text-center">
@@ -101,8 +104,11 @@ export default function LoginPage() {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Enter username"
                     autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     disabled={loading}
-                    className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 disabled:bg-slate-100"
+                    className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 caret-slate-900 outline-none transition placeholder:text-slate-400 selection:bg-slate-200 selection:text-slate-900 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 disabled:bg-slate-100"
                   />
                 </div>
               </div>
@@ -125,8 +131,11 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password"
                     autoComplete="current-password"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     disabled={loading}
-                    className="w-full rounded-lg border border-slate-300 py-3 pl-11 pr-20 text-sm outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 disabled:bg-slate-100"
+                    className="w-full rounded-lg border border-slate-300 bg-white py-3 pl-11 pr-20 text-sm text-slate-900 caret-slate-900 outline-none transition placeholder:text-slate-400 selection:bg-slate-200 selection:text-slate-900 focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 disabled:bg-slate-100"
                   />
 
                   <button

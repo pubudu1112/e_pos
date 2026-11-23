@@ -107,7 +107,7 @@ export default function PaymentMethodsChart({
   };
 
   return (
-    <div className="h-[280px] w-full">
+    <div className="h-[240px] w-full sm:h-[280px]">
       <ReactECharts
         option={option}
         style={{

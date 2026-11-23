@@ -219,16 +219,16 @@ export default function ExpenseReportClient() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <div className="min-h-[calc(100dvh_-_4rem)] bg-slate-50 p-3 sm:p-4 lg:min-h-[calc(100dvh_-_5rem)] md:p-6">
       <div className="mx-auto max-w-7xl space-y-5">
         {/* Header */}
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-rose-600">
                 Reports · Operating Expenses
               </p>
-              <h1 className="mt-1 text-2xl font-black text-slate-900">
+              <h1 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">
                 Expense Category & Daily Expense Report
               </h1>
               <p className="mt-1 text-sm text-slate-500">
@@ -351,52 +351,52 @@ export default function ExpenseReportClient() {
           <>
             {/* KPI Summary Cards */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Total Expenses
                 </p>
-                <p className="mt-2 text-lg font-black text-rose-600">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-rose-600">
                   Rs. {money(filteredTotalAmount)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Expense Vouchers
                 </p>
-                <p className="mt-2 text-lg font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-slate-900">
                   {filteredExpenses.length.toLocaleString()}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Categories Used
                 </p>
-                <p className="mt-2 text-lg font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-slate-900">
                   {data.summary.categoriesUsed}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Daily Avg (Active Days)
                 </p>
-                <p className="mt-2 text-lg font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-slate-900">
                   Rs. {money(data.summary.dailyAverage)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Highest Single Expense
                 </p>
-                <p className="mt-2 text-lg font-black text-slate-900">
+                <p className="mt-2 break-words text-base font-black sm:text-lg text-slate-900">
                   Rs. {money(data.summary.highestExpense)}
                 </p>
               </div>
 
-              <div className="rounded-2xl border bg-white p-4 shadow-sm">
+              <div className="min-w-0 rounded-2xl border bg-white p-3 sm:p-4 shadow-sm">
                 <p className="text-xs font-semibold text-slate-500">
                   Top Expense Category
                 </p>
@@ -409,7 +409,7 @@ export default function ExpenseReportClient() {
             {/* Category & Payment Method Breakdown */}
             <div className="grid gap-5 lg:grid-cols-3">
               {/* Category Breakdown */}
-              <section className="rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
+              <section className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5 lg:col-span-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FolderTree className="h-5 w-5 text-rose-600" />
@@ -463,7 +463,7 @@ export default function ExpenseReportClient() {
               </section>
 
               {/* Payment Method Breakdown */}
-              <section className="rounded-2xl border bg-white p-5 shadow-sm">
+              <section className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-rose-600" />
                   <h2 className="font-black text-slate-900">Payment Methods</h2>
@@ -502,7 +502,7 @@ export default function ExpenseReportClient() {
             </div>
 
             {/* Daily Expenses Timeline */}
-            <section className="rounded-2xl border bg-white p-5 shadow-sm">
+            <section className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-rose-600" />
                 <h2 className="font-black text-slate-900">
@@ -567,7 +567,7 @@ export default function ExpenseReportClient() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="touch-pan-x overscroll-x-contain overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
                     <tr>
@@ -649,3 +649,4 @@ export default function ExpenseReportClient() {
     </div>
   );
 }
+
