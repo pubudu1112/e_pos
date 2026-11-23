@@ -7,17 +7,43 @@ import {
   Sun,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-
-  const [mounted, setMounted] =
-    useState(false);
+  const menuId = useId();
+  const [mounted, setMounted] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        menuRef.current &&
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
 
   if (!mounted) {
     return (
@@ -50,7 +76,7 @@ export default function ThemeToggle() {
   ];
 
   return (
-    <div className="relative group">
+    <div ref={menuRef} className="relative">
 
       {/* ================================================= */}
       {/* THEME BUTTON */}
@@ -58,8 +84,12 @@ export default function ThemeToggle() {
 
       <button
         type="button"
+        onClick={() => setMenuOpen((open) => !open)}
         className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-all hover:border-primary/30 hover:bg-accent hover:text-primary"
         aria-label="Change theme"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
+        aria-controls={menuId}
       >
 
         {theme === "dark" ? (
@@ -76,7 +106,16 @@ export default function ThemeToggle() {
       {/* THEME MENU */}
       {/* ================================================= */}
 
-      <div className="invisible absolute right-0 top-12 z-50 w-44 translate-y-1 rounded-xl border border-border bg-card p-1.5 opacity-0 shadow-xl transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+      <div
+        id={menuId}
+        role="menu"
+        aria-label="Appearance"
+        className={`absolute right-0 top-12 z-50 w-44 rounded-xl border border-border bg-card p-1.5 shadow-xl transition-all duration-150 ${
+          menuOpen
+            ? "visible translate-y-0 opacity-100"
+            : "invisible pointer-events-none translate-y-1 opacity-0"
+        }`}
+      >
 
         <div className="px-2.5 py-2">
 
@@ -96,9 +135,12 @@ export default function ThemeToggle() {
             <button
               key={option.value}
               type="button"
-              onClick={() =>
-                setTheme(option.value)
-              }
+              role="menuitemradio"
+              aria-checked={active}
+              onClick={() => {
+                setTheme(option.value);
+                setMenuOpen(false);
+              }}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-xs font-semibold transition ${
                 active
                   ? "bg-primary/10 text-primary"
