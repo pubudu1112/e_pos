@@ -3992,7 +3992,7 @@ export default function POSClient({
                   type="text"
                   value={paymentNote}
                   onChange={(e) => setPaymentNote(e.target.value)}
-                  placeholder="e.g. WhatsApp document sent, Urgent job"
+                  placeholder="e.g. Job request or urgent order"
                   className="h-9 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-xs text-slate-800 dark:text-white focus:border-teal-500 focus:outline-none"
                 />
               </div>
@@ -4072,7 +4072,7 @@ export default function POSClient({
                     No. 45, Main Street, Colombo, Sri Lanka
                   </p>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                    Tel: +94 77 123 4567 | WhatsApp: 071 987 6543
+                    Tel: +94 77 123 4567
                   </p>
                 </div>
 
@@ -4219,7 +4219,7 @@ export default function POSClient({
             </div>
 
             {/* Print & Action Buttons Fixed Footer */}
-            <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 px-5 py-3.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 backdrop-blur-sm">
+            <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 px-4 py-3.5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={() => printBill("thermal")}

@@ -172,24 +172,27 @@ export default function PurchaseClient() {
 
     async function loadProducts() {
         try {
-            const response = await fetch("/api/pos/items");
+            const response = await fetch("/api/purchases/products", {
+                cache: "no-store",
+            });
 
             if (!response.ok) {
                 throw new Error("Unable to load products.");
             }
 
             const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.message || "Unable to load products.");
+            }
 
-            const productItems = (result.data ?? [])
-                .filter((item: any) => item.type === "PRODUCT")
-                .map((item: any) => ({
+            const productItems = (result.data ?? []).map((item: any) => ({
                     id: item.id,
                     code: item.code,
                     name: item.name,
-                    brand: String(item.brand ?? ""),
-                    sellingPrice: Number(item.price ?? 0),
+                    brand: String(item.brand?.name ?? ""),
+                    sellingPrice: Number(item.sellingPrice ?? 0),
                     purchasePrice: Number(item.purchasePrice ?? 0),
-                    stock: Number(item.stock ?? 0),
+                    stock: Number(item.stock?.quantity ?? 0),
                 }));
 
             setProducts(productItems);

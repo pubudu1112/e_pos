@@ -741,8 +741,8 @@ async function main() {
     {
       code: "SC-005",
       barcode: "SC005",
-      name: "Scan, PDF & Email / WhatsApp Service",
-      description: "Instant document digitizing and direct forwarding service",
+      name: "Scan, PDF & Email Service",
+      description: "Instant document digitizing and email forwarding service",
       category: "Scanning",
       unit: "Jobs",
       brand: "Pubudu Hub",
